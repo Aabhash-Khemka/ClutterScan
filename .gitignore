@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production builds
+dist/
+build/
+out/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# Editor & IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python & ML / Algorithm outputs
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.pt
+*.onnx
+*.weights
+checkpoints/
+data/raw/
+data/processed/
