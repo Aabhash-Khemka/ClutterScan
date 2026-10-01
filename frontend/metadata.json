@@ -1,0 +1,6 @@
+{
+  "name": "ClutterScan — Local Disk Forensic & Cleanup System",
+  "description": "High-fidelity local disk forensic analysis, SHA-256 duplicate detection, perceptual hash image clustering, and safe reversible cleanup.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

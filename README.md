@@ -7,15 +7,20 @@ ClutterScan is an intelligent clutter detection, classification, and resolution 
 ```
 ClutterScan/
 │
-├── frontend/             # Frontend client application (React / Vite)
+├── frontend/             # Frontend forensic client (React 19 / TypeScript / Vite / Tailwind v4)
 │   ├── src/
-│   │   ├── components/   # Reusable UI components
-│   │   ├── pages/        # Page views and routes
-│   │   ├── services/     # API integration services
-│   │   ├── utils/        # Utility helpers and functions
-│   │   └── App.jsx       # Root React component
-│   ├── public/           # Static assets
-│   ├── package.json      # Frontend package configuration
+│   │   ├── components/   # Reusable UI elements (Header, DiffModal, CleanupModal)
+│   │   ├── screens/      # Forensic views (Home, Storage, Duplicates, Images, Files, Cleanup, History)
+│   │   ├── mockData.ts   # Forensic simulation dataset & records
+│   │   ├── types.ts      # TypeScript interfaces and data models
+│   │   ├── index.css     # Terminal forensic theme & Tailwind v4
+│   │   ├── App.tsx       # Root React component & hash router
+│   │   └── main.tsx      # Application entry point
+│   ├── index.html        # Main HTML & Space Mono typography
+│   ├── metadata.json     # Capability definitions
+│   ├── tsconfig.json     # TypeScript compiler configuration
+│   ├── vite.config.ts    # Vite build & alias configuration
+│   ├── package.json      # Frontend dependencies & npm scripts
 │   └── README.md         # Frontend guide and docs
 │
 ├── backend/              # Backend API and server (Express / Node.js)
@@ -54,6 +59,7 @@ cd frontend
 npm install
 npm run dev
 ```
+Starts the forensic frontend at `http://localhost:3000`.
 
 ### Backend
 ```bash

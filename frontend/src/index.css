@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    border-radius: 0px !important;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #000000;
+    color: #e2e2e2;
+    font-family: 'Space Mono', Menlo, Monaco, Consolas, "JetBrains Mono", monospace;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: #ffffff;
+    color: #000000;
+  }
+
+  /* Custom subtle scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #000000;
+    border-left: 1px solid #1f1f1f;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #353535;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #636465;
+  }
+}
+
+/* CRT and scanline aesthetics for forensic realism */
+.scanline-grid {
+  background-size: 100% 4px;
+  background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 50%, transparent 50%);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
