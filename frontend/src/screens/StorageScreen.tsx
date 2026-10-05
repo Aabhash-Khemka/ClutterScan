@@ -1,19 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TreeNode, NavTab } from '../types';
 import { INITIAL_FILESYSTEM_TREE } from '../mockData';
 
 interface StorageScreenProps {
   onNavigate: (tab: NavTab) => void;
   onShowNotice?: (msg: string) => void;
+  treeData?: TreeNode[];
 }
 
 export const StorageScreen: React.FC<StorageScreenProps> = ({
   onNavigate,
   onShowNotice,
+  treeData: initialTreeData,
 }) => {
-  const [treeData, setTreeData] = useState<TreeNode[]>(INITIAL_FILESYSTEM_TREE);
+  const [treeData, setTreeData] = useState<TreeNode[]>(initialTreeData || INITIAL_FILESYSTEM_TREE);
   const [isAllExpanded, setIsAllExpanded] = useState<boolean>(false);
   const [isReindexing, setIsReindexing] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (initialTreeData && initialTreeData.length > 0) {
+      setTreeData(initialTreeData);
+    }
+  }, [initialTreeData]);
 
   // Toggle single node
   const toggleNodeById = (nodeId: string) => {

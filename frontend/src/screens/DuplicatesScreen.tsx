@@ -5,18 +5,21 @@ import { MOCK_HASH_GROUPS } from '../mockData';
 interface DuplicatesScreenProps {
   onNavigate: (tab: NavTab) => void;
   onStageDuplicates: (count: number) => void;
+  hashGroups?: HashGroup[];
 }
 
 export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
   onNavigate,
   onStageDuplicates,
+  hashGroups: propHashGroups,
 }) => {
-  const [selectedGroupId, setSelectedGroupId] = useState<string>('001');
+  const groups = propHashGroups && propHashGroups.length > 0 ? propHashGroups : MOCK_HASH_GROUPS;
+  const [selectedGroupId, setSelectedGroupId] = useState<string>(groups[0]?.id || '001');
   const [isStaged, setIsStaged] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string>('STATUS: READY');
 
   const currentGroup: HashGroup =
-    MOCK_HASH_GROUPS.find((g) => g.id === selectedGroupId) || MOCK_HASH_GROUPS[0];
+    groups.find((g) => g.id === selectedGroupId) || groups[0];
 
   const handleToggleStage = () => {
     if (!isStaged) {
@@ -92,7 +95,7 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
           </div>
 
           <div className="flex flex-col gap-3">
-            {MOCK_HASH_GROUPS.map((group) => {
+            {groups.map((group) => {
               const isSelected = group.id === selectedGroupId;
               return (
                 <div

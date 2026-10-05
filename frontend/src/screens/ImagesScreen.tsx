@@ -8,6 +8,7 @@ interface ImagesScreenProps {
   onStageImageCandidate: (id: string) => void;
   stagedCandidateIds: string[];
   onShowNotice?: (msg: string) => void;
+  clusters?: PerceptualCluster[];
 }
 
 export const ImagesScreen: React.FC<ImagesScreenProps> = ({
@@ -15,13 +16,15 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
   onStageImageCandidate,
   stagedCandidateIds,
   onShowNotice,
+  clusters: propClusters,
 }) => {
-  const [selectedClusterId, setSelectedClusterId] = useState<string>('group-1');
+  const clusters = propClusters && propClusters.length > 0 ? propClusters : MOCK_PERCEPTUAL_CLUSTERS;
+  const [selectedClusterId, setSelectedClusterId] = useState<string>(clusters[0]?.id || 'group-1');
   const [activeDiffImage, setActiveDiffImage] = useState<PerceptualImage | null>(null);
 
   const activeCluster =
-    MOCK_PERCEPTUAL_CLUSTERS.find((c) => c.id === selectedClusterId) ||
-    MOCK_PERCEPTUAL_CLUSTERS[0];
+    clusters.find((c) => c.id === selectedClusterId) ||
+    clusters[0];
 
   const referenceImage =
     activeCluster.images.find((img) => img.isReference) || activeCluster.images[0];
@@ -115,7 +118,7 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
           // CLUSTER_SELECTOR: SELECT EVALUATION TARGET
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          {MOCK_PERCEPTUAL_CLUSTERS.map((cluster) => {
+          {clusters.map((cluster) => {
             const isSelected = cluster.id === selectedClusterId;
             return (
               <button

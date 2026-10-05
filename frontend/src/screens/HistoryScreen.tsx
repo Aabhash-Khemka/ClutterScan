@@ -7,6 +7,8 @@ interface HistoryScreenProps {
   recoveryLog: RecoveryLogItem[];
   onRestoreItem: (id: string) => void;
   onShowNotice?: (msg: string) => void;
+  historicalScans?: HistoricalScanEntry[];
+  snapshotDeltas?: SnapshotDeltaItem[];
 }
 
 export const HistoryScreen: React.FC<HistoryScreenProps> = ({
@@ -14,13 +16,18 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
   recoveryLog,
   onRestoreItem,
   onShowNotice,
+  historicalScans: propScans,
+  snapshotDeltas: propDeltas,
 }) => {
+  const scans = propScans && propScans.length > 0 ? propScans : HISTORICAL_SCANS;
+  const deltas = propDeltas && propDeltas.length > 0 ? propDeltas : SNAPSHOT_DELTAS;
+
   const handleExportHistorical = () => {
     const data = {
       manifestType: 'INODE_MANIFEST_V3',
       exportTimestamp: new Date().toISOString(),
-      historicalScans: HISTORICAL_SCANS,
-      snapshotDeltas: SNAPSHOT_DELTAS,
+      historicalScans: scans,
+      snapshotDeltas: deltas,
       recoveryEntries: recoveryLog,
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -178,7 +185,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1f1f1f] font-mono">
-                {SNAPSHOT_DELTAS.map((item, idx) => (
+                {deltas.map((item, idx) => (
                   <tr
                     key={idx}
                     className="hover:bg-white hover:text-black transition-none cursor-default group"
@@ -227,7 +234,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1f1f1f]">
-                {HISTORICAL_SCANS.map((scan, idx) => (
+                {scans.map((scan, idx) => (
                   <tr key={idx} className="hover:bg-[#131313] transition-none">
                     <td className="py-3 pr-2 text-white font-bold">{scan.date}</td>
                     <td className="py-3 px-2 text-[#c4c7c8] truncate max-w-[140px]">
