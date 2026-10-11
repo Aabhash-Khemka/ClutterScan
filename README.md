@@ -60,4 +60,4 @@ cd frontend
 npm install
 npm run dev
 ```
-Starts the forensic frontend at `http://localhost:5173`.
+Starts the forensic frontend at `http://localhost:3000`.
