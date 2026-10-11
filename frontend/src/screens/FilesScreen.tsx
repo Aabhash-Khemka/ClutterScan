@@ -45,6 +45,36 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
     return (stagedBytesTotal / (1024 * 1024)).toFixed(1) + ' MB';
   }, [stagedBytesTotal]);
 
+  const oldCount = useMemo(
+    () => files.filter((f) => f.type === 'ARCHIVE' || f.type === 'TAR' || f.reason.includes('TIMESTAMP') || f.reason.includes('ARCHIVE')).length,
+    [files]
+  );
+
+  const tempCount = useMemo(
+    () => files.filter((f) => f.type === 'TMP' || f.type === 'CACHE' || f.type === 'DMP' || f.reason.includes('RUNTIME') || f.reason.includes('SCRATCH') || f.reason.includes('STACK')).length,
+    [files]
+  );
+
+  const totalCandidateCount = files.length;
+
+  const totalPotentialRecoveryBytes = useMemo(
+    () => files.reduce((acc, f) => acc + (f.bytes || 0), 0),
+    [files]
+  );
+
+  const formattedPotentialRecovery = useMemo(() => {
+    if (totalPotentialRecoveryBytes >= 1024 * 1024 * 1024) {
+      return (totalPotentialRecoveryBytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+    }
+    if (totalPotentialRecoveryBytes >= 1024 * 1024) {
+      return (totalPotentialRecoveryBytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+    if (totalPotentialRecoveryBytes >= 1024) {
+      return (totalPotentialRecoveryBytes / 1024).toFixed(1) + ' KB';
+    }
+    return totalPotentialRecoveryBytes + ' B';
+  }, [totalPotentialRecoveryBytes]);
+
   const allFilteredStaged = filteredFiles.length > 0 && filteredFiles.every((f) => f.isStaged);
 
   const handleBulkToggle = () => {
@@ -75,25 +105,25 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
           <span className="text-[11px] text-[#8e9192] uppercase tracking-widest">
             OLD FILES (&gt;365D)
           </span>
-          <span className="text-xl md:text-2xl font-bold text-white tracking-widest">83</span>
+          <span className="text-xl md:text-2xl font-bold text-white tracking-widest">{oldCount}</span>
         </div>
         <div className="p-4 border-b sm:border-b-0 lg:border-r border-[#1f1f1f] flex flex-col gap-1">
           <span className="text-[11px] text-[#8e9192] uppercase tracking-widest">
             TEMPORARY FILES (.TMP/.LOG)
           </span>
-          <span className="text-xl md:text-2xl font-bold text-white tracking-widest">41</span>
+          <span className="text-xl md:text-2xl font-bold text-white tracking-widest">{tempCount}</span>
         </div>
         <div className="p-4 border-b sm:border-b-0 border-r-0 sm:border-r border-[#1f1f1f] flex flex-col gap-1">
           <span className="text-[11px] text-[#8e9192] uppercase tracking-widest">
             TOTAL CANDIDATES
           </span>
-          <span className="text-xl md:text-2xl font-bold text-white tracking-widest">124</span>
+          <span className="text-xl md:text-2xl font-bold text-white tracking-widest">{totalCandidateCount}</span>
         </div>
         <div className="p-4 flex flex-col gap-1">
           <span className="text-[11px] text-[#8e9192] uppercase tracking-widest">
             POTENTIAL RECOVERY
           </span>
-          <span className="text-xl md:text-2xl font-bold text-white tracking-widest">4.72 GB</span>
+          <span className="text-xl md:text-2xl font-bold text-white tracking-widest">{formattedPotentialRecovery}</span>
         </div>
       </div>
 
@@ -109,7 +139,7 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
                 : 'border-[#1f1f1f] bg-black text-[#c4c7c8] hover:border-[#444748] hover:text-white'
             }`}
           >
-            [ ALL (124) ]
+            [ ALL ({totalCandidateCount}) ]
           </button>
           <button
             type="button"
@@ -120,7 +150,7 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
                 : 'border-[#1f1f1f] bg-black text-[#c4c7c8] hover:border-[#444748] hover:text-white'
             }`}
           >
-            [ OLD (83) ]
+            [ OLD ({oldCount}) ]
           </button>
           <button
             type="button"
@@ -131,7 +161,7 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
                 : 'border-[#1f1f1f] bg-black text-[#c4c7c8] hover:border-[#444748] hover:text-white'
             }`}
           >
-            [ TEMPORARY (41) ]
+            [ TEMPORARY ({tempCount}) ]
           </button>
         </div>
 
@@ -166,7 +196,14 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-[#1f1f1f] text-xs">
-            {filteredFiles.map((file) => (
+            {filteredFiles.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="py-8 text-center text-[#8e9192] uppercase">
+                  ZERO CANDIDATE INODES MATCH CURRENT FILTER PROTOCOL // DISK CLEAN
+                </td>
+              </tr>
+            ) : (
+              filteredFiles.map((file) => (
               <tr
                 key={file.id}
                 className="transition-none hover:bg-[#131313] group"
@@ -208,7 +245,8 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
                   </button>
                 </td>
               </tr>
-            ))}
+            ))
+            )}
           </tbody>
         </table>
       </div>

@@ -146,8 +146,10 @@ class ScanPipelineManager:
                 repo.save_files_and_directories(result.scan_id, files, dirs)
                 repo.save_duplicate_groups(result.scan_id, result.duplicate_groups)
                 repo.save_similar_image_clusters(result.scan_id, result.similar_clusters)
-            except Exception:
-                pass
+                repo.save_recommendations(result.scan_id, result.recommendations)
+            except Exception as ex:
+                import traceback
+                traceback.print_exc()
 
             session.end_time = datetime.now()
             session.status = "COMPLETED"

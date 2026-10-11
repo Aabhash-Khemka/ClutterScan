@@ -8,16 +8,7 @@ import { ImagesScreen } from './screens/ImagesScreen';
 import { FilesScreen } from './screens/FilesScreen';
 import { CleanupScreen } from './screens/CleanupScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
-import {
-  INITIAL_METADATA_FILES,
-  INITIAL_CLEANUP_CANDIDATES,
-  INITIAL_RECOVERY_LOG,
-  INITIAL_FILESYSTEM_TREE,
-  MOCK_HASH_GROUPS,
-  MOCK_PERCEPTUAL_CLUSTERS,
-  HISTORICAL_SCANS,
-  SNAPSHOT_DELTAS,
-} from './mockData';
+
 import {
   TreeNode,
   HashGroup,
@@ -29,30 +20,60 @@ import { api } from './services/api';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('home');
-  const [files, setFiles] = useState<MetadataFileItem[]>(INITIAL_METADATA_FILES);
-  const [candidates, setCandidates] = useState<CleanupCandidateRecord[]>(INITIAL_CLEANUP_CANDIDATES);
-  const [recoveryLog, setRecoveryLog] = useState<RecoveryLogItem[]>(INITIAL_RECOVERY_LOG);
-  const [treeData, setTreeData] = useState<TreeNode[]>(INITIAL_FILESYSTEM_TREE);
-  const [hashGroups, setHashGroups] = useState<HashGroup[]>(MOCK_HASH_GROUPS);
-  const [perceptualClusters, setPerceptualClusters] = useState<PerceptualCluster[]>(MOCK_PERCEPTUAL_CLUSTERS);
-  const [historicalScans, setHistoricalScans] = useState<HistoricalScanEntry[]>(HISTORICAL_SCANS);
-  const [snapshotDeltas, setSnapshotDeltas] = useState<SnapshotDeltaItem[]>(SNAPSHOT_DELTAS);
-  const [stagedImageCandidateIds, setStagedImageCandidateIds] = useState<string[]>(['img-c2']);
+  const [files, setFiles] = useState<MetadataFileItem[]>([]);
+  const [candidates, setCandidates] = useState<CleanupCandidateRecord[]>([]);
+  const [recoveryLog, setRecoveryLog] = useState<RecoveryLogItem[]>([]);
+  const [treeData, setTreeData] = useState<TreeNode[]>([]);
+  const [hashGroups, setHashGroups] = useState<HashGroup[]>([]);
+  const [perceptualClusters, setPerceptualClusters] = useState<PerceptualCluster[]>([]);
+  const [historicalScans, setHistoricalScans] = useState<HistoricalScanEntry[]>([]);
+  const [snapshotDeltas, setSnapshotDeltas] = useState<SnapshotDeltaItem[]>([]);
+  const [stagedImageCandidateIds, setStagedImageCandidateIds] = useState<string[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Load latest historical data from SQLite on mount
+  const loadScanData = async (scanId: string) => {
+    try {
+      const [tree, dups, simImages, metadataFiles, recs, hist] = await Promise.all([
+        api.getFilesystemTree(scanId).catch(() => []),
+        api.getDuplicates(scanId).catch(() => []),
+        api.getSimilarImages(scanId).catch(() => []),
+        api.getFiles(scanId).catch(() => []),
+        api.getRecommendations(scanId).catch(() => []),
+        api.getHistory().catch(() => null),
+      ]);
+
+      if (Array.isArray(tree)) setTreeData(tree);
+      if (Array.isArray(dups)) setHashGroups(dups);
+      if (Array.isArray(simImages)) setPerceptualClusters(simImages);
+      if (Array.isArray(metadataFiles)) setFiles(metadataFiles);
+      if (Array.isArray(recs)) setCandidates(recs);
+      if (hist) {
+        if (Array.isArray(hist.historicalScans)) setHistoricalScans(hist.historicalScans);
+        if (Array.isArray(hist.snapshotDeltas)) setSnapshotDeltas(hist.snapshotDeltas);
+        if (Array.isArray(hist.recoveryEntries)) setRecoveryLog(hist.recoveryEntries);
+      }
+    } catch (err) {
+      console.warn('Error loading scan artifacts:', err);
+    }
+  };
+
+  // Load latest scan and history on mount
   useEffect(() => {
-    api.getHistory().then((data) => {
-      if (data.historicalScans && data.historicalScans.length > 0) {
-        setHistoricalScans(data.historicalScans);
-      }
-      if (data.snapshotDeltas && data.snapshotDeltas.length > 0) {
-        setSnapshotDeltas(data.snapshotDeltas);
-      }
-      if (data.recoveryEntries && data.recoveryEntries.length > 0) {
-        setRecoveryLog(data.recoveryEntries);
-      }
-    }).catch(() => {});
+    api.getLatestScan()
+      .then((scan) => {
+        if (scan && scan.scan_id) {
+          loadScanData(scan.scan_id);
+        }
+      })
+      .catch(() => {});
+
+    api.getHistory()
+      .then((data) => {
+        if (data.historicalScans) setHistoricalScans(data.historicalScans);
+        if (data.snapshotDeltas) setSnapshotDeltas(data.snapshotDeltas);
+        if (data.recoveryEntries) setRecoveryLog(data.recoveryEntries);
+      })
+      .catch(() => {});
   }, []);
 
   // Synchronize with URL hash
@@ -185,31 +206,9 @@ export default function App() {
   // Scan completed callback
   const handleScanCompleted = async (scanId?: string, totalFiles?: number) => {
     if (scanId) {
-      try {
-        const [tree, dups, simImages, metadataFiles, recs, hist] = await Promise.all([
-          api.getFilesystemTree(scanId).catch(() => null),
-          api.getDuplicates(scanId).catch(() => null),
-          api.getSimilarImages(scanId).catch(() => null),
-          api.getFiles(scanId).catch(() => null),
-          api.getRecommendations(scanId).catch(() => null),
-          api.getHistory().catch(() => null),
-        ]);
-
-        if (tree && tree.length > 0) setTreeData(tree);
-        if (dups && dups.length > 0) setHashGroups(dups);
-        if (simImages && simImages.length > 0) setPerceptualClusters(simImages);
-        if (metadataFiles && metadataFiles.length > 0) setFiles(metadataFiles);
-        if (recs && recs.length > 0) setCandidates(recs);
-        if (hist) {
-          if (hist.historicalScans && hist.historicalScans.length > 0) setHistoricalScans(hist.historicalScans);
-          if (hist.snapshotDeltas && hist.snapshotDeltas.length > 0) setSnapshotDeltas(hist.snapshotDeltas);
-          if (hist.recoveryEntries && hist.recoveryEntries.length > 0) setRecoveryLog(hist.recoveryEntries);
-        }
-      } catch (err) {
-        console.warn('Error loading scan artifacts:', err);
-      }
+      await loadScanData(scanId);
     }
-    const countDisplay = totalFiles ? totalFiles.toLocaleString() : '12,482';
+    const countDisplay = totalFiles !== undefined ? totalFiles.toLocaleString() : '0';
     showToast(`INODE DISK TRAVERSAL COMPLETE: ${countDisplay} FILES CATALOGED`);
   };
 
@@ -220,24 +219,10 @@ export default function App() {
       if (res.results && res.results.length > 0) {
         setRecoveryLog((prev) => [...res.results, ...prev]);
       }
-    } catch (err) {
-      console.warn('Backend cleanup error, logging locally:', err);
-      const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
-      const newHistoryItems: RecoveryLogItem[] = selectedRecords.map((r, i) => {
-        const filename = r.targetPath.split('\\').pop() || r.targetPath;
-        return {
-          id: `rc-${Date.now()}-${i}`,
-          dispatchId: `#RC-${Math.floor(9000 + Math.random() * 999)}`,
-          filename,
-          sizeFormatted: r.recoverableFormatted,
-          originPath: r.targetPath,
-          status: 'RECOVERABLE (OS RECYCLE BIN)',
-          location: 'OS RECYCLE BIN',
-          timestamp,
-          isRestored: false,
-        };
-      });
-      setRecoveryLog((prev) => [...newHistoryItems, ...prev]);
+    } catch (err: any) {
+      console.warn('Backend cleanup error:', err);
+      showToast(`CLEANUP ERROR: ${err?.message || 'FAILED TO MIGRATE FILES'}`);
+      return;
     }
 
     // Unselect the migrated candidates
@@ -253,6 +238,7 @@ export default function App() {
       `SAFE CLEANUP EXECUTED: ${selectedRecords.length} INODES MIGRATED TO OS RECYCLE BIN`
     );
   };
+
 
   // Restore item in History screen
   const handleRestoreItem = async (id: string) => {

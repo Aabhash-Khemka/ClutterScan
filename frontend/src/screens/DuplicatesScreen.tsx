@@ -13,13 +13,29 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
   onStageDuplicates,
   hashGroups: propHashGroups,
 }) => {
-  const groups = propHashGroups && propHashGroups.length > 0 ? propHashGroups : MOCK_HASH_GROUPS;
+  const groups = propHashGroups !== undefined ? propHashGroups : MOCK_HASH_GROUPS;
   const [selectedGroupId, setSelectedGroupId] = useState<string>(groups[0]?.id || '001');
   const [isStaged, setIsStaged] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string>('STATUS: READY');
 
-  const currentGroup: HashGroup =
+  const currentGroup: HashGroup | undefined =
     groups.find((g) => g.id === selectedGroupId) || groups[0];
+
+  const duplicateGroupsCount = groups.length;
+  const totalDuplicateFiles = groups.reduce((acc, g) => acc + (g.files ? g.files.length : g.matchCount), 0);
+  const potentialRecoveryBytes = groups.reduce((acc, g) => {
+    if (g.files && g.files.length > 1) {
+      return acc + g.files.slice(1).reduce((sum, f) => sum + (f.bytes || 0), 0);
+    }
+    return acc;
+  }, 0);
+
+  const formatBytes = (bytes: number) => {
+    if (bytes >= 1024 * 1024 * 1024) return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+    if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    if (bytes >= 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return bytes + ' B';
+  };
 
   const handleToggleStage = () => {
     if (!isStaged) {
@@ -39,8 +55,8 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
     }, 400);
   };
 
-  const preferredFile = currentGroup.files.find((f) => f.isPreferred) || currentGroup.files[0];
-  const candidateFile = currentGroup.files.find((f) => !f.isPreferred) || currentGroup.files[1] || currentGroup.files[0];
+  const preferredFile = currentGroup?.files.find((f) => f.isPreferred) || currentGroup?.files[0];
+  const candidateFile = currentGroup?.files.find((f) => !f.isPreferred) || currentGroup?.files[1] || currentGroup?.files[0];
 
   return (
     <div className="w-full flex flex-col font-mono text-xs text-white">
@@ -65,17 +81,17 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-3 text-[11px] uppercase tracking-widest">
           <div className="flex items-center gap-1.5">
             <span className="text-[#8e9192]">DUPLICATE GROUPS:</span>
-            <span className="text-white font-bold">42</span>
+            <span className="text-white font-bold">{duplicateGroupsCount}</span>
           </div>
           <div className="text-[#444748]">|</div>
           <div className="flex items-center gap-1.5">
             <span className="text-[#8e9192]">DUPLICATE FILES:</span>
-            <span className="text-white font-bold">137</span>
+            <span className="text-white font-bold">{totalDuplicateFiles}</span>
           </div>
           <div className="text-[#444748]">|</div>
           <div className="flex items-center gap-1.5">
             <span className="text-[#8e9192]">POTENTIAL RECOVERY:</span>
-            <span className="text-white font-bold">8.42 GB</span>
+            <span className="text-white font-bold">{formatBytes(potentialRecoveryBytes)}</span>
           </div>
           <div className="text-[#444748]">|</div>
           <div className="flex items-center gap-1.5">
@@ -86,12 +102,29 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
       </div>
 
       {/* MAIN FORENSIC 2-COLUMN SPLIT */}
+      {groups.length === 0 ? (
+        <div className="w-full min-h-[400px] border-b border-[#1f1f1f] bg-[#0e0e0e] p-8 flex flex-col items-center justify-center gap-4 text-center">
+          <div className="text-base font-bold text-white tracking-widest uppercase">
+            [ZERO_DUPLICATE_GROUPS_DETECTED]
+          </div>
+          <div className="text-xs text-[#8e9192] max-w-lg leading-relaxed uppercase">
+            ALL SCANNED FILES EXHIBIT UNIQUE CRYPTOGRAPHIC HASH IDENTIFIERS. ZERO REDUNDANT INODE ARTIFACTS REQUIRE TRIAGE.
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigate('storage')}
+            className="mt-2 px-6 py-2.5 border border-white bg-white text-black font-bold uppercase transition-none hover:bg-neutral-200 cursor-pointer"
+          >
+            → INSPECT STORAGE HIERARCHY
+          </button>
+        </div>
+      ) : (
       <div className="w-full grid grid-cols-1 lg:grid-cols-12 min-h-[600px] border-b border-[#1f1f1f]">
         {/* LEFT COLUMN: HASH GROUPS SELECTOR (4 COLS) */}
         <div className="lg:col-span-4 border-b lg:border-b-0 lg:border-r border-[#1f1f1f] p-4 flex flex-col gap-4 bg-[#0e0e0e]">
           <div className="flex items-center justify-between pb-2 border-b border-[#1f1f1f] text-xs font-bold text-white tracking-widest">
             <span>[HASH_GROUPS]</span>
-            <span className="text-[#8e9192]">SECTORS: 001 - 042</span>
+            <span className="text-[#8e9192]">SECTORS: 001 - {groups.length.toString().padStart(3, '0')}</span>
           </div>
 
           <div className="flex flex-col gap-3">
@@ -157,7 +190,7 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
           {/* HEX LOG SUMMARY FOOTER */}
           <div className="mt-auto pt-4 border-t border-[#1f1f1f] text-[10px] text-[#8e9192] flex flex-col gap-1">
             <div>CHECKSUM RUNTIME: SHA256_AVX2_OPTIMIZED</div>
-            <div>TOTAL DIGEST POOL: 4,921 ARTIFACTS</div>
+            <div>TOTAL DIGEST POOL: {totalDuplicateFiles} ARTIFACTS</div>
             <div className="text-white">SYSTEM STATUS: READY FOR BULK TRIAGE</div>
           </div>
         </div>
@@ -364,13 +397,14 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
               <span>ENCODING: RAW_LITTLE_ENDIAN</span>
             </div>
             <div className="text-xs text-[#c4c7c8] overflow-x-auto whitespace-pre leading-relaxed select-all font-mono">
-              {currentGroup.hexSample.map((line, idx) => (
+              {(currentGroup?.hexSample || []).map((line, idx) => (
                 <div key={idx}>{line}</div>
               ))}
             </div>
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 };

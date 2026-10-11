@@ -30,6 +30,7 @@ def preview_cleanup(payload: Dict[str, Any]) -> Dict[str, Any]:
         "candidateCount": len(candidates),
         "validCount": valid_count,
         "recoverableBytes": total_bytes,
+        "totalBytes": total_bytes,
         "recoverableFormatted": format_size(total_bytes),
         "issues": issues,
         "safeToProceed": len(issues) == 0,

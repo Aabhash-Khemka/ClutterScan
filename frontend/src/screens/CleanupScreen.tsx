@@ -95,7 +95,7 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
           <span className="text-[#8e9192] text-[10px] uppercase">
             CANDIDATE RECOMMENDATIONS
           </span>
-          <span className="text-white font-bold text-base md:text-lg">24 RECORDS</span>
+          <span className="text-white font-bold text-base md:text-lg">{candidates.length} RECORDS</span>
         </div>
         <div className="flex flex-col gap-0.5 border-l border-[#1f1f1f] pl-3">
           <span className="text-[#8e9192] text-[10px] uppercase">
@@ -144,6 +144,23 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
           </div>
         </div>
 
+        {candidates.length === 0 ? (
+          <div className="w-full min-h-[300px] border border-[#1f1f1f] bg-black p-8 flex flex-col items-center justify-center gap-3 text-center">
+            <div className="text-base font-bold text-white tracking-widest uppercase">
+              [ZERO_CLEANUP_CANDIDATES_STAGED]
+            </div>
+            <div className="text-xs text-[#8e9192] max-w-lg leading-relaxed uppercase">
+              NO REDUNDANT OR TEMPORARY INODES STAGED FOR RECOVERY. USE FILES, DUPLICATES, OR IMAGES SCREENS TO STAGE CANDIDATES FOR SAFE ROUTING.
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate('storage')}
+              className="mt-2 px-6 py-2 border border-white bg-white text-black font-bold uppercase transition-none hover:bg-neutral-200 cursor-pointer"
+            >
+              → RETURN TO STORAGE
+            </button>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {candidates.map((card) => {
             const isSelected = card.isSelected;
@@ -224,6 +241,7 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
             );
           })}
         </div>
+        )}
       </div>
 
       {/* ACTION / AUTHORIZATION BLOCK */}

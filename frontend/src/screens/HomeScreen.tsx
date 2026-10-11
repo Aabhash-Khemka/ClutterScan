@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavTab } from '../types';
-import { api } from '../services/api';
+import { api, SystemVolumeData, SystemFolderData } from '../services/api';
 
 interface HomeScreenProps {
   onNavigate: (tab: NavTab) => void;
@@ -12,7 +12,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onScanCompleted,
 }) => {
   const [selectedVolume, setSelectedVolume] = useState<'PRIMARY' | 'EXTERNAL' | 'CUSTOM'>('PRIMARY');
-  const [targetPath, setTargetPath] = useState<string>('C:\\Users\\Operator\\Documents');
+  const [volumes, setVolumes] = useState<SystemVolumeData[]>([]);
+  const [folders, setFolders] = useState<SystemFolderData[]>([]);
+  const [targetPath, setTargetPath] = useState<string>('');
   const [pipelineOptions, setPipelineOptions] = useState({
     exactDupes: true,
     similarImages: true,
@@ -25,15 +27,29 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [workersPercent, setWorkersPercent] = useState<number>(0);
   const [inodesPercent, setInodesPercent] = useState<number>(0);
   const [discoveredFiles, setDiscoveredFiles] = useState<number>(0);
+  const [discoveredFormattedSize, setDiscoveredFormattedSize] = useState<string>('0 B');
   const [statusMessage, setStatusMessage] = useState<string>('ENGINE_STATUS: IDLE // STANDBY FOR INODE DISCOVERY');
 
-  // Detect local system volumes on mount
+  // Detect local system volumes and accessible user folders on mount
   useEffect(() => {
-    api.getSystemVolumes().then((vols) => {
-      if (vols && vols.length > 0) {
-        // If current path is still default, optionally keep or adjust
-      }
-    }).catch(() => {});
+    Promise.all([
+      api.getSystemVolumes(),
+      api.getSystemFolders(),
+    ])
+      .then(([vols, flds]) => {
+        if (vols && vols.length > 0) {
+          setVolumes(vols);
+        }
+        if (flds && flds.length > 0) {
+          setFolders(flds);
+          setTargetPath(flds[0].path);
+        } else if (vols && vols.length > 0) {
+          setTargetPath(vols[0].path);
+        }
+      })
+      .catch((err) => {
+        console.warn('System initialization error:', err);
+      });
   }, []);
 
   const toggleOption = (key: keyof typeof pipelineOptions) => {
@@ -42,6 +58,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   const handleExecuteScan = async () => {
     if (scanStatus === 'SCANNING') return;
+    const cleanPath = targetPath.trim();
+    if (!cleanPath) {
+      setStatusMessage('ERROR: TARGET PATH CANNOT BE EMPTY.');
+      return;
+    }
+
     setScanStatus('SCANNING');
     setWorkersPercent(10);
     setInodesPercent(5);
@@ -49,7 +71,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     setStatusMessage('INITIALIZING FORENSIC TRAVERSAL PIPELINE...');
 
     try {
-      const startResult = await api.startScan(targetPath, pipelineOptions);
+      const startResult = await api.startScan(cleanPath, pipelineOptions);
       const scanId = startResult.scanId;
 
       // Poll scan progress
@@ -59,6 +81,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           setWorkersPercent(status.progress);
           setInodesPercent(status.progress);
           setDiscoveredFiles(status.totalFiles);
+          if (status.formattedSize) {
+            setDiscoveredFormattedSize(status.formattedSize);
+          }
           setStatusMessage(status.message?.toUpperCase() || 'SCANNING INODES...');
 
           if (status.status === 'COMPLETED') {
@@ -67,38 +92,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             setWorkersPercent(100);
             setInodesPercent(100);
             setDiscoveredFiles(status.totalFiles);
-            setStatusMessage('INODE TRAVERSAL & FORENSIC ANALYSIS COMPLETE');
+            setDiscoveredFormattedSize(status.formattedSize);
+            setStatusMessage(`INODE TRAVERSAL COMPLETE (${status.totalFiles.toLocaleString()} FILES)`);
             onScanCompleted(scanId, status.totalFiles);
           } else if (status.status === 'FAILED') {
             clearInterval(pollInterval);
             setScanStatus('READY');
             setStatusMessage(`SCAN ERROR: ${status.message}`);
           }
-        } catch (pollErr) {
+        } catch (pollErr: any) {
           console.warn('Poll error:', pollErr);
         }
       }, 350);
     } catch (err: any) {
-      console.warn('Backend scan failed, running simulated fallback:', err);
-      setStatusMessage(`NOTICE: ${err.message || 'Connecting'}. RUNNING SIMULATED RUNTIME.`);
-      // Simulated fallback so UI stays responsive if target path is dummy
-      let progress = 10;
-      const interval = setInterval(() => {
-        progress += 15;
-        setWorkersPercent(Math.min(100, progress));
-        setInodesPercent(Math.min(100, progress));
-        setDiscoveredFiles((f) => Math.min(12482, f + 1850));
-
-        if (progress >= 100) {
-          clearInterval(interval);
-          setScanStatus('COMPLETE');
-          setWorkersPercent(100);
-          setInodesPercent(100);
-          setDiscoveredFiles(12482);
-          setStatusMessage('INODE TRAVERSAL COMPLETE (12,482 FILES)');
-          onScanCompleted(undefined, 12482);
-        }
-      }, 250);
+      setScanStatus('READY');
+      setStatusMessage(`SCAN ERROR: ${err.message || 'Failed to initiate scan on path.'}`);
     }
   };
 
@@ -151,7 +159,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <div
             onClick={() => {
               setSelectedVolume('PRIMARY');
-              setTargetPath('C:\\Users\\Operator\\Documents');
+              if (volumes[0]) {
+                setTargetPath(volumes[0].path);
+              } else if (folders[0]) {
+                setTargetPath(folders[0].path);
+              }
             }}
             className={`border p-6 cursor-pointer select-none transition-none ${
               selectedVolume === 'PRIMARY'
@@ -167,15 +179,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               [ PRIMARY VOLUME ]
             </div>
             <div className="text-lg md:text-xl font-bold tracking-tight mb-1">
-              SYSTEM DRIVE
+              {volumes[0]?.name || 'SYSTEM DRIVE'}
             </div>
-            <div className="text-3xl font-bold mb-4">C:\</div>
+            <div className="text-3xl font-bold mb-4">{volumes[0]?.path || 'C:\\'}</div>
             <div
               className={`text-[11px] tracking-wider ${
                 selectedVolume === 'PRIMARY' ? 'text-black font-bold' : 'text-[#8e9192]'
               }`}
             >
-              STATUS: AVAILABLE
+              {volumes[0]
+                ? `FREE: ${volumes[0].formattedFree} // USED: ${volumes[0].percentUsed}%`
+                : 'STATUS: AVAILABLE'}
             </div>
           </div>
 
@@ -183,7 +197,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <div
             onClick={() => {
               setSelectedVolume('EXTERNAL');
-              setTargetPath('E:\\ForensicBackups');
+              if (volumes.length > 1) {
+                setTargetPath(volumes[1].path);
+              } else if (folders.length > 1) {
+                setTargetPath(folders[1].path);
+              }
             }}
             className={`border p-6 cursor-pointer select-none transition-none ${
               selectedVolume === 'EXTERNAL'
@@ -199,23 +217,29 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               [ EXTERNAL VOLUME ]
             </div>
             <div className="text-lg md:text-xl font-bold tracking-tight mb-1">
-              EXTERNAL STORAGE
+              {volumes.length > 1 ? volumes[1].name : 'EXTERNAL STORAGE'}
             </div>
-            <div className="text-3xl font-bold mb-4">E:\</div>
+            <div className="text-3xl font-bold mb-4">
+              {volumes.length > 1 ? volumes[1].path : 'E:\\'}
+            </div>
             <div
               className={`text-[11px] tracking-wider ${
                 selectedVolume === 'EXTERNAL' ? 'text-black font-bold' : 'text-[#8e9192]'
               }`}
             >
-              STATUS: AVAILABLE
+              {volumes.length > 1
+                ? `FREE: ${volumes[1].formattedFree} // USED: ${volumes[1].percentUsed}%`
+                : 'STATUS: NOT MOUNTED (STANDBY)'}
             </div>
           </div>
 
-          {/* CUSTOM LOCATION */}
+          {/* TARGET DIRECTORY / PRESET */}
           <div
             onClick={() => {
               setSelectedVolume('CUSTOM');
-              setTargetPath('C:\\Users\\Operator\\Downloads');
+              if (folders.length > 0) {
+                setTargetPath(folders[0].path);
+              }
             }}
             className={`border p-6 cursor-pointer select-none transition-none ${
               selectedVolume === 'CUSTOM'
@@ -231,15 +255,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               [ TARGET DIRECTORY ]
             </div>
             <div className="text-lg md:text-xl font-bold tracking-tight mb-1">
-              CUSTOM LOCATION
+              USER WORKSPACE
             </div>
-            <div className="text-2xl font-bold mb-4 truncate">SELECT PATH</div>
+            <div className="text-2xl font-bold mb-4 truncate">
+              {folders.length > 0 ? folders[0].name.toUpperCase() : 'CUSTOM PATH'}
+            </div>
             <div
               className={`text-[11px] tracking-wider ${
                 selectedVolume === 'CUSTOM' ? 'text-black font-bold' : 'text-[#8e9192]'
               }`}
             >
-              STATUS: WAITING
+              {folders.length > 0 ? `${folders.length} PRESET PATHS LOADED` : 'STATUS: READY'}
             </div>
           </div>
         </div>
@@ -260,10 +286,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           />
           <button
             type="button"
-            onClick={() => setTargetPath('C:\\Users\\Operator\\Documents')}
+            onClick={() => {
+              if (folders.length > 0) {
+                const currentIndex = folders.findIndex((f) => f.path.toLowerCase() === targetPath.toLowerCase());
+                const nextFolder = folders[(currentIndex + 1) % folders.length];
+                setTargetPath(nextFolder.path);
+              }
+            }}
             className="px-4 py-2.5 border border-[#1f1f1f] text-[#c4c7c8] hover:text-white hover:border-[#444748] uppercase tracking-wider transition-none cursor-pointer whitespace-nowrap"
           >
-            [ SELECT DIRECTORY ]
+            [ CYCLE DIRECTORY ({folders.length}) ]
           </button>
           <button
             type="button"
@@ -276,6 +308,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               : '[ EXECUTE FULL DISK ANALYSIS ]'}
           </button>
         </div>
+        {statusMessage && (
+          <div className="text-[11px] text-[#c4c7c8] tracking-wider font-mono">
+            &gt; {statusMessage}
+          </div>
+        )}
       </div>
 
       {/* ANALYSIS ALGORITHMS PIPELINE */}
@@ -435,13 +472,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 <span className="text-[#8e9192] text-[10px] block uppercase">
                   FILES DISCOVERED
                 </span>
-                <span className="text-white text-xl font-bold font-mono">12,482</span>
+                <span className="text-white text-xl font-bold font-mono">
+                  {discoveredFiles.toLocaleString()}
+                </span>
               </div>
               <div>
                 <span className="text-[#8e9192] text-[10px] block uppercase">
                   TOTAL STORAGE SCANNED
                 </span>
-                <span className="text-white text-xl font-bold font-mono">184.42 GB</span>
+                <span className="text-white text-xl font-bold font-mono">
+                  {discoveredFormattedSize}
+                </span>
               </div>
             </div>
 

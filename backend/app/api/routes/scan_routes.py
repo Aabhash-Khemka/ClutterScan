@@ -27,6 +27,7 @@ def start_scan(request: ScanRequest):
     return {
         "scanId": scan_id,
         "status": "IN_PROGRESS",
+        "targetPath": target_path,
         "message": f"Scan initiated for {target_path}",
     }
 
@@ -35,6 +36,10 @@ def get_latest_scan():
     """Retrieve metadata for the most recent scan."""
     latest_id = ScanPipelineManager.get_latest_scan_id()
     if not latest_id:
+        repo = ScanRepository()
+        latest_sess = repo.get_latest_session()
+        if latest_sess:
+            return get_scan_status(latest_sess.id)
         return {"scanId": None, "status": "READY"}
     return get_scan_status(latest_id)
 
@@ -55,6 +60,7 @@ def get_scan_status(scan_id: str):
             "totalFiles": session.total_files,
             "totalDirectories": session.total_directories,
             "totalSize": session.total_size,
+            "totalBytes": session.total_size,
             "formattedSize": session.to_dict()["formattedSize"],
             "errorCount": session.error_count,
             "errors": [],
@@ -69,6 +75,7 @@ def get_scan_status(scan_id: str):
         "totalFiles": len(res.all_files),
         "totalDirectories": len(res.all_directories),
         "totalSize": total_bytes,
+        "totalBytes": total_bytes,
         "formattedSize": format_size(total_bytes),
         "errorCount": len(res.errors),
         "errors": res.errors,
@@ -79,7 +86,11 @@ def get_scan_status(scan_id: str):
 def get_filesystem_tree(scan_id: str):
     """Retrieve N-ary directory tree for Storage visualization."""
     res = ScanPipelineManager.get_result(scan_id)
-    if not res or not res.tree_root:
+    if res and res.tree_root:
+        return [res.tree_root.to_dict()]
+
+    repo = ScanRepository()
+    tree_root = repo.get_tree(scan_id)
+    if not tree_root:
         raise HTTPException(status_code=404, detail="Filesystem tree not found for this scan.")
-    # Return array with root node to match frontend TreeNode[]
-    return [res.tree_root.to_dict()]
+    return [tree_root.to_dict()]

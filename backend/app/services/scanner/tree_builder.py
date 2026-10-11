@@ -22,6 +22,8 @@ class TreeBuilder:
         node.aggregate_size = total
         return total
 
+    compute_aggregate_sizes = calculate_size
+
     @staticmethod
     def collect_file_nodes(root: FileNode) -> List[FileNode]:
         """Collect all leaf file nodes from the tree."""
