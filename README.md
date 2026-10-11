@@ -2,6 +2,9 @@
 Great Work Aabhash,Krish,Avani!
 ClutterScan is an intelligent clutter detection, classification, and resolution platform.
 
+See [IMPLEMENTATION.md](IMPLEMENTATION.md) for the application architecture,
+analysis flow, API routes, cleanup safeguards, and development commands.
+
 ## Project Structure
 
 ```
