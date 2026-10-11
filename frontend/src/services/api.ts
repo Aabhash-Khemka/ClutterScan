@@ -36,6 +36,12 @@ export interface SystemVolumeData {
   percentUsed: number;
 }
 
+export interface SystemFolderData {
+  name: string;
+  path: string;
+  exists: boolean;
+}
+
 export interface HistoryData {
   historicalScans: HistoricalScanEntry[];
   snapshotDeltas: SnapshotDeltaItem[];
@@ -52,6 +58,23 @@ export const api = {
       console.warn('API getSystemVolumes fallback:', err);
       return [];
     }
+  },
+
+  async getSystemFolders(): Promise<SystemFolderData[]> {
+    try {
+      const res = await fetch(`${API_BASE}/system/folders`);
+      if (!res.ok) throw new Error('Failed to fetch system folders');
+      return await res.json();
+    } catch (err) {
+      console.warn('API getSystemFolders fallback:', err);
+      return [];
+    }
+  },
+
+  async getLatestScan(): Promise<ScanStatusData> {
+    const res = await fetch(`${API_BASE}/scan/latest`);
+    if (!res.ok) throw new Error('Failed to fetch latest scan');
+    return await res.json();
   },
 
   async startScan(

@@ -19,8 +19,11 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
   historicalScans: propScans,
   snapshotDeltas: propDeltas,
 }) => {
-  const scans = propScans && propScans.length > 0 ? propScans : HISTORICAL_SCANS;
-  const deltas = propDeltas && propDeltas.length > 0 ? propDeltas : SNAPSHOT_DELTAS;
+  const scans = propScans !== undefined ? propScans : HISTORICAL_SCANS;
+  const deltas = propDeltas !== undefined ? propDeltas : SNAPSHOT_DELTAS;
+
+  const baselineScan = scans.length > 1 ? scans[scans.length - 1] : scans[0];
+  const currentScan = scans[0];
 
   const handleExportHistorical = () => {
     const data = {
@@ -81,21 +84,21 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
         <div className="flex flex-wrap items-center gap-3 uppercase">
           <div className="flex items-center gap-1.5">
             <span className="text-[#8e9192]">BASELINE SNAPSHOT:</span>
-            <span className="text-white border border-[#1f1f1f] px-2 py-1 cursor-pointer hover:border-[#444748]">
-              [ 29 SEP 2026 // 11:42:01 UTC ]
+            <span className="text-white border border-[#1f1f1f] px-2 py-1 cursor-default">
+              [ {baselineScan ? baselineScan.date : 'NO PREVIOUS SNAPSHOT'} ]
             </span>
           </div>
           <span className="text-[#8e9192]">--&gt;</span>
           <div className="flex items-center gap-1.5">
             <span className="text-[#8e9192]">COMPARISON TARGET:</span>
             <span className="bg-white text-black font-bold px-2 py-1 cursor-default">
-              [ 01 OCT 2026 // 16:30:19 UTC ]
+              [ {currentScan ? currentScan.date : 'CURRENT SCAN'} ]
             </span>
           </div>
         </div>
         <div className="flex items-center gap-2 text-[11px]">
-          <span className="text-[#8e9192]">DELTA_INTERVAL:</span>
-          <span className="text-white font-bold">+52H 48M 18S</span>
+          <span className="text-[#8e9192]">SNAPSHOT COUNT:</span>
+          <span className="text-white font-bold">{scans.length} RECORDED</span>
         </div>
       </div>
 
@@ -105,19 +108,19 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
         <div className="border border-[#1f1f1f] bg-black p-4 flex flex-col justify-between h-36">
           <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-2 text-[11px]">
             <span className="text-[#8e9192] uppercase">[SECTOR_A :: BASELINE]</span>
-            <span className="text-[#8e9192]">29 SEP 2026</span>
+            <span className="text-[#8e9192]">{baselineScan ? baselineScan.date : 'N/A'}</span>
           </div>
           <div className="flex flex-col gap-1 my-auto">
             <div className="text-[10px] text-[#8e9192] uppercase tracking-widest">
               USED STORAGE:
             </div>
             <div className="text-2xl md:text-3xl font-bold text-white tracking-tight tabular-nums">
-              182.40 <span className="text-xs text-[#8e9192]">GB</span>
+              {baselineScan ? baselineScan.total : '0 B'}
             </div>
           </div>
           <div className="flex items-center justify-between border-t border-[#1f1f1f] pt-2 text-[11px]">
             <span className="text-[#8e9192] uppercase">RECORDED INODES:</span>
-            <span className="text-white font-bold">11,902</span>
+            <span className="text-white font-bold">{baselineScan ? baselineScan.inodes : '0'}</span>
           </div>
         </div>
 
@@ -125,19 +128,19 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
         <div className="border border-[#1f1f1f] bg-black p-4 flex flex-col justify-between h-36">
           <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-2 text-[11px]">
             <span className="text-[#8e9192] uppercase">[SECTOR_B :: AUDITED]</span>
-            <span className="text-white font-bold">01 OCT 2026</span>
+            <span className="text-white font-bold">{currentScan ? currentScan.date : 'N/A'}</span>
           </div>
           <div className="flex flex-col gap-1 my-auto">
             <div className="text-[10px] text-[#8e9192] uppercase tracking-widest">
               USED STORAGE:
             </div>
             <div className="text-2xl md:text-3xl font-bold text-white tracking-tight tabular-nums">
-              184.85 <span className="text-xs text-[#8e9192]">GB</span>
+              {currentScan ? currentScan.total : '0 B'}
             </div>
           </div>
           <div className="flex items-center justify-between border-t border-[#1f1f1f] pt-2 text-[11px]">
             <span className="text-[#8e9192] uppercase">CURRENT INODES:</span>
-            <span className="text-white font-bold">12,482</span>
+            <span className="text-white font-bold">{currentScan ? currentScan.inodes : '0'}</span>
           </div>
         </div>
 
@@ -146,7 +149,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
           <div className="flex items-center justify-between border-b border-[#444748] pb-2 text-[11px]">
             <span className="text-white uppercase font-bold">[NET_STORAGE_DELTA]</span>
             <span className="text-white bg-[#1f1f1f] px-1.5 py-0.5 font-bold">
-              +580 INODES
+              {deltas.length > 0 ? `${deltas.length} DIRECTORY DELTAS` : 'NO DELTAS'}
             </span>
           </div>
           <div className="flex flex-col gap-1 my-auto">
@@ -154,12 +157,14 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
               VOLUME VARIATION:
             </div>
             <div className="text-2xl md:text-3xl font-bold text-white tracking-tight tabular-nums">
-              + 2.45 <span className="text-xs text-[#8e9192]">GB</span>
+              {deltas.length > 0 ? deltas[0].delta : '0 B'}
             </div>
           </div>
           <div className="flex items-center justify-between border-t border-[#444748] pt-2 text-[11px]">
             <span className="text-[#8e9192] uppercase">TRAJECTORY:</span>
-            <span className="text-white font-bold">EXPANSION (+1.34%)</span>
+            <span className="text-white font-bold">
+              {deltas.length > 0 ? (deltas[0].isPositive ? 'EXPANSION' : 'CONTRACTION') : 'STABLE'}
+            </span>
           </div>
         </div>
       </div>
@@ -185,31 +190,39 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1f1f1f] font-mono">
-                {deltas.map((item, idx) => (
-                  <tr
-                    key={idx}
-                    className="hover:bg-white hover:text-black transition-none cursor-default group"
-                  >
-                    <td className="py-2.5 pr-2 font-bold">{item.directory}</td>
-                    <td className="py-2.5 px-2 text-right font-bold text-white group-hover:text-black tabular-nums">
-                      {item.delta}
-                    </td>
-                    <td
-                      className={`py-2.5 pl-2 text-right font-bold group-hover:text-black ${
-                        item.isPositive ? 'text-white' : 'text-[#8e9192]'
-                      }`}
-                    >
-                      [ {item.direction} ]
+                {deltas.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="py-6 text-center text-[#8e9192] uppercase text-[11px]">
+                      INSUFFICIENT SNAPSHOTS // REQUIRES 2+ SCANS FOR DELTA ANALYSIS
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  deltas.map((item, idx) => (
+                    <tr
+                      key={idx}
+                      className="hover:bg-white hover:text-black transition-none cursor-default group"
+                    >
+                      <td className="py-2.5 pr-2 font-bold">{item.directory}</td>
+                      <td className="py-2.5 px-2 text-right font-bold text-white group-hover:text-black tabular-nums">
+                        {item.delta}
+                      </td>
+                      <td
+                        className={`py-2.5 pl-2 text-right font-bold group-hover:text-black ${
+                          item.isPositive ? 'text-white' : 'text-[#8e9192]'
+                        }`}
+                      >
+                        [ {item.direction} ]
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
 
           <div className="border-t border-[#1f1f1f] pt-2 text-[10px] text-[#8e9192] flex justify-between mt-auto">
-            <span>ALLOCATION_MAP: EXT4/NTFS</span>
-            <span>TREE_DEPTH: 4 LEVELS</span>
+            <span>ALLOCATION_MAP: NTFS/LOCAL</span>
+            <span>STORAGE_SNAPSHOT_ENGINE</span>
           </div>
         </div>
 
@@ -219,7 +232,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
             <span className="font-bold text-white tracking-wider uppercase">
               [HISTORICAL_SCAN_INDEX]
             </span>
-            <span className="text-[#8e9192] text-[11px]">REPOSITORIES: 03</span>
+            <span className="text-[#8e9192] text-[11px]">RECORDED SESSIONS: {scans.length.toString().padStart(2, '0')}</span>
           </div>
 
           <div className="w-full overflow-x-auto">
@@ -234,27 +247,35 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1f1f1f]">
-                {scans.map((scan, idx) => (
-                  <tr key={idx} className="hover:bg-[#131313] transition-none">
-                    <td className="py-3 pr-2 text-white font-bold">{scan.date}</td>
-                    <td className="py-3 px-2 text-[#c4c7c8] truncate max-w-[140px]">
-                      {scan.rootTarget}
-                    </td>
-                    <td className="py-3 px-2 text-right text-white tabular-nums">{scan.inodes}</td>
-                    <td className="py-3 px-2 text-right text-white font-bold tabular-nums">
-                      {scan.total}
-                    </td>
-                    <td className="py-3 pl-2 text-right text-white font-bold whitespace-nowrap">
-                      {scan.status}
+                {scans.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-6 text-center text-[#8e9192] uppercase text-[11px]">
+                      NO HISTORICAL SCAN SESSIONS // EXECUTE A SCAN ON HOME SCREEN
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  scans.map((scan, idx) => (
+                    <tr key={idx} className="hover:bg-[#131313] transition-none">
+                      <td className="py-3 pr-2 text-white font-bold">{scan.date}</td>
+                      <td className="py-3 px-2 text-[#c4c7c8] truncate max-w-[140px]">
+                        {scan.rootTarget}
+                      </td>
+                      <td className="py-3 px-2 text-right text-white tabular-nums">{scan.inodes}</td>
+                      <td className="py-3 px-2 text-right text-white font-bold tabular-nums">
+                        {scan.total}
+                      </td>
+                      <td className="py-3 pl-2 text-right text-white font-bold whitespace-nowrap">
+                        {scan.status}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
 
           <div className="mt-auto border-t border-[#1f1f1f] pt-2 flex items-center justify-between text-[11px] text-[#8e9192]">
-            <span>CATALOG_PERSISTENCE: SQLITE_IN_MEMORY</span>
+            <span>CATALOG_PERSISTENCE: SQLITE_LOCAL_DB</span>
             <button
               type="button"
               onClick={handleExportHistorical}
@@ -287,6 +308,11 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
         </div>
 
         {/* RECOVERY ENTRIES */}
+        {recoveryLog.length === 0 ? (
+          <div className="border border-[#1f1f1f] bg-black p-6 text-center text-[#8e9192] uppercase text-xs">
+            ZERO RECOVERY AUDIT ENTRIES // NO CLEANUP EXECUTED YET
+          </div>
+        ) : (
         <div className="flex flex-col gap-2">
           {recoveryLog.map((item) => (
             <div
@@ -352,6 +378,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
             </div>
           ))}
         </div>
+        )}
 
         {/* AUDIT FOOTER LOG LINE */}
         <div className="border-t border-[#1f1f1f] pt-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-[10px] text-[#8e9192] uppercase">

@@ -18,7 +18,7 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
   onShowNotice,
   clusters: propClusters,
 }) => {
-  const clusters = propClusters && propClusters.length > 0 ? propClusters : MOCK_PERCEPTUAL_CLUSTERS;
+  const clusters = propClusters !== undefined ? propClusters : MOCK_PERCEPTUAL_CLUSTERS;
   const [selectedClusterId, setSelectedClusterId] = useState<string>(clusters[0]?.id || 'group-1');
   const [activeDiffImage, setActiveDiffImage] = useState<PerceptualImage | null>(null);
 
@@ -27,14 +27,22 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
     clusters[0];
 
   const referenceImage =
-    activeCluster.images.find((img) => img.isReference) || activeCluster.images[0];
+    activeCluster?.images?.find((img) => img.isReference) || activeCluster?.images?.[0];
+
+  const totalImageGroups = clusters.length;
+  const totalSimilarImages = clusters.reduce((acc, c) => acc + (c.images ? c.images.length : c.matchCount), 0);
+  const totalEvaluatedPairs = clusters.reduce((acc, c) => {
+    const n = c.images ? c.images.length : c.matchCount;
+    return acc + Math.floor((n * (n - 1)) / 2);
+  }, 0);
 
   const handleExportManifest = () => {
+    if (!activeCluster) return;
     const manifest = {
       algorithm: 'DCT_PHASH_64BIT',
       hammingThreshold: 8,
       cluster: activeCluster.id,
-      evaluatedPairs: 1842,
+      evaluatedPairs: totalEvaluatedPairs,
       images: activeCluster.images,
     };
     const blob = new Blob([JSON.stringify(manifest, null, 2)], {
@@ -88,12 +96,12 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
       <div className="w-full border border-[#1f1f1f] bg-black p-4 flex flex-wrap items-center justify-between gap-4 text-[11px] text-[#c4c7c8] uppercase">
         <div className="flex items-center gap-2">
           <span className="text-[#8e9192]">IMAGE GROUPS:</span>
-          <span className="text-white font-bold">18</span>
+          <span className="text-white font-bold">{totalImageGroups}</span>
         </div>
         <div className="text-[#444748] hidden md:inline">|</div>
         <div className="flex items-center gap-2">
           <span className="text-[#8e9192]">SIMILAR IMAGES:</span>
-          <span className="text-white font-bold">64</span>
+          <span className="text-white font-bold">{totalSimilarImages}</span>
         </div>
         <div className="text-[#444748] hidden md:inline">|</div>
         <div className="flex items-center gap-2">
@@ -103,7 +111,7 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
         <div className="text-[#444748] hidden md:inline">|</div>
         <div className="flex items-center gap-2">
           <span className="text-[#8e9192]">INSPECTED PAIRS:</span>
-          <span className="text-white font-bold">1,842</span>
+          <span className="text-white font-bold">{totalEvaluatedPairs.toLocaleString()}</span>
         </div>
         <div className="text-[#444748] hidden md:inline">|</div>
         <div className="flex items-center gap-2">
@@ -112,37 +120,55 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
         </div>
       </div>
 
-      {/* GROUP SELECTOR TABS */}
-      <div className="flex flex-col gap-2">
-        <div className="text-[#8e9192] text-[11px] uppercase tracking-widest">
-          // CLUSTER_SELECTOR: SELECT EVALUATION TARGET
+      {/* GROUP SELECTOR TABS & CONTENT */}
+      {clusters.length === 0 ? (
+        <div className="w-full min-h-[350px] border border-[#1f1f1f] bg-black p-8 flex flex-col items-center justify-center gap-4 text-center">
+          <div className="text-base font-bold text-white tracking-widest uppercase">
+            [ZERO_SIMILAR_IMAGE_CLUSTERS_DETECTED]
+          </div>
+          <div className="text-xs text-[#8e9192] max-w-lg leading-relaxed uppercase">
+            ALL SCANNED IMAGES EXHIBIT DISTINCT PERCEPTUAL HASH FREQUENCIES. ZERO SENSOR BURSTS OR DUPLICATE EDITS DETECTED WITHIN HAMMING DISTANCE &lt;= 08.
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigate('storage')}
+            className="mt-2 px-6 py-2.5 border border-white bg-white text-black font-bold uppercase transition-none hover:bg-neutral-200 cursor-pointer"
+          >
+            → EXPLORE STORAGE DASHBOARD
+          </button>
         </div>
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          {clusters.map((cluster) => {
-            const isSelected = cluster.id === selectedClusterId;
-            return (
-              <button
-                key={cluster.id}
-                type="button"
-                onClick={() => setSelectedClusterId(cluster.id)}
-                className={`px-4 py-2 border uppercase cursor-pointer transition-none font-bold ${
-                  isSelected
-                    ? 'bg-white text-black border-white'
-                    : 'bg-[#0e0e0e] text-[#c4c7c8] border-[#1f1f1f] hover:border-white hover:text-white'
-                }`}
-              >
-                {cluster.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      ) : (
+        <>
+          <div className="flex flex-col gap-2">
+            <div className="text-[#8e9192] text-[11px] uppercase tracking-widest">
+              // CLUSTER_SELECTOR: SELECT EVALUATION TARGET
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              {clusters.map((cluster) => {
+                const isSelected = cluster.id === selectedClusterId;
+                return (
+                  <button
+                    key={cluster.id}
+                    type="button"
+                    onClick={() => setSelectedClusterId(cluster.id)}
+                    className={`px-4 py-2 border uppercase cursor-pointer transition-none font-bold ${
+                      isSelected
+                        ? 'bg-white text-black border-white'
+                        : 'bg-[#0e0e0e] text-[#c4c7c8] border-[#1f1f1f] hover:border-white hover:text-white'
+                    }`}
+                  >
+                    {cluster.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-      {/* FORENSIC COMPARISON IMAGE GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {activeCluster.images.map((img) => {
-          const isStaged = stagedCandidateIds.includes(img.id);
-          const isRef = img.isReference;
+          {/* FORENSIC COMPARISON IMAGE GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {activeCluster?.images?.map((img) => {
+              const isStaged = stagedCandidateIds.includes(img.id);
+              const isRef = img.isReference;
 
           return (
             <div
@@ -286,6 +312,8 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
           );
         })}
       </div>
+      </>
+      )}
 
       {/* FORENSIC MANDATORY SAFETY NOTICE */}
       <div className="w-full border border-[#444748] p-4 bg-black flex flex-col gap-2">

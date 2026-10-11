@@ -22,7 +22,7 @@ class Scanner:
 
     def _next_node_id(self) -> str:
         self._node_counter += 1
-        return f"node-{self._node_counter}"
+        return f"node-{uuid.uuid4().hex[:10]}"
 
     def scan(self) -> FileNode:
         """
