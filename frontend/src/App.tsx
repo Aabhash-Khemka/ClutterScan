@@ -290,7 +290,7 @@ export default function App() {
       )}
 
       {/* MAIN CONTAINER */}
-      <main className="w-full flex-1 pt-24 pb-12 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto flex flex-col">
+      <main className="w-full flex-1 pt-28 pb-12 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto flex flex-col">
         {activeTab === 'home' && (
           <HomeScreen
             onNavigate={navigateTo}
