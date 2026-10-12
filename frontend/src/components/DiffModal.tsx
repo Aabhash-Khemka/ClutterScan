@@ -64,7 +64,7 @@ export const DiffModal: React.FC<DiffModalProps> = ({
                 : 'bg-black text-[#c4c7c8] border-[#444748] hover:text-white'
             }`}
           >
-            [ DIFFERENCE MASK (XOR) ]
+            [ BLENDED OVERLAY ]
           </button>
           <button
             type="button"
@@ -75,7 +75,7 @@ export const DiffModal: React.FC<DiffModalProps> = ({
                 : 'bg-black text-[#c4c7c8] border-[#444748] hover:text-white'
             }`}
           >
-            [ SPECTRAL TELEMETRY ]
+            [ HASH DETAILS ]
           </button>
         </div>
 
@@ -136,8 +136,8 @@ export const DiffModal: React.FC<DiffModalProps> = ({
           {viewMode === 'OVERLAY_DIFFERENCE' && (
             <div className="w-full space-y-3">
               <div className="text-[11px] text-[#8e9192] flex justify-between">
-                <span>INTERACTIVE DIFFERENCE THRESHOLD SLIDER</span>
-                <span className="text-white font-bold">ALPHA: {sliderPosition}%</span>
+                <span>Adjust the image overlay</span>
+                <span className="text-white font-bold">CANDIDATE OPACITY: {sliderPosition}%</span>
               </div>
               <input
                 type="range"
@@ -161,7 +161,7 @@ export const DiffModal: React.FC<DiffModalProps> = ({
                   style={{ opacity: sliderPosition / 100 }}
                 />
                 <div className="absolute bottom-2 left-2 bg-black/80 px-2 py-0.5 border border-white text-[10px]">
-                  XOR DELTA INTENSITY // HAMMING DISTANCE: {candidateImage.hammingDistance} BITS
+                  pHash distance: {candidateImage.hammingDistance} of 64 bits
                 </div>
               </div>
             </div>
@@ -179,18 +179,19 @@ export const DiffModal: React.FC<DiffModalProps> = ({
                   <span className="text-white font-bold">{candidateImage.hammingDistance} BITS</span>
                 </div>
                 <div>
-                  <span className="text-[#8e9192] block">CONFIDENCE:</span>
+                  <span className="text-[#8e9192] block">HASH SIMILARITY:</span>
                   <span className="text-white font-bold">{candidateImage.similarity}</span>
                 </div>
                 <div>
                   <span className="text-[#8e9192] block">CLASSIFICATION:</span>
-                  <span className="text-white font-bold">DERIVATIVE</span>
+                  <span className="text-white font-bold">VISUALLY SIMILAR</span>
                 </div>
               </div>
               <div className="border border-[#1f1f1f] p-3 bg-[#131313] space-y-1">
-                <div className="text-[#8e9192]">HEX TELEMETRY COMPARISON:</div>
-                <div className="text-[#c4c7c8]">REF:  {referenceImage.pHash} [CANONICAL HASH]</div>
-                <div className="text-white font-bold">CAND: {candidateImage.pHash} [VARIANCE DETECTED]</div>
+                <div className="text-[#8e9192]">PERCEPTUAL HASH VALUES:</div>
+                <div className="text-[#c4c7c8] break-all">Reference: {referenceImage.pHash}</div>
+                <div className="text-white font-bold break-all">Candidate: {candidateImage.pHash}</div>
+                <div className="text-[#8e9192] pt-2">Similarity is calculated as (64 − bit differences) ÷ 64. It is not a probability or an image-content verification.</div>
               </div>
             </div>
           )}
@@ -199,7 +200,7 @@ export const DiffModal: React.FC<DiffModalProps> = ({
         {/* Modal Footer Controls */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2 border-t border-[#1f1f1f]">
           <div className="text-[11px] text-[#8e9192]">
-            NON-DESTRUCTIVE INSPECTION // OPERATOR CONFIRMATION PRESERVED
+            Similarity is based on perceptual hashes, not pixel-by-pixel identity.
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -217,7 +218,7 @@ export const DiffModal: React.FC<DiffModalProps> = ({
               }}
               className="px-4 py-1.5 border border-white bg-white text-black font-bold uppercase transition-none hover:bg-neutral-200"
             >
-              {isStaged ? '[ CANCEL STAGING ]' : '[ STAGE CANDIDATE FOR PURGE ]'}
+              {isStaged ? 'Remove review mark' : 'Mark for review'}
             </button>
           </div>
         </div>

@@ -51,3 +51,57 @@ def test_resolution_aware_duplicate_selection(tmp_path: Path):
     assert candidate.resolution == "1280 \u00d7 720"
     assert "CLEANUP CANDIDATE" in candidate.status
     assert "DOWNSAMPLED COMPRESSED DUPLICATE" in candidate.status_desc
+
+
+def test_non_image_reference_explains_the_path_and_name_heuristic():
+    files = [
+        DuplicateFileItem(
+            id="preferred",
+            name="original.bin",
+            path="C:\\Data\\Documents\\original.bin",
+            size=100,
+            content_hash="same-hash",
+        ),
+        DuplicateFileItem(
+            id="candidate",
+            name="copy.bin",
+            path="C:\\Data\\Downloads\\copy.bin",
+            size=100,
+            content_hash="same-hash",
+        ),
+    ]
+
+    preferred, candidates = ResolutionDetector.evaluate_group_resolutions(files)
+
+    assert preferred.name == "original.bin"
+    assert "path/name score of 100/100" in preferred.rationale
+    assert "does not know which copy you prefer" in preferred.rationale
+    assert candidates[0].name == "copy.bin"
+    assert "path/name score of 30/100" in candidates[0].rationale
+    assert "path contains Downloads (-40)" in candidates[0].rationale
+    assert "name contains '(1)' or 'copy' (-30)" in candidates[0].rationale
+
+
+def test_tied_non_image_paths_explain_reference_ordering():
+    files = [
+        DuplicateFileItem(
+            id="first",
+            name="first.bin",
+            path="C:\\Data\\first.bin",
+            size=100,
+            content_hash="same-hash",
+        ),
+        DuplicateFileItem(
+            id="second",
+            name="second.bin",
+            path="C:\\Data\\second.bin",
+            size=100,
+            content_hash="same-hash",
+        ),
+    ]
+
+    preferred, candidates = ResolutionDetector.evaluate_group_resolutions(files)
+
+    assert preferred.name == "first.bin"
+    assert "first matching file in scan order" in candidates[0].rationale
+    assert "not a user preference" in candidates[0].rationale

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { NavTab, PerceptualImage } from '../types';
-import { MOCK_PERCEPTUAL_CLUSTERS } from '../mockData';
+import { NavTab, PerceptualCluster, PerceptualImage } from '../types';
 import { DiffModal } from '../components/DiffModal';
 
 interface ImagesScreenProps {
@@ -18,7 +17,7 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
   onShowNotice,
   clusters: propClusters,
 }) => {
-  const clusters = propClusters !== undefined ? propClusters : MOCK_PERCEPTUAL_CLUSTERS;
+  const clusters = propClusters ?? [];
   const [selectedClusterId, setSelectedClusterId] = useState<string>(clusters[0]?.id || 'group-1');
   const [activeDiffImage, setActiveDiffImage] = useState<PerceptualImage | null>(null);
 
@@ -31,18 +30,12 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
 
   const totalImageGroups = clusters.length;
   const totalSimilarImages = clusters.reduce((acc, c) => acc + (c.images ? c.images.length : c.matchCount), 0);
-  const totalEvaluatedPairs = clusters.reduce((acc, c) => {
-    const n = c.images ? c.images.length : c.matchCount;
-    return acc + Math.floor((n * (n - 1)) / 2);
-  }, 0);
-
   const handleExportManifest = () => {
     if (!activeCluster) return;
     const manifest = {
       algorithm: 'DCT_PHASH_64BIT',
       hammingThreshold: 8,
       cluster: activeCluster.id,
-      evaluatedPairs: totalEvaluatedPairs,
       images: activeCluster.images,
     };
     const blob = new Blob([JSON.stringify(manifest, null, 2)], {
@@ -55,13 +48,7 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
     a.click();
     URL.revokeObjectURL(url);
     if (onShowNotice) {
-      onShowNotice('EXPORT pHASH MANIFEST: WRITTEN TO LOCAL DISK');
-    }
-  };
-
-  const handleRerunScan = () => {
-    if (onShowNotice) {
-      onShowNotice('GPU_SURV_0: RE-COMPUTING DCT PERCEPTUAL FREQUENCIES... [COMPLETE]');
+      onShowNotice('Similar-image group exported as JSON.');
     }
   };
 
@@ -75,7 +62,7 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
               [PERCEPTUAL_HASH_MATRIX]
             </span>
             <span className="text-[11px] text-black bg-white font-bold px-1.5 py-0.5 uppercase">
-              v2.4_DCT
+              Similar images
             </span>
           </div>
           <p className="text-[11px] text-[#8e9192] uppercase tracking-wider">
@@ -87,7 +74,7 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
             ALGORITHM: DCT_PHASH_64BIT // HAMMING_THRESHOLD: &lt;= 08
           </div>
           <div className="text-[#8e9192] uppercase">
-            EXEC_NODE: GPU_SURV_0 // RADIX: HEX_LITTLE_ENDIAN
+            Results are grouped when their 64-bit pHashes differ by no more than 8 bits.
           </div>
         </div>
       </div>
@@ -110,13 +97,7 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
         </div>
         <div className="text-[#444748] hidden md:inline">|</div>
         <div className="flex items-center gap-2">
-          <span className="text-[#8e9192]">INSPECTED PAIRS:</span>
-          <span className="text-white font-bold">{totalEvaluatedPairs.toLocaleString()}</span>
-        </div>
-        <div className="text-[#444748] hidden md:inline">|</div>
-        <div className="flex items-center gap-2">
-          <span className="text-[#8e9192]">STATUS:</span>
-          <span className="text-white border border-[#444748] px-1 py-0.5">[IDLE_STABLE]</span>
+          <span className="text-[#8e9192]">SIMILARITY IS NOT A CONFIDENCE SCORE</span>
         </div>
       </div>
 
@@ -124,10 +105,10 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
       {clusters.length === 0 ? (
         <div className="w-full min-h-[350px] border border-[#1f1f1f] bg-black p-8 flex flex-col items-center justify-center gap-4 text-center">
           <div className="text-base font-bold text-white tracking-widest uppercase">
-            [ZERO_SIMILAR_IMAGE_CLUSTERS_DETECTED]
+            No similar-image groups to review
           </div>
           <div className="text-xs text-[#8e9192] max-w-lg leading-relaxed uppercase">
-            ALL SCANNED IMAGES EXHIBIT DISTINCT PERCEPTUAL HASH FREQUENCIES. ZERO SENSOR BURSTS OR DUPLICATE EDITS DETECTED WITHIN HAMMING DISTANCE &lt;= 08.
+            No group was returned for this scan. Similar-image detection may have been disabled, or no supported image pair met the 8-bit pHash threshold. This does not prove that all files are unique.
           </div>
           <button
             type="button"
@@ -282,7 +263,7 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
                       onClick={() => setActiveDiffImage(img)}
                       className="w-full py-1.5 border border-[#444748] text-[11px] text-[#8e9192] hover:text-white hover:bg-black hover:border-white uppercase cursor-pointer transition-none font-bold"
                     >
-                      [INSPECT_TELEMETRY]
+                      Inspect hash details
                     </button>
                   ) : (
                     <div className="flex gap-2">
@@ -295,7 +276,7 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
                             : 'border-[#444748] text-white hover:bg-white hover:text-black hover:border-white'
                         }`}
                       >
-                        {isStaged ? '[STAGED]' : '[STAGE_PURGE]'}
+                        {isStaged ? 'Marked for review' : 'Mark for review'}
                       </button>
                       <button
                         type="button"
@@ -331,28 +312,22 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
           DELETION IS STRICTLY DISALLOWED // MANUAL USER AUDIT MANDATORY.
         </div>
         <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-[#1f1f1f] text-[11px] text-[#8e9192]">
-          <span>SECURITY_KEY: SHA256_LOCAL_VERIFIED</span>
+          <span>          A visual match can still be a different photo. Review before taking action.</span>
           <div className="flex items-center gap-4">
             <button
               type="button"
-              onClick={handleRerunScan}
-              className="text-white font-bold hover:underline uppercase cursor-pointer"
-            >
-              [RE-RUN SCAN]
-            </button>
-            <button
-              type="button"
               onClick={handleExportManifest}
-              className="text-white font-bold hover:underline uppercase cursor-pointer"
+              disabled={!activeCluster}
+              className="text-white font-bold hover:underline uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              [EXPORT pHASH MANIFEST]
+              Export this group
             </button>
             <button
               type="button"
               onClick={() => onNavigate('cleanup')}
               className="text-white font-bold border border-white px-2 py-0.5 uppercase hover:bg-white hover:text-black cursor-pointer"
             >
-              FORWARD TO CLEANUP &gt;&gt;
+              Review cleanup suggestions &gt;&gt;
             </button>
           </div>
         </div>

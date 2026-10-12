@@ -24,6 +24,8 @@ export interface ScanStatusData {
   message: string;
 }
 
+export type LatestScanData = Partial<ScanStatusData> & { scanId: string | null };
+
 export interface SystemVolumeData {
   path: string;
   name: string;
@@ -71,7 +73,7 @@ export const api = {
     }
   },
 
-  async getLatestScan(): Promise<ScanStatusData> {
+  async getLatestScan(): Promise<LatestScanData> {
     const res = await fetch(`${API_BASE}/scan/latest`);
     if (!res.ok) throw new Error('Failed to fetch latest scan');
     return await res.json();

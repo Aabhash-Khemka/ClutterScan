@@ -3,6 +3,7 @@ export type NavTab = 'home' | 'storage' | 'duplicates' | 'images' | 'files' | 'c
 export interface TreeNode {
   id: string;
   name: string;
+  path?: string;
   size: string;
   bytes: number;
   isDir: boolean;
@@ -78,12 +79,22 @@ export interface MetadataFileItem {
 export interface CleanupCandidateRecord {
   id: string;
   rank: string;
-  impactScore: number;
+  impactScore?: number;
   targetPath: string;
   reasons: string[];
   recoverableFormatted: string;
   bytes: number;
   isSelected: boolean;
+  scoreBreakdown?: RecommendationScoreFactor[];
+  scoreBeforeClamp?: number;
+  selectionThreshold?: number;
+}
+
+export interface RecommendationScoreFactor {
+  key: string;
+  label: string;
+  points: number;
+  explanation: string;
 }
 
 export interface RecoveryLogItem {
@@ -98,6 +109,11 @@ export interface RecoveryLogItem {
   isRestored: boolean;
 }
 
+export interface CleanupExecutionSummary {
+  movedCount: number;
+  failedCount: number;
+}
+
 export interface SnapshotDeltaItem {
   directory: string;
   delta: string;
@@ -106,6 +122,8 @@ export interface SnapshotDeltaItem {
 }
 
 export interface HistoricalScanEntry {
+  id?: string;
+  scanId?: string;
   date: string;
   rootTarget: string;
   inodes: string;

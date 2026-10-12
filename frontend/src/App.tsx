@@ -15,6 +15,7 @@ import {
   PerceptualCluster,
   HistoricalScanEntry,
   SnapshotDeltaItem,
+  CleanupExecutionSummary,
 } from './types';
 import { api } from './services/api';
 
@@ -61,8 +62,8 @@ export default function App() {
   useEffect(() => {
     api.getLatestScan()
       .then((scan) => {
-        if (scan && scan.scan_id) {
-          loadScanData(scan.scan_id);
+        if (scan?.scanId) {
+          loadScanData(scan.scanId);
         }
       })
       .catch(() => {});
@@ -130,10 +131,9 @@ export default function App() {
               }
               const newRecord: CleanupCandidateRecord = {
                 id: `rec-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-                rank: `RECORD_${(cand.length + 1).toString().padStart(2, '0')}`,
-                impactScore: Math.floor(70 + Math.random() * 25),
+                rank: 'MANUALLY_SELECTED',
                 targetPath: f.path,
-                reasons: [f.type, f.reason.replace(/\s+/g, '_').toUpperCase()],
+                reasons: [f.type, f.reason],
                 recoverableFormatted: f.size,
                 bytes: f.bytes,
                 isSelected: true,
@@ -156,15 +156,33 @@ export default function App() {
 
   // Bulk stage files
   const handleBulkStageFiles = (fileIds: string[], stage: boolean) => {
-    setFiles((prev) =>
-      prev.map((f) => (fileIds.includes(f.id) ? { ...f, isStaged: stage } : f))
-    );
-    setCandidates((cand) =>
-      cand.map((c) => ({
-        ...c,
-        isSelected: stage,
-      }))
-    );
+    const selectedFiles = files.filter((file) => fileIds.includes(file.id));
+    const selectedPaths = new Set(selectedFiles.map((file) => file.path));
+    setFiles((prev) => prev.map((f) => (
+      fileIds.includes(f.id) ? { ...f, isStaged: stage } : f
+    )));
+    setCandidates((current) => {
+      const updated = current.map((candidate) => (
+        selectedPaths.has(candidate.targetPath)
+          ? { ...candidate, isSelected: stage }
+          : candidate
+      ));
+      const knownPaths = new Set(updated.map((candidate) => candidate.targetPath));
+      const manuallySelected = stage
+        ? selectedFiles
+            .filter((file) => !knownPaths.has(file.path))
+            .map((file) => ({
+              id: `rec-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              rank: 'MANUALLY_SELECTED',
+              targetPath: file.path,
+              reasons: [file.type, file.reason],
+              recoverableFormatted: file.size,
+              bytes: file.bytes,
+              isSelected: true,
+            }))
+        : [];
+      return [...updated, ...manuallySelected];
+    });
     showToast(
       stage
         ? `STAGED ${fileIds.length} FILES FOR EXECUTION QUEUE`
@@ -173,8 +191,24 @@ export default function App() {
   };
 
   // Stage duplicates from Duplicates screen
-  const handleStageDuplicates = (count: number) => {
-    showToast(`COMMITTED ${count} DUPLICATE REPLICAS TO RECOVERY QUEUE`);
+  const handleStageDuplicates = (paths: string[], selected: boolean) => {
+    const duplicatePaths = new Set(paths);
+    const stagedCount = candidates.filter((candidate) =>
+      duplicatePaths.has(candidate.targetPath)
+    ).length;
+    setCandidates((current) =>
+      current.map((candidate) => (
+        duplicatePaths.has(candidate.targetPath)
+          ? { ...candidate, isSelected: selected }
+          : candidate
+      ))
+    );
+    showToast(
+      stagedCount > 0
+        ? `${selected ? 'SELECTED' : 'UNSELECTED'} ${stagedCount} MATCHING FILES FOR REVIEW`
+        : 'NO CLEANUP SUGGESTIONS MATCH THIS DUPLICATE GROUP'
+    );
+    return stagedCount;
   };
 
   // Stage image candidate from Images screen
@@ -184,8 +218,8 @@ export default function App() {
       const next = exists ? prev.filter((item) => item !== id) : [...prev, id];
       showToast(
         exists
-          ? `UNSTAGED IMAGE CANDIDATE [${id}]`
-          : `IMAGE CANDIDATE [${id}] STAGED FOR RECOVERY ROUTING`
+          ? 'Image removed from this session’s review marks.'
+          : 'Image marked for this session only. No cleanup suggestion or deletion was created.'
       );
       return next;
     });
@@ -199,8 +233,15 @@ export default function App() {
   };
 
   // Select all / deselect all in Cleanup screen
-  const handleSelectAllCandidates = (selectAll: boolean) => {
-    setCandidates((prev) => prev.map((c) => ({ ...c, isSelected: selectAll })));
+  const handleSelectCandidates = (candidateIds: string[], select: boolean) => {
+    const selectedIds = new Set(candidateIds);
+    setCandidates((prev) =>
+      prev.map((candidate) => (
+        selectedIds.has(candidate.id)
+          ? { ...candidate, isSelected: select }
+          : candidate
+      ))
+    );
   };
 
   // Scan completed callback
@@ -212,31 +253,45 @@ export default function App() {
     showToast(`INODE DISK TRAVERSAL COMPLETE: ${countDisplay} FILES CATALOGED`);
   };
 
+  const handleOpenHistoricalScan = async (scanId: string) => {
+    await loadScanData(scanId);
+    navigateTo('cleanup');
+    showToast('Loaded saved results for review.');
+  };
+
   // Execute safe cleanup in Cleanup screen
-  const handleExecuteSafeCleanup = async (selectedRecords: CleanupCandidateRecord[]) => {
+  const handleExecuteSafeCleanup = async (
+    selectedRecords: CleanupCandidateRecord[]
+  ): Promise<CleanupExecutionSummary> => {
     try {
       const res = await api.confirmCleanup(selectedRecords);
-      if (res.results && res.results.length > 0) {
-        setRecoveryLog((prev) => [...res.results, ...prev]);
-      }
-    } catch (err: any) {
-      console.warn('Backend cleanup error:', err);
-      showToast(`CLEANUP ERROR: ${err?.message || 'FAILED TO MIGRATE FILES'}`);
-      return;
+      const results = res.results ?? [];
+      setRecoveryLog((prev) => [...results, ...prev]);
+      const movedPaths = new Set(
+        results
+          .filter((result) => !result.status.startsWith('FAILED'))
+          .map((result) => result.originPath)
+      );
+      setCandidates((prev) =>
+        prev.map((candidate) => (
+          movedPaths.has(candidate.targetPath)
+            ? { ...candidate, isSelected: false }
+            : candidate
+        ))
+      );
+      const movedCount = results.filter((result) => !result.status.startsWith('FAILED')).length;
+      const failedCount = results.length - movedCount;
+      showToast(
+        failedCount > 0
+          ? `CLEANUP FINISHED: ${movedCount} MOVED, ${failedCount} NOT MOVED`
+          : `CLEANUP FINISHED: ${movedCount} FILES MOVED TO RECOVERY`
+      );
+      return { movedCount, failedCount };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Cleanup could not be completed.';
+      showToast(`CLEANUP ERROR: ${message}`);
+      throw err;
     }
-
-    // Unselect the migrated candidates
-    setCandidates((prev) =>
-      prev.map((c) =>
-        selectedRecords.some((r) => r.id === c.id)
-          ? { ...c, isSelected: false }
-          : c
-      )
-    );
-
-    showToast(
-      `SAFE CLEANUP EXECUTED: ${selectedRecords.length} INODES MIGRATED TO OS RECYCLE BIN`
-    );
   };
 
 
@@ -244,8 +299,10 @@ export default function App() {
   const handleRestoreItem = async (id: string) => {
     try {
       await api.restoreFile(id);
-    } catch (err: any) {
-      console.warn('Backend restore notice:', err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'The file could not be restored.';
+      showToast(`RESTORE ERROR: ${message}`);
+      return;
     }
 
     setRecoveryLog((prev) =>
@@ -338,7 +395,7 @@ export default function App() {
             onNavigate={navigateTo}
             candidates={candidates}
             onToggleCandidate={handleToggleCandidate}
-            onSelectAllCandidates={handleSelectAllCandidates}
+            onSelectCandidates={handleSelectCandidates}
             onExecuteSafeCleanup={handleExecuteSafeCleanup}
           />
         )}
@@ -346,6 +403,7 @@ export default function App() {
         {activeTab === 'history' && (
           <HistoryScreen
             onNavigate={navigateTo}
+            onOpenScan={handleOpenHistoricalScan}
             recoveryLog={recoveryLog}
             onRestoreItem={handleRestoreItem}
             onShowNotice={showToast}

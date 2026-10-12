@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { NavTab, MetadataFileItem } from '../types';
-import { INITIAL_METADATA_FILES } from '../mockData';
 
 interface FilesScreenProps {
   onNavigate: (tab: NavTab) => void;
@@ -19,13 +18,15 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
 
   const filteredFiles = useMemo(() => {
     if (filterType === 'OLD') {
-      return files.filter(
-        (f) => f.type === 'ARCHIVE' || f.type === 'TAR' || f.reason.includes('TIMESTAMP') || f.reason.includes('ARCHIVE')
-      );
+      return files.filter((file) => file.reason.includes('TIMESTAMP'));
     }
     if (filterType === 'TEMPORARY') {
-      return files.filter(
-        (f) => f.type === 'TMP' || f.type === 'CACHE' || f.type === 'DMP' || f.reason.includes('RUNTIME') || f.reason.includes('SCRATCH') || f.reason.includes('STACK')
+      return files.filter((file) =>
+        file.type === 'TMP'
+        || file.type === 'CACHE'
+        || file.type === 'EPHEMERAL'
+        || file.reason.includes('TEMPORARY')
+        || file.reason.includes('EXTENSION_MATCH')
       );
     }
     return files;
@@ -46,12 +47,18 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
   }, [stagedBytesTotal]);
 
   const oldCount = useMemo(
-    () => files.filter((f) => f.type === 'ARCHIVE' || f.type === 'TAR' || f.reason.includes('TIMESTAMP') || f.reason.includes('ARCHIVE')).length,
+    () => files.filter((file) => file.reason.includes('TIMESTAMP')).length,
     [files]
   );
 
   const tempCount = useMemo(
-    () => files.filter((f) => f.type === 'TMP' || f.type === 'CACHE' || f.type === 'DMP' || f.reason.includes('RUNTIME') || f.reason.includes('SCRATCH') || f.reason.includes('STACK')).length,
+    () => files.filter((file) =>
+      file.type === 'TMP'
+      || file.type === 'CACHE'
+      || file.type === 'EPHEMERAL'
+      || file.reason.includes('TEMPORARY')
+      || file.reason.includes('EXTENSION_MATCH')
+    ).length,
     [files]
   );
 
@@ -103,7 +110,7 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border border-[#1f1f1f] bg-black">
         <div className="p-4 border-b sm:border-b-0 border-r-0 sm:border-r border-[#1f1f1f] flex flex-col gap-1">
           <span className="text-[11px] text-[#8e9192] uppercase tracking-widest">
-            OLD FILES (&gt;365D)
+            OLDER FILES (&gt;180D MODIFIED)
           </span>
           <span className="text-xl md:text-2xl font-bold text-white tracking-widest">{oldCount}</span>
         </div>
