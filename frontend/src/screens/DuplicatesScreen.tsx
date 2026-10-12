@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { NavTab, HashGroup } from '../types';
-import { MOCK_HASH_GROUPS } from '../mockData';
 
 interface DuplicatesScreenProps {
   onNavigate: (tab: NavTab) => void;
-  onStageDuplicates: (count: number) => void;
+  onStageDuplicates: (paths: string[], selected: boolean) => number;
   hashGroups?: HashGroup[];
 }
 
@@ -13,13 +12,14 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
   onStageDuplicates,
   hashGroups: propHashGroups,
 }) => {
-  const groups = propHashGroups !== undefined ? propHashGroups : MOCK_HASH_GROUPS;
+  const groups = propHashGroups ?? [];
   const [selectedGroupId, setSelectedGroupId] = useState<string>(groups[0]?.id || '001');
-  const [isStaged, setIsStaged] = useState<boolean>(false);
+  const [stagedGroupId, setStagedGroupId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string>('STATUS: READY');
 
   const currentGroup: HashGroup | undefined =
     groups.find((g) => g.id === selectedGroupId) || groups[0];
+  const isStaged = currentGroup?.id === stagedGroupId;
 
   const duplicateGroupsCount = groups.length;
   const totalDuplicateFiles = groups.reduce((acc, g) => acc + (g.files ? g.files.length : g.matchCount), 0);
@@ -38,21 +38,18 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
   };
 
   const handleToggleStage = () => {
-    if (!isStaged) {
-      setIsStaged(true);
-      setStatusMessage('STATUS: 2 ITEMS COMMITTED TO STAGING BUFFER');
-      onStageDuplicates(2);
-    } else {
-      setIsStaged(false);
-      setStatusMessage('STATUS: STANDBY');
-    }
-  };
-
-  const handleReverify = () => {
-    setStatusMessage('VERIFYING BLOCKS...');
-    setTimeout(() => {
-      setStatusMessage('CHECKSUM MATCH 100%: ZERO DIVERGENCE');
-    }, 400);
+    if (!currentGroup) return;
+    const nextSelected = !isStaged;
+    const paths = currentGroup.files
+      .filter((file) => !file.isPreferred)
+      .map((file) => file.path);
+    const matchedCount = onStageDuplicates(paths, nextSelected);
+    setStagedGroupId(nextSelected ? currentGroup.id : null);
+    setStatusMessage(
+      matchedCount > 0
+        ? `${matchedCount} matching file${matchedCount === 1 ? '' : 's'} ${nextSelected ? 'selected' : 'removed'} for review.`
+        : 'No matching cleanup suggestions were found for this group.'
+    );
   };
 
   const preferredFile = currentGroup?.files.find((f) => f.isPreferred) || currentGroup?.files[0];
@@ -93,12 +90,17 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
             <span className="text-[#8e9192]">POTENTIAL RECOVERY:</span>
             <span className="text-white font-bold">{formatBytes(potentialRecoveryBytes)}</span>
           </div>
-          <div className="text-[#444748]">|</div>
           <div className="flex items-center gap-1.5">
-            <span className="text-[#8e9192]">HASH COLLISION RISK:</span>
-            <span className="text-white font-bold">0.0000%</span>
+            <span className="text-[#8e9192]">
+              MATCH RULE: SAME FILE SIZE, THEN IDENTICAL SHA-256 CONTENT HASH
+            </span>
           </div>
         </div>
+        <p className="text-[#c4c7c8] leading-relaxed">
+          Potential recovery adds the sizes of non-reference copies. The reference is only a
+          display suggestion, not a record of your preference; review each path before selecting
+          files for cleanup.
+        </p>
       </div>
 
       {/* MAIN FORENSIC 2-COLUMN SPLIT */}
@@ -187,11 +189,10 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
             })}
           </div>
 
-          {/* HEX LOG SUMMARY FOOTER */}
+          {/* Match summary */}
           <div className="mt-auto pt-4 border-t border-[#1f1f1f] text-[10px] text-[#8e9192] flex flex-col gap-1">
-            <div>CHECKSUM RUNTIME: SHA256_AVX2_OPTIMIZED</div>
-            <div>TOTAL DIGEST POOL: {totalDuplicateFiles} ARTIFACTS</div>
-            <div className="text-white">SYSTEM STATUS: READY FOR BULK TRIAGE</div>
+            <div>Matching files: {totalDuplicateFiles}</div>
+            <div className="text-white">No files are moved from this screen.</div>
           </div>
         </div>
 
@@ -204,7 +205,7 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
                 [GROUP_ANALYSIS :: {currentGroup.sectorName}]
               </span>
               <span className="text-white text-[10px] uppercase border border-white px-2 py-0.5">
-                EXACT BYTEWISE MATCH: CONFIRMED
+                SAME SHA-256 DIGEST
               </span>
             </div>
 
@@ -216,7 +217,7 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
             {/* TELEMETRY FILE PATH LIST */}
             <div className="pt-2 flex flex-col gap-1.5">
               <div className="text-[#8e9192] text-[10px] uppercase tracking-wider">
-                PATH INVENTORY (MATCH IDENTIFIER VERIFIED):
+                Files with this digest:
               </div>
               {currentGroup.files.map((file, idx) => (
                 <div
@@ -236,14 +237,14 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
             </div>
           </div>
 
-          {/* RESOLUTION ANALYSIS WORKFLOW */}
+          {/* Copy selection details */}
           <div className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-[#1f1f1f] pb-2 gap-2">
               <span className="text-white font-bold text-sm uppercase tracking-wider">
-                [RESOLUTION_ANALYSIS]
+                [KEEP_AND_REVIEW_RATIONALE]
               </span>
               <span className="text-[#8e9192] text-[11px] uppercase tracking-widest">
-                METADATA + DOWNSAMPLE RESOLUTION MATRIX
+                Reference selection details
               </span>
             </div>
 
@@ -253,10 +254,10 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
                 <div className="space-y-3">
                   <div className="flex justify-between items-start border-b border-[#1f1f1f] pb-2">
                     <span className="text-xs font-bold text-white tracking-widest uppercase">
-                      IMAGE A [PREFERRED]
+                      Reference copy
                     </span>
                     <span className="bg-white text-black text-[10px] px-1.5 py-0.5 uppercase font-bold">
-                      [KEEP]
+                      [REFERENCE]
                     </span>
                   </div>
                   <div className="space-y-1.5 text-xs">
@@ -296,10 +297,10 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
                 <div className="space-y-3">
                   <div className="flex justify-between items-start border-b border-[#1f1f1f] pb-2">
                     <span className="text-xs font-bold text-[#c4c7c8] tracking-widest uppercase">
-                      IMAGE B [CANDIDATE]
+                      Matching copy
                     </span>
                     <span className="border border-[#444748] text-[#c4c7c8] text-[10px] px-1.5 py-0.5 uppercase">
-                      [STAGE]
+                      [REVIEW]
                     </span>
                   </div>
                   <div className="space-y-1.5 text-xs">
@@ -340,7 +341,7 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
           <div className="border border-[#1f1f1f] p-4 bg-black space-y-3">
             <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-2 text-xs font-bold text-white tracking-widest uppercase">
               <span>[ALGORITHMIC_DECISION_RULE]</span>
-              <span className="text-[#8e9192] text-[11px]">AUTOMATED RESOLUTION PROTOCOL</span>
+              <span className="text-[#8e9192] text-[11px]">Suggested handling</span>
             </div>
 
             <div className="space-y-2 text-xs uppercase leading-relaxed">
@@ -369,13 +370,6 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
                 }`}
               >
                 {isStaged ? '[DUPLICATES_QUEUED_IN_STAGING]' : '[STAGE_DUPLICATES_FOR_CLEANUP]'}
-              </button>
-              <button
-                type="button"
-                onClick={handleReverify}
-                className="border border-[#444748] bg-black text-[#c4c7c8] px-4 py-2 font-bold tracking-wider uppercase hover:border-white hover:text-white transition-none cursor-pointer"
-              >
-                [REVERIFY_SHA256_BLOCKS]
               </button>
               <button
                 type="button"

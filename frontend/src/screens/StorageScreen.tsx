@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { TreeNode, NavTab } from '../types';
-import { INITIAL_FILESYSTEM_TREE } from '../mockData';
 
 interface StorageScreenProps {
   onNavigate: (tab: NavTab) => void;
@@ -13,9 +12,8 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
   onShowNotice,
   treeData: initialTreeData,
 }) => {
-  const [treeData, setTreeData] = useState<TreeNode[]>(initialTreeData || INITIAL_FILESYSTEM_TREE);
+  const [treeData, setTreeData] = useState<TreeNode[]>(initialTreeData ?? []);
   const [isAllExpanded, setIsAllExpanded] = useState<boolean>(false);
-  const [isReindexing, setIsReindexing] = useState<boolean>(false);
 
   useEffect(() => {
     if (initialTreeData && initialTreeData.length > 0) {
@@ -55,6 +53,7 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
   };
 
   const handleExportJson = () => {
+    if (treeData.length === 0) return;
     const jsonString = JSON.stringify(treeData, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -64,18 +63,8 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
     a.click();
     URL.revokeObjectURL(url);
     if (onShowNotice) {
-      onShowNotice('EXPORT_STRUCTURE.JSON COMMITTED TO DISK BUFFER');
+      onShowNotice('Filesystem structure exported as JSON.');
     }
-  };
-
-  const handleReindex = () => {
-    setIsReindexing(true);
-    setTimeout(() => {
-      setIsReindexing(false);
-      if (onShowNotice) {
-        onShowNotice('FASTAPI WORKER #04: INODES RE-INDEXED (12,482 NODES OK)');
-      }
-    }, 1000);
   };
 
   // Compute real statistics from treeData
@@ -102,8 +91,8 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
 
   const { fileCount, dirCount, maxDepth } = countNodes(treeData);
   const rootNode = treeData[0];
-  const rootSizeDisplay = rootNode ? rootNode.size : '0 B';
-  const rootPathDisplay = rootNode ? rootNode.path : 'N/A';
+  const rootSizeDisplay = rootNode ? rootNode.size : '—';
+  const rootPathDisplay = rootNode ? rootNode.path : 'No scan loaded';
 
   // Recursive tree flattening for terminal view
   interface FlattenedTreeItem {
@@ -128,7 +117,7 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
       items.push({
         id: node.id,
         name: node.name,
-        path: node.path,
+        path: node.path ?? node.name,
         size: node.size,
         isDir: !!node.isDir,
         isOpen: !!node.isOpen,
@@ -149,25 +138,19 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
 
   return (
     <div className="w-full flex flex-col gap-6 font-mono text-xs text-white">
-      {/* SECTION HEADER: FORENSIC DOSSIER IDENTIFIER */}
+      {/* Section header */}
       <section className="border-b border-[#1f1f1f] pb-3 flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
         <div className="flex flex-col gap-1">
           <div className="text-base md:text-xl font-bold text-white tracking-widest uppercase">
-            [STORAGE_METRICS_OVERVIEW]
+            Storage overview
           </div>
           <div className="text-[11px] text-[#8e9192] uppercase tracking-wider">
             FILESYSTEM STRUCTURE // {rootPathDisplay}
           </div>
         </div>
-        <div className="flex items-center gap-2 text-[11px]">
-          <span className="text-[#8e9192]">SYSTEM_DISPATCH ::</span>
-          <span className="border border-[#444748] px-2 py-0.5 text-white bg-[#0e0e0e] uppercase">
-            INODE_TRAVERSAL_ENGINE // DEPTH_LIMIT: UNBOUNDED
-          </span>
-        </div>
       </section>
 
-      {/* TOP METRICS: 4 RECTANGULAR TELEMETRY CELLS */}
+      {/* Summary metrics */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* CELL 01: TOTAL SCANNED */}
         <div className="border border-[#1f1f1f] bg-[#0e0e0e] p-6 flex flex-col justify-between h-36">
@@ -190,7 +173,7 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
             <span>SEC_02</span>
           </div>
           <div className="text-2xl md:text-3xl font-bold text-white tracking-tight tabular-nums">
-            {fileCount.toLocaleString()}
+            {rootNode ? fileCount.toLocaleString() : '—'}
           </div>
           <div className="text-[11px] text-[#c4c7c8] border-t border-[#1f1f1f] pt-2">
             INODE OBJECTS CATALOGED
@@ -204,24 +187,24 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
             <span>SEC_03</span>
           </div>
           <div className="text-2xl md:text-3xl font-bold text-white tracking-tight tabular-nums">
-            {dirCount.toLocaleString()}
+            {rootNode ? dirCount.toLocaleString() : '—'}
           </div>
           <div className="text-[11px] text-[#c4c7c8] border-t border-[#1f1f1f] pt-2">
             DISK FOLDERS TRAVERSED
           </div>
         </div>
 
-        {/* CELL 04: SCAN DURATION */}
+        {/* CELL 04: TREE DEPTH */}
         <div className="border border-[#1f1f1f] bg-[#0e0e0e] p-6 flex flex-col justify-between h-36">
           <div className="flex justify-between items-center text-[#8e9192] text-[11px]">
-            <span>[ SCAN DURATION ]</span>
-            <span className="text-white font-bold">● LIVE</span>
+            <span>[ TREE DEPTH ]</span>
+            <span>LEVELS</span>
           </div>
           <div className="text-2xl md:text-3xl font-bold text-white tracking-tight tabular-nums">
-            LIVE
+            {rootNode ? maxDepth.toLocaleString() : '—'}
           </div>
           <div className="text-[11px] text-[#c4c7c8] border-t border-[#1f1f1f] pt-2">
-            FASTAPI TRAVERSAL ACTIVE
+            Maximum depth shown in the tree
           </div>
         </div>
       </section>
@@ -253,6 +236,11 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
 
         {/* ASCII / TEXT TREE INTERACTION BUFFER */}
         <div className="text-xs md:text-sm leading-relaxed overflow-x-auto text-[#e2e2e2] select-none font-mono max-h-[500px]">
+          {flattenedTree.length === 0 && (
+            <div className="py-8 text-center text-[#8e9192]">
+              No scan results are loaded. Run a scan to explore filesystem structure.
+            </div>
+          )}
           {flattenedTree.map((item, index) => {
             const lineNum = index.toString().padStart(4, '0');
             if (item.isRoot) {
@@ -296,7 +284,7 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
       <section className="border border-[#1f1f1f] bg-[#0e0e0e] p-6">
         <div className="text-sm font-bold text-white mb-4 pb-2 border-b border-[#1f1f1f] flex items-center justify-between">
           <span>[SCAN_METADATA]</span>
-          <span className="text-[11px] text-[#8e9192]">TELEMETRY_LOG_VERIFIED</span>
+          <span className="text-[11px] text-[#8e9192]">Values from the loaded scan</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-xs">
           {/* META 01 */}
@@ -317,33 +305,21 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
           {/* META 04 */}
           <div className="flex flex-col gap-1 border-l border-[#1f1f1f] pl-4">
             <span className="text-[#8e9192] text-[10px] uppercase">SCAN STATUS</span>
-            <span className="text-white font-bold">COMPLETE (FASTAPI INODE TRAVERSAL VERIFIED)</span>
+            <span className="text-white font-bold">{rootNode ? 'Results loaded' : 'No scan loaded'}</span>
           </div>
         </div>
       </section>
 
       {/* TERMINAL FOOTER ACTIONS */}
       <section className="pt-2 flex flex-wrap gap-4 justify-between items-center text-xs">
-        <div className="flex items-center gap-2 text-[#8e9192]">
-          <span>CURSOR: SECTOR_INSPECT</span>
-          <span>::</span>
-          <span className="text-white font-bold">IO_WAIT: 0.00%</span>
-        </div>
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={handleExportJson}
-            className="bg-[#0e0e0e] text-[#c4c7c8] hover:bg-white hover:text-black border border-[#444748] px-4 py-2 transition-none uppercase cursor-pointer"
+            disabled={!rootNode}
+            className="bg-[#0e0e0e] text-[#c4c7c8] hover:bg-white hover:text-black border border-[#444748] px-4 py-2 transition-none uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             [ EXPORT_STRUCTURE.JSON ]
-          </button>
-          <button
-            type="button"
-            onClick={handleReindex}
-            disabled={isReindexing}
-            className="bg-[#0e0e0e] text-[#c4c7c8] hover:bg-white hover:text-black border border-[#444748] px-4 py-2 transition-none uppercase cursor-pointer disabled:opacity-50"
-          >
-            {isReindexing ? '[ INDEXING INODES... ]' : '[ RE-INDEX DISK ]'}
           </button>
           <button
             type="button"

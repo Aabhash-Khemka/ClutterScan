@@ -179,12 +179,6 @@ class ScanRepository:
                         created_at=datetime.fromisoformat(r["created_at"]) if r["created_at"] else None,
                         modified_at=datetime.fromisoformat(r["modified_at"]) if r["modified_at"] else None,
                         accessed_at=datetime.fromisoformat(r["accessed_at"]) if r["accessed_at"] else None,
-                        content_hash=r["content_hash"],
-                        p_hash=r["p_hash"],
-                        width=r["width"],
-                        height=r["height"],
-                        is_old=bool(r["is_old"]),
-                        is_temp=bool(r["is_temp"]),
                         error=r["error"],
                     )
                 )
@@ -369,8 +363,11 @@ class ScanRepository:
                 rec_pk = f"{scan_id}_{r.id}"
                 conn.execute(
                     """
-                    INSERT OR REPLACE INTO recommendations (id, scan_id, rank_label, target_path, score, reasons, recoverable_bytes, is_selected)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT OR REPLACE INTO recommendations (
+                        id, scan_id, rank_label, target_path, score, reasons,
+                        recoverable_bytes, is_selected, score_breakdown, selection_threshold
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         rec_pk,
@@ -381,6 +378,8 @@ class ScanRepository:
                         json.dumps(r.reasons),
                         r.bytes,
                         1 if r.is_selected else 0,
+                        json.dumps(r.score_breakdown),
+                        r.selection_threshold,
                     ),
                 )
 
@@ -403,6 +402,16 @@ class ScanRepository:
                         reasons=reasons,
                         bytes=r["recoverable_bytes"],
                         is_selected=bool(r["is_selected"]),
+                        score_breakdown=(
+                            json.loads(r["score_breakdown"])
+                            if "score_breakdown" in r.keys() and r["score_breakdown"]
+                            else []
+                        ),
+                        selection_threshold=(
+                            r["selection_threshold"]
+                            if "selection_threshold" in r.keys()
+                            else 60
+                        ),
                     )
                 )
             return recs
@@ -477,4 +486,3 @@ class ScanRepository:
         if root_node:
             TreeBuilder.calculate_size(root_node)
         return root_node
-

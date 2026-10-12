@@ -44,8 +44,8 @@ class DuplicateGroup:
     total_bytes: int
     files: List[DuplicateFileItem] = field(default_factory=list)
     reason: str = "IDENTICAL CONTENT DIGEST DETECTED."
-    safety_rule: str = "PRESERVE PREFERRED COPY AS MASTER."
-    staging_action: str = "QUEUE REDUNDANT DUPLICATES TO RECOMMENDATIONS."
+    safety_rule: str = "Review the copies before selecting any for cleanup."
+    staging_action: str = "Select matching files for cleanup review; nothing moves until you confirm."
     hex_sample: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:

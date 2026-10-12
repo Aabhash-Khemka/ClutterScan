@@ -187,6 +187,10 @@ def test_real_e2e_scan_pipeline(test_directory: Path):
     persisted_recs = persisted_recs_res.json()
     assert len(persisted_recs) == len(recs)
 
+    persisted_files_res = client.get(f"/api/files/{scan_id}")
+    assert persisted_files_res.status_code == 200
+    assert isinstance(persisted_files_res.json(), list)
+
     # Latest scan session endpoint
     latest_res = client.get("/api/scan/latest")
     assert latest_res.status_code == 200

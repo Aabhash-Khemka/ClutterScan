@@ -137,7 +137,7 @@ class SnapshotManager:
         with get_db(**kwargs) as conn:
             rows = conn.execute(
                 """
-                SELECT id, timestamp, root_path, total_inodes, total_storage, used_storage
+                SELECT id, scan_id, timestamp, root_path, total_inodes, total_storage, used_storage
                 FROM snapshots
                 ORDER BY timestamp DESC
                 """
@@ -145,15 +145,16 @@ class SnapshotManager:
 
             for r in rows:
                 dt = datetime.fromisoformat(r["timestamp"])
-                formatted_date = dt.strftime("%d %b %Y").upper()
+                formatted_date = dt.strftime("%d %b %Y %H:%M").upper()
                 results.append(
                     HistoricalScanRecord(
                         id=r["id"],
+                        scan_id=r["scan_id"],
                         date=formatted_date,
                         root_target=r["root_path"],
                         inodes=f"{r['total_inodes']:,}",
                         total=format_size(r["used_storage"]),
-                        status="[ COMPLETE / VERIFIED ]",
+                        status="[COMPLETED]",
                     )
                 )
         return results

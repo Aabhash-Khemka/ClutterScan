@@ -15,6 +15,17 @@ def init_db(db_path: Path = DATABASE_PATH) -> None:
         with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
             schema_script = f.read()
         conn.executescript(schema_script)
+        recommendation_columns = {
+            row[1] for row in conn.execute("PRAGMA table_info(recommendations)")
+        }
+        if "score_breakdown" not in recommendation_columns:
+            conn.execute(
+                "ALTER TABLE recommendations ADD COLUMN score_breakdown TEXT NOT NULL DEFAULT '[]'"
+            )
+        if "selection_threshold" not in recommendation_columns:
+            conn.execute(
+                "ALTER TABLE recommendations ADD COLUMN selection_threshold INTEGER NOT NULL DEFAULT 60"
+            )
         conn.commit()
 
 @contextmanager

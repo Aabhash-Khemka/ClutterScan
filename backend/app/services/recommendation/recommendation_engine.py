@@ -7,6 +7,7 @@ from app.models.file_node import FileNode
 from app.models.duplicate_group import DuplicateGroup
 from app.models.cleanup_recommendation import CleanupRecommendation
 from app.core.config import settings
+from app.utils.file_utils import format_size
 
 class RecommendationEngine:
     """Algorithm 9: Cleanup Recommendation Scoring and Ranking."""
@@ -73,32 +74,69 @@ class RecommendationEngine:
             file_size = node.size if node else 0
             score = 0.0
             reasons: List[str] = []
+            score_breakdown: List[Dict[str, Any]] = []
 
             # 1. Duplicate evidence
             if path_str in dup_candidate_map:
                 score += self.w_dup
+                score_breakdown.append({
+                    "key": "exact_duplicate",
+                    "label": "Exact duplicate",
+                    "points": self.w_dup,
+                    "explanation": "The file has the same SHA-256 content hash as another file.",
+                })
                 reasons.append("EXACT_DUPLICATE")
                 if dup_candidate_map[path_str]["is_lower_res"]:
                     score += self.w_res
+                    score_breakdown.append({
+                        "key": "lower_resolution",
+                        "label": "Lower-resolution copy",
+                        "points": self.w_res,
+                        "explanation": "Another identical image copy has a higher pixel resolution.",
+                    })
                     reasons.append("LOWER_RESOLUTION")
 
             # 2. Temporary evidence
             if path_str in temp_map:
                 score += self.w_temp
+                score_breakdown.append({
+                    "key": "temporary_artifact",
+                    "label": "Temporary-file evidence",
+                    "points": self.w_temp,
+                    "explanation": "The filename, extension, or containing folder matches a temporary-file rule.",
+                })
                 reasons.append("TEMPORARY_ARTIFACT")
 
             # 3. Age evidence
             if path_str in old_map:
                 score += self.w_age
                 age_days = old_map[path_str].get("ageDays", 180)
+                score_breakdown.append({
+                    "key": "older_file",
+                    "label": "Older file",
+                    "points": self.w_age,
+                    "explanation": f"The file's recorded modification time is {age_days} days old.",
+                })
                 reasons.append(f"UNRESOLVED_INODE_AGE > {age_days}D")
 
             # 4. Storage impact evidence
             if file_size >= 100 * 1024 * 1024:  # >= 100 MB
                 score += self.w_size
+                score_breakdown.append({
+                    "key": "high_storage_impact",
+                    "label": "Large file",
+                    "points": self.w_size,
+                    "explanation": f"The file is {format_size(file_size)}, at or above the 100 MB large-file threshold.",
+                })
                 reasons.append("HIGH_STORAGE_IMPACT")
             elif file_size >= 10 * 1024 * 1024:  # >= 10 MB
                 score += self.w_size * 0.5
+                score_breakdown.append({
+                    "key": "moderate_storage_impact",
+                    "label": "Moderately large file",
+                    "points": self.w_size * 0.5,
+                    "explanation": f"The file is {format_size(file_size)}, at or above the 10 MB storage-impact threshold.",
+                })
                 reasons.append("MODERATE_STORAGE_IMPACT")
 
             # 5. Recent use penalty
@@ -106,6 +144,13 @@ class RecommendationEngine:
                 age_seconds = current_time - node.modified_at.timestamp()
                 if age_seconds < 3 * 86400:  # < 3 days
                     score -= self.w_recent
+                    score_breakdown.append({
+                        "key": "recent_activity",
+                        "label": "Recent activity",
+                        "points": -self.w_recent,
+                        "explanation": "A recent modification lowers this file's priority.",
+                    })
+                    reasons.append("RECENTLY_MODIFIED")
 
             clamped_score = int(max(0, min(100, round(score))))
 
@@ -118,6 +163,8 @@ class RecommendationEngine:
                     reasons=reasons,
                     bytes=file_size,
                     is_selected=clamped_score >= self.selection_threshold,
+                    score_breakdown=score_breakdown,
+                    selection_threshold=self.selection_threshold,
                 )
             )
 

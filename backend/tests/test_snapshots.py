@@ -68,3 +68,4 @@ def test_snapshot_creation_and_comparison(tmp_path: Path):
     assert len(scans) == 2
     assert scans[0].id == snap2.id
     assert scans[1].id == snap1.id
+    assert ":" in scans[0].date

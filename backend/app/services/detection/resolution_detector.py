@@ -43,10 +43,12 @@ class ResolutionDetector:
             )
 
             preferred.is_preferred = True
-            preferred.status = "PREFERRED COPY (KEEP)"
-            preferred.status_desc = "HIGHEST NATIVE SENSOR RESOLUTION"
+            preferred.status = "PREFERRED REFERENCE (REVIEW)"
+            preferred.status_desc = "REFERENCE FOR THIS MATCHING GROUP"
             preferred.rationale = (
-                f"HIGHEST NATIVE SENSOR RESOLUTION ({preferred.resolution}). ZERO LOSSY RECOMPRESSION DETECTED."
+                f"Chosen as the group's reference ({preferred.resolution}). "
+                "The matching SHA-256 digest indicates identical file content; "
+                "this does not establish which location you prefer to keep."
             )
 
             for c in candidates:
@@ -58,56 +60,65 @@ class ResolutionDetector:
                         f"IDENTICAL VISUAL CONTENT // DOWNSAMPLED COMPRESSED DUPLICATE ({c.resolution})."
                     )
                 else:
-                    # Same resolution
-                    ResolutionDetector._assign_path_rationale(c)
+                    c.status = "REVIEW CANDIDATE"
+                    c.status_desc = "SAME CONTENT AS THE REFERENCE"
+                    c.rationale = (
+                        "This file has the same SHA-256 digest and image dimensions as the reference. "
+                        "No user-specific keep preference is recorded."
+                    )
 
             return preferred, candidates
 
         # Non-image files: select canonical file (prefer Documents/Pictures over Downloads/Temp)
-        def _heuristic_rank(f: DuplicateFileItem) -> int:
+        def _heuristic_details(f: DuplicateFileItem) -> tuple[int, List[str]]:
             p_lower = f.path.lower()
             score = 100
+            signals = []
             if "download" in p_lower:
                 score -= 40
+                signals.append("path contains Downloads (-40)")
             if "temp" in p_lower:
                 score -= 50
+                signals.append("path contains 'temp' (-50)")
             if "desktop" in p_lower:
                 score -= 20
+                signals.append("path contains Desktop (-20)")
             if "(1)" in p_lower or "copy" in p_lower:
                 score -= 30
-            return score
+                signals.append("name contains '(1)' or 'copy' (-30)")
+            return score, signals
 
-        sorted_files = sorted(files, key=_heuristic_rank, reverse=True)
+        sorted_files = sorted(
+            files, key=lambda f: _heuristic_details(f)[0], reverse=True
+        )
         preferred = sorted_files[0]
         candidates = sorted_files[1:]
 
         preferred.is_preferred = True
-        preferred.status = "PREFERRED COPY (KEEP)"
-        preferred.status_desc = "PRIMARY STORAGE LOCATION"
-        preferred.rationale = "CANONICAL VERSION COMMITTED IN PRIMARY WORKSPACE."
+        preferred_score, preferred_signals = _heuristic_details(preferred)
+        preferred.status = "PREFERRED REFERENCE (REVIEW)"
+        preferred.status_desc = "PATH/NAME HEURISTIC REFERENCE"
+        preferred.rationale = (
+            f"Selected as the reference by a path/name score of {preferred_score}/100"
+            + (f" ({'; '.join(preferred_signals)})." if preferred_signals else " (no penalty signals).")
+            + " This heuristic does not know which copy you prefer."
+        )
 
         for c in candidates:
             c.is_preferred = False
-            ResolutionDetector._assign_path_rationale(c)
+            candidate_score, candidate_signals = _heuristic_details(c)
+            c.status = "REVIEW CANDIDATE"
+            c.status_desc = "RANKED BY PATH/NAME HEURISTIC"
+            if candidate_score == preferred_score:
+                c.rationale = (
+                    f"Tied with the reference at {candidate_score}/100; the first matching file "
+                    "in scan order is shown as the reference. This is not a user preference."
+                )
+            else:
+                c.rationale = (
+                    f"Ranked for review by a path/name score of {candidate_score}/100"
+                    + (f" ({'; '.join(candidate_signals)})." if candidate_signals else " (no penalty signals).")
+                    + " A lower score does not mean this copy is unnecessary."
+                )
 
         return preferred, candidates
-
-    @staticmethod
-    def _assign_path_rationale(file_item: DuplicateFileItem) -> None:
-        p_lower = file_item.path.lower()
-        if "download" in p_lower:
-            file_item.status = "CLEANUP CANDIDATE"
-            file_item.status_desc = "STALE DOWNLOAD REPLICATION"
-            file_item.rationale = "IDENTICAL BYTE BLOCKS REDUNDANTLY CACHED IN DOWNLOADS."
-        elif "temp" in p_lower:
-            file_item.status = "CLEANUP CANDIDATE"
-            file_item.status_desc = "EPHEMERAL STAGING DIR"
-            file_item.rationale = "TRANSIENT REPLICA IN TEMPORARY WORKSPACE."
-        elif "desktop" in p_lower:
-            file_item.status = "CLEANUP CANDIDATE"
-            file_item.status_desc = "STALE DESKTOP COPY"
-            file_item.rationale = "EXACT BITSTREAM REPLICATION LOCATED ON DESKTOP."
-        else:
-            file_item.status = "CLEANUP CANDIDATE"
-            file_item.status_desc = "REDUNDANT REPLICA"
-            file_item.rationale = "EXACT BITSTREAM REPLICATION ACROSS MULTIPLE VOLUMES."

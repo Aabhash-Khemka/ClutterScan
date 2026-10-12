@@ -130,6 +130,8 @@ CREATE TABLE IF NOT EXISTS recommendations (
     reasons TEXT NOT NULL,
     recoverable_bytes INTEGER NOT NULL,
     is_selected INTEGER DEFAULT 0,
+    score_breakdown TEXT NOT NULL DEFAULT '[]',
+    selection_threshold INTEGER NOT NULL DEFAULT 60,
     FOREIGN KEY (scan_id) REFERENCES scan_sessions(id) ON DELETE CASCADE
 );
 

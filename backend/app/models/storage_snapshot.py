@@ -53,6 +53,7 @@ class SnapshotDelta:
 class HistoricalScanRecord:
     """Formatted historical scan entry matching frontend HistoricalScanEntry."""
     id: str
+    scan_id: str
     date: str
     root_target: str
     inodes: str
@@ -62,6 +63,7 @@ class HistoricalScanRecord:
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
+            "scanId": self.scan_id,
             "date": self.date,
             "rootTarget": self.root_target,
             "inodes": self.inodes,

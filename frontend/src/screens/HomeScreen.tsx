@@ -410,7 +410,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 Older files
               </div>
               <div className="text-[10px] text-[#8e9192]">
-                Not accessed in over 365 days.
+                Modified more than 180 days ago.
               </div>
             </div>
           </button>
