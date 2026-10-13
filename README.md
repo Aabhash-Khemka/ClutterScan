@@ -1,5 +1,5 @@
 # ClutterScan
-ClutterScan is an intelligent clutter detection, classification, and resolution platform.
+ClutterScan is a full-stack disk analysis and cleanup tool. It scans a local drive into a size-annotated folder tree, then finds exact duplicates (size pre-filter plus content hashing) and near-identical images (perceptual hashing with Hamming distance). It saves each scan as a snapshot to track folder growth over time, ranks cleanup suggestions by space recovered, and sends deletions to the system trash so they stay reversible.
 
 ## Project Structure
 
