@@ -10,7 +10,9 @@ SCHEMA_PATH = Path(__file__).parent / "schema.sql"
 def init_db(db_path: Path = DATABASE_PATH) -> None:
     """Initialize SQLite database using schema.sql."""
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    with sqlite3.connect(db_path) as conn:
+    with sqlite3.connect(db_path, timeout=30.0) as conn:
+        conn.execute("PRAGMA journal_mode = WAL;")
+        conn.execute("PRAGMA busy_timeout = 30000;")
         conn.execute("PRAGMA foreign_keys = ON;")
         with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
             schema_script = f.read()
@@ -35,8 +37,10 @@ def init_db(db_path: Path = DATABASE_PATH) -> None:
 @contextmanager
 def get_db(db_path: Path = DATABASE_PATH) -> Generator[sqlite3.Connection, None, None]:
     """Context manager for SQLite connections with row factory."""
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, timeout=30.0)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode = WAL;")
+    conn.execute("PRAGMA busy_timeout = 30000;")
     conn.execute("PRAGMA foreign_keys = ON;")
     try:
         yield conn
