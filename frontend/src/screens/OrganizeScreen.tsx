@@ -11,10 +11,6 @@ import {
   Play,
   Search,
   Filter,
-  Layers,
-  Sparkles,
-  Check,
-  ShieldCheck
 } from 'lucide-react';
 
 interface OrganizeScreenProps {
@@ -166,164 +162,160 @@ export const OrganizeScreen: React.FC<OrganizeScreenProps> = ({
   const skippedCount = moves.filter((m) => m.status === 'skipped').length;
 
   return (
-    <div className="w-full flex flex-col gap-6 text-[#172033] pb-12">
-      {/* HEADER SECTION */}
-      <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-2">
-        <div className="flex flex-col gap-1">
+    <div className="w-full bg-[#080808] text-[#f5f5f5] font-sans flex flex-col gap-6">
+      {/* Title Header */}
+      <div className="border-b border-[#303030] pb-5 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#172033] tracking-tight">
-              Smart File Organizer
+            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+              Smart Organize
             </h1>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EEF2FF] text-[#5B5CE2] border border-[#C7D2FE]">
-              Intelligent Classification
+            <span className="text-xs bg-white text-black font-semibold px-2 py-0.5 rounded-[2px] uppercase">
+              Folder Tidying
             </span>
           </div>
-          <p className="text-sm md:text-base text-[#64748B]">
-            Sort loose files into structured categories by file type, academic topics, or project keywords with instant 1-click lossless undo.
+          <p className="text-base text-[#b8b8b8] max-w-2xl">
+            Automatically classify loose files into structured category subfolders by extension and academic or project keywords. Preview proposed moves before applying them, with 1-click lossless undo.
           </p>
         </div>
-
         <button
           onClick={() => setShowConfig(!showConfig)}
-          className="flex items-center gap-2 border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] px-4 py-2 text-xs text-[#334155] font-semibold rounded-lg transition-colors cursor-pointer shadow-xs"
+          className="flex items-center gap-2 border border-[#303030] bg-[#141414] hover:border-white px-4 py-2.5 text-sm text-white font-semibold rounded-[2px] transition-colors cursor-pointer self-start md:self-auto"
         >
-          <Settings2 size={15} />
+          <Settings2 className="w-4 h-4" />
           <span>{showConfig ? 'Hide Rules' : 'Category Rules'}</span>
         </button>
-      </section>
+      </div>
 
-      {/* CLASSIFICATION RULES PANEL */}
+      {/* Rules Config Panel */}
       {showConfig && (
-        <section className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs flex flex-col gap-4">
-          <div className="text-sm font-semibold text-[#172033]">Custom Keyword Classification Rules</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-[#64748B] font-medium">Academic &amp; Coursework Keywords (comma separated)</label>
+        <div className="border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col gap-3 text-sm">
+          <div className="font-bold text-white text-base">Custom Classification Keywords (Comma Separated)</div>
+          <div className="flex flex-col sm:flex-row gap-5">
+            <div className="flex-1 flex flex-col gap-1.5">
+              <label className="text-xs text-[#858585] uppercase font-semibold">College &amp; Academic Keywords</label>
               <input
                 type="text"
                 value={collegeKeywords}
                 onChange={(e) => setCollegeKeywords(e.target.value)}
-                className="bg-[#F8FAFC] border border-[#E2E8F0] px-3.5 py-2 text-sm text-[#172033] rounded-lg focus:border-[#5B5CE2] focus:bg-white outline-none"
+                className="bg-[#080808] border border-[#303030] p-3 text-sm text-white rounded-[2px] focus:border-white outline-none font-mono"
               />
             </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-[#64748B] font-medium">Project &amp; Code Keywords (comma separated)</label>
+            <div className="flex-1 flex flex-col gap-1.5">
+              <label className="text-xs text-[#858585] uppercase font-semibold">Project &amp; Code Keywords</label>
               <input
                 type="text"
                 value={projectKeywords}
                 onChange={(e) => setProjectKeywords(e.target.value)}
-                className="bg-[#F8FAFC] border border-[#E2E8F0] px-3.5 py-2 text-sm text-[#172033] rounded-lg focus:border-[#5B5CE2] focus:bg-white outline-none"
+                className="bg-[#080808] border border-[#303030] p-3 text-sm text-white rounded-[2px] focus:border-white outline-none font-mono"
               />
             </div>
           </div>
-        </section>
+        </div>
       )}
 
-      {/* FOLDER INPUT & ACTION CARD */}
-      <section className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs flex flex-col sm:flex-row items-center gap-3">
+      {/* Target Folder Input & Scan Action */}
+      <div className="border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col sm:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
-          <Folder size={18} className="absolute left-3.5 top-3.5 text-[#94A3B8]" />
+          <Folder className="w-5 h-5 absolute left-3.5 top-3.5 text-[#858585]" />
           <input
             type="text"
             value={folderPath}
             onChange={(e) => setFolderPath(e.target.value)}
             placeholder="Enter target directory path (e.g. C:\Users\Username\Downloads)..."
-            className="w-full bg-[#F8FAFC] border border-[#E2E8F0] pl-10 pr-4 py-3 text-sm text-[#172033] placeholder:text-[#94A3B8] rounded-lg focus:border-[#5B5CE2] focus:bg-white outline-none"
+            className="w-full bg-[#080808] border border-[#303030] pl-11 pr-4 py-3 text-sm text-white placeholder:text-[#606060] rounded-[2px] focus:border-white outline-none font-mono"
           />
         </div>
         <button
           onClick={handleScan}
           disabled={loading || !folderPath.trim()}
-          className="w-full sm:w-auto bg-[#5B5CE2] hover:bg-[#4849C7] disabled:opacity-50 text-white px-6 py-3 text-sm font-semibold rounded-lg shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
+          className="w-full sm:w-auto border border-white bg-white text-black hover:bg-neutral-200 disabled:opacity-50 px-7 py-3 text-sm font-semibold rounded-[2px] transition-colors cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
         >
-          <Play size={16} fill="white" />
+          <Play className="w-4 h-4 fill-black" />
           <span>{loading ? 'Analyzing Files...' : 'Generate Plan'}</span>
         </button>
-      </section>
+      </div>
 
-      {/* PLAN PREVIEW & EXECUTION */}
+      {/* Plan Preview & Execution Section */}
       {plan && (
         <div className="flex flex-col gap-4">
-          {/* Plan Metrics */}
-          <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-xs">
-              <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Total Loose Files</div>
-              <div className="text-2xl font-bold text-[#172033] mt-1">{moves.length}</div>
-              <div className="text-xs text-[#94A3B8] mt-0.5">Discovered in folder</div>
+          {/* Plan Summary Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+              <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Total Loose Files</span>
+              <span className="text-2xl md:text-3xl font-bold font-mono text-white">{moves.length}</span>
+              <span className="text-xs text-[#b8b8b8]">Files found in directory</span>
             </div>
-
-            <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-xs">
-              <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Ready to Move</div>
-              <div className="text-2xl font-bold text-[#15803D] mt-1">{readyCount}</div>
-              <div className="text-xs text-[#94A3B8] mt-0.5">Zero naming collisions</div>
+            <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+              <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Ready to Move</span>
+              <span className="text-2xl md:text-3xl font-bold font-mono text-white">{readyCount}</span>
+              <span className="text-xs text-[#b8b8b8]">Safe, no naming collisions</span>
             </div>
-
-            <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-xs">
-              <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Collisions (Blocked)</div>
-              <div className="text-2xl font-bold text-[#B45309] mt-1">{conflictCount}</div>
-              <div className="text-xs text-[#94A3B8] mt-0.5">Dest. name conflicts</div>
+            <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+              <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Conflicts (Blocked)</span>
+              <span className="text-2xl md:text-3xl font-bold font-mono text-[#e5ad55]">{conflictCount}</span>
+              <span className="text-xs text-[#858585]">Existing destination file</span>
             </div>
-
-            <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-xs">
-              <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Excluded</div>
-              <div className="text-2xl font-bold text-[#64748B] mt-1">{skippedCount}</div>
-              <div className="text-xs text-[#94A3B8] mt-0.5">Skipped from move</div>
+            <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+              <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Excluded</span>
+              <span className="text-2xl md:text-3xl font-bold font-mono text-[#858585]">{skippedCount}</span>
+              <span className="text-xs text-[#858585]">Skipped by operator</span>
             </div>
-          </section>
+          </div>
 
           {/* Action Execution Banner */}
-          <section className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <h3 className="font-bold text-sm text-[#172033]">
-                Review Proposed Organization
-              </h3>
-              <p className="text-xs text-[#64748B] mt-0.5">
-                Files are moved safely only after execution. You can adjust categories or skip individual files.
-              </p>
+              <div className="font-bold text-white text-base">
+                Review &amp; Apply Proposed Moves
+              </div>
+              <div className="text-sm text-[#b8b8b8] mt-1">
+                No files are moved until you click execute. You can override target folders below or skip individual files.
+              </div>
             </div>
             <button
               onClick={handleExecute}
               disabled={executing || readyCount === 0}
-              className="w-full sm:w-auto bg-[#15803D] hover:bg-[#166534] disabled:opacity-40 text-white px-6 py-2.5 text-xs font-semibold rounded-lg shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
+              className="w-full sm:w-auto border border-white bg-white text-black hover:bg-neutral-200 disabled:opacity-50 px-7 py-3 text-sm font-semibold rounded-[2px] transition-colors cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
             >
-              <CheckCircle2 size={16} />
-              <span>{executing ? 'Organizing Files...' : `Apply Plan (${readyCount} Files)`}</span>
+              <CheckCircle2 className="w-4 h-4 text-black" />
+              <span>{executing ? 'Organizing Files...' : `Execute Move (${readyCount} Files)`}</span>
             </button>
-          </section>
+          </div>
 
-          {/* Execution Result */}
+          {/* Execution Result Notice */}
           {executeResult && (
-            <div className="bg-[#F0FDF4] border border-[#86EFAC] rounded-xl p-4 text-xs text-[#166534] flex flex-col gap-2 shadow-xs">
-              <div className="flex items-center gap-2 font-bold text-sm">
-                <CheckCircle2 size={18} className="text-[#16A34A]" />
-                <span>Organize Completed: {executeResult.totalMoved} files categorized successfully!</span>
+            <div className="border border-[#303030] bg-[#0b0b0b] p-4 flex flex-col gap-2">
+              <div className="flex items-center gap-2 text-white font-bold text-xs uppercase">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Operation Complete: {executeResult.totalMoved} files moved successfully</span>
               </div>
               {executeResult.operationId && (
-                <div className="flex items-center gap-3 pt-1">
-                  <span>Batch ID: {executeResult.operationId}</span>
+                <div className="text-[11px] text-[#858585] flex items-center gap-3">
+                  <span>Operation ID: {executeResult.operationId}</span>
                   <button
                     onClick={() => handleUndo(executeResult.operationId)}
                     disabled={undoingId === executeResult.operationId}
-                    className="border border-[#15803D] bg-white text-[#15803D] hover:bg-[#15803D] hover:text-white px-2.5 py-1 text-xs font-semibold rounded-md cursor-pointer transition-colors"
+                    className="border border-[#404040] hover:border-white px-2 py-0.5 text-white hover:bg-white hover:text-black uppercase text-[10px] cursor-pointer"
                   >
-                    {undoingId === executeResult.operationId ? 'Restoring files...' : 'Lossless Undo Now'}
+                    {undoingId === executeResult.operationId ? 'Undoing...' : 'Undo Move Now'}
                   </button>
                 </div>
               )}
             </div>
           )}
 
-          {/* Moves Table Card */}
-          <section className="bg-white border border-[#E2E8F0] rounded-xl shadow-xs overflow-hidden flex flex-col">
+          {/* Filters & Moves Table */}
+          <div className="border border-[#303030] bg-[#141414] rounded-[2px] flex flex-col">
             {/* Filter controls */}
-            <div className="bg-[#F8FAFC] p-4 border-b border-[#E2E8F0] flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
+            <div className="p-4 border-b border-[#303030] flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
                 <button
                   onClick={() => setSelectedCategory('ALL')}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-[2px] border transition-colors cursor-pointer ${
                     selectedCategory === 'ALL'
-                      ? 'bg-[#5B5CE2] text-white shadow-xs'
-                      : 'bg-white text-[#64748B] hover:text-[#172033] border border-[#E2E8F0]'
+                      ? 'border-white bg-white text-black'
+                      : 'border-[#303030] text-[#b8b8b8] hover:text-white'
                   }`}
                 >
                   All ({moves.length})
@@ -332,10 +324,10 @@ export const OrganizeScreen: React.FC<OrganizeScreenProps> = ({
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-[2px] border transition-colors cursor-pointer whitespace-nowrap ${
                       selectedCategory === cat
-                        ? 'bg-[#5B5CE2] text-white shadow-xs'
-                        : 'bg-white text-[#64748B] hover:text-[#172033] border border-[#E2E8F0]'
+                        ? 'border-white bg-white text-black'
+                        : 'border-[#303030] text-[#b8b8b8] hover:text-white'
                     }`}
                   >
                     {cat} ({moves.filter((m) => m.category === cat).length})
@@ -344,41 +336,41 @@ export const OrganizeScreen: React.FC<OrganizeScreenProps> = ({
               </div>
 
               <div className="relative w-full sm:w-72">
-                <Search size={15} className="absolute left-3 top-2.5 text-[#94A3B8]" />
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#858585]" />
                 <input
                   type="text"
                   value={searchFilter}
                   onChange={(e) => setSearchFilter(e.target.value)}
                   placeholder="Filter by filename..."
-                  className="w-full bg-white border border-[#E2E8F0] pl-9 pr-3 py-2 text-xs text-[#172033] placeholder:text-[#94A3B8] rounded-lg focus:border-[#5B5CE2] outline-none"
+                  className="w-full bg-[#080808] border border-[#303030] pl-9 pr-3 py-2 text-sm text-white placeholder:text-[#606060] rounded-[2px] focus:border-white outline-none font-mono"
                 />
               </div>
             </div>
 
             {/* Table */}
             <div className="overflow-x-auto max-h-[500px]">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[#64748B] uppercase font-semibold">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead className="sticky top-0 bg-[#1b1b1b] border-b border-[#303030] text-xs text-[#858585] uppercase font-semibold">
                   <tr>
-                    <th className="py-3 px-4">File Name &amp; Source</th>
-                    <th className="py-3 px-4">Target Category</th>
-                    <th className="py-3 px-4">Rule Reason</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Exclude / Include</th>
+                    <th className="p-3.5">Filename &amp; Location</th>
+                    <th className="p-3.5">Target Subfolder</th>
+                    <th className="p-3.5">Classification Rule</th>
+                    <th className="p-3.5">Status</th>
+                    <th className="p-3.5 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#F1F5F9] text-sm">
+                <tbody className="divide-y divide-[#303030]">
                   {filteredMoves.map((m) => (
-                    <tr key={m.id} className="hover:bg-[#F8FAFC] transition-colors">
-                      <td className="py-3 px-4 max-w-sm">
-                        <div className="font-medium text-sm text-[#172033] truncate">{m.filename}</div>
-                        <div className="text-xs text-[#64748B] truncate mt-0.5" title={m.sourcePath}>{m.sourcePath}</div>
+                    <tr key={m.id} className="hover:bg-[#1b1b1b] transition-colors">
+                      <td className="p-3.5">
+                        <div className="font-semibold text-white font-mono text-sm truncate max-w-sm">{m.filename}</div>
+                        <div className="text-xs text-[#858585] font-mono truncate max-w-sm mt-0.5">{m.sourcePath}</div>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="p-3.5">
                         <select
                           value={m.category}
                           onChange={(e) => handleCategoryOverride(m.id, e.target.value)}
-                          className="bg-white border border-[#CBD5E1] px-2.5 py-1 text-xs text-[#172033] rounded-lg focus:border-[#5B5CE2] outline-none cursor-pointer"
+                          className="bg-[#080808] border border-[#303030] px-3 py-1.5 text-sm text-white rounded-[2px] focus:border-white outline-none cursor-pointer"
                         >
                           <option value="Documents">Documents</option>
                           <option value="Images">Images</option>
@@ -391,33 +383,33 @@ export const OrganizeScreen: React.FC<OrganizeScreenProps> = ({
                           <option value="Unsorted">Unsorted</option>
                         </select>
                       </td>
-                      <td className="py-3 px-4 text-xs text-[#64748B]">{m.ruleReason}</td>
-                      <td className="py-3 px-4">
+                      <td className="p-3.5 text-xs text-[#b8b8b8]">{m.ruleReason}</td>
+                      <td className="p-3.5">
                         {m.status === 'ready' && (
-                          <span className="text-[11px] font-semibold text-[#15803D] bg-[#DCFCE7] px-2.5 py-1 rounded-full">
+                          <span className="text-xs font-semibold text-white border border-[#454545] px-2.5 py-1 rounded-[2px] bg-[#242424]">
                             Ready
                           </span>
                         )}
                         {m.status === 'conflict' && (
-                          <span className="text-[11px] font-semibold text-[#B45309] bg-[#FEF3C7] px-2.5 py-1 rounded-full" title={m.conflictNote}>
+                          <span className="text-xs font-semibold text-[#e5ad55] border border-[#e5ad55]/40 px-2.5 py-1 rounded-[2px] bg-[#e5ad55]/10" title={m.conflictNote}>
                             Name Collision
                           </span>
                         )}
                         {m.status === 'skipped' && (
-                          <span className="text-[11px] font-semibold text-[#64748B] bg-[#F1F5F9] px-2.5 py-1 rounded-full">
+                          <span className="text-xs font-semibold text-[#858585] border border-[#303030] px-2.5 py-1 rounded-[2px] bg-[#080808]">
                             Excluded
                           </span>
                         )}
                         {m.status === 'moved' && (
-                          <span className="text-[11px] font-semibold text-[#15803D] bg-[#DCFCE7] px-2.5 py-1 rounded-full">
+                          <span className="text-xs font-semibold text-[#57B887] border border-[#57B887]/40 px-2.5 py-1 rounded-[2px] bg-[#57B887]/10">
                             Moved ✓
                           </span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="p-3.5 text-right">
                         <button
                           onClick={() => handleSkipToggle(m.id)}
-                          className="border border-[#CBD5E1] hover:bg-[#F8FAFC] px-3 py-1 text-xs text-[#334155] rounded-lg font-medium transition-colors cursor-pointer shadow-xs"
+                          className="border border-[#454545] hover:border-white px-3 py-1 text-xs text-white hover:bg-white hover:text-black rounded-[2px] font-semibold transition-colors cursor-pointer"
                         >
                           {m.status === 'skipped' ? 'Include' : 'Skip'}
                         </button>
@@ -426,7 +418,7 @@ export const OrganizeScreen: React.FC<OrganizeScreenProps> = ({
                   ))}
                   {filteredMoves.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="py-12 text-center text-[#64748B] text-sm">
+                      <td colSpan={5} className="p-8 text-center text-[#858585] text-sm">
                         No files matching current filters.
                       </td>
                     </tr>
@@ -434,39 +426,39 @@ export const OrganizeScreen: React.FC<OrganizeScreenProps> = ({
                 </tbody>
               </table>
             </div>
-          </section>
+          </div>
         </div>
       )}
 
-      {/* HISTORY & UNDO JOURNAL */}
-      <section className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs flex flex-col gap-4">
-        <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3 text-sm">
-          <div className="font-semibold text-[#172033]">
-            Organization Journal &amp; Reversible Moves
-          </div>
-          <span className="text-[#64748B] text-xs">
-            {history.length} Previous Operations Recorded
+      {/* History & Undo Section */}
+      <div className="border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col gap-4">
+        <div className="flex items-center justify-between border-b border-[#303030] pb-3 text-sm">
+          <span className="font-bold text-white text-base">
+            Smart Organize Execution &amp; Lossless Undo Journal
+          </span>
+          <span className="text-[#858585] text-xs font-mono">
+            {history.length} Operations Audited
           </span>
         </div>
 
         {history.length === 0 ? (
-          <div className="py-8 text-center text-xs text-[#64748B]">
-            No previous organize operations recorded.
+          <div className="p-8 text-center text-sm text-[#858585]">
+            No previous organize operations recorded yet.
           </div>
         ) : (
           <div className="flex flex-col gap-3">
             {history.map((op) => (
               <div
                 key={op.id}
-                className="border border-[#E2E8F0] bg-[#F8FAFC] p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                className="border border-[#303030] bg-[#080808] p-4 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
               >
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-[#172033] text-xs">{op.sourceFolder}</span>
-                    <span className="text-xs text-[#94A3B8]">• {op.createdAt}</span>
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center gap-2.5">
+                    <span className="font-semibold text-white font-mono text-sm">{op.sourceFolder}</span>
+                    <span className="text-xs text-[#858585] font-mono">&bull; {op.createdAt}</span>
                   </div>
-                  <div className="text-xs text-[#64748B]">
-                    Status: <strong className="text-[#172033] font-medium">{op.status}</strong> | Moved: <strong className="text-[#172033] font-medium">{op.totalMoved} files</strong> | Skipped: {op.totalSkipped}
+                  <div className="text-xs text-[#858585]">
+                    Status: <span className="text-white font-semibold">{op.status}</span> | Moved: <span className="text-white font-mono font-medium">{op.totalMoved}</span> | Skipped: <span className="text-white font-mono font-medium">{op.totalSkipped}</span>
                   </div>
                 </div>
 
@@ -475,14 +467,14 @@ export const OrganizeScreen: React.FC<OrganizeScreenProps> = ({
                     <button
                       onClick={() => handleUndo(op.id)}
                       disabled={undoingId === op.id}
-                      className="border border-[#5B5CE2] hover:bg-[#EEF2FF] text-[#5B5CE2] bg-white px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+                      className="border border-white hover:bg-neutral-200 text-black bg-white px-4 py-2 text-xs font-semibold rounded-[2px] transition-colors cursor-pointer flex items-center gap-2"
                     >
-                      <RotateCcw size={14} />
+                      <RotateCcw className="w-3.5 h-3.5" />
                       <span>{undoingId === op.id ? 'Restoring files...' : 'Lossless Undo Move'}</span>
                     </button>
                   )}
                   {op.undoStatus === 'undone' && (
-                    <span className="text-xs text-[#15803D] bg-[#DCFCE7] px-3 py-1 rounded-full font-semibold">
+                    <span className="text-xs text-[#57B887] border border-[#57B887]/40 px-3 py-1.5 bg-[#57B887]/10 rounded-[2px] font-semibold">
                       ✓ Undone Successfully
                     </span>
                   )}
@@ -491,7 +483,7 @@ export const OrganizeScreen: React.FC<OrganizeScreenProps> = ({
             ))}
           </div>
         )}
-      </section>
+      </div>
     </div>
   );
 };

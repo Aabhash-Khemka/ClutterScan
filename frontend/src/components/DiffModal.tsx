@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { PerceptualImage } from '../types';
-import { X, Sliders, Layers, BarChart2 } from 'lucide-react';
 
 interface DiffModalProps {
   referenceImage: PerceptualImage;
@@ -23,35 +22,35 @@ export const DiffModal: React.FC<DiffModalProps> = ({
   const [sliderPosition, setSliderPosition] = useState<number>(50);
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#0F172A]/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-      <div className="bg-white border border-[#E2E8F0] rounded-2xl shadow-xl max-w-4xl w-full p-6 space-y-5 text-sm text-[#172033]">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-[2px] flex items-center justify-center p-3 sm:p-6 overflow-y-auto font-sans">
+      <div className="bg-[#141414] border border-[#454545] rounded-[2px] shadow-2xl max-w-4xl w-full p-5 sm:p-7 space-y-5 text-sm text-[#f5f5f5]">
         {/* Modal Header */}
-        <div className="border-b border-[#E2E8F0] pb-4 flex items-start justify-between">
+        <div className="border-b border-[#303030] pb-4 flex items-start justify-between">
           <div>
-            <h2 className="text-lg font-bold text-[#172033] tracking-tight">
-              Visual Difference Inspection • {candidateImage.badge}
+            <h2 className="text-lg md:text-xl font-bold text-white tracking-tight">
+              Visual Difference Inspection &bull; {candidateImage.badge}
             </h2>
-            <div className="text-xs text-[#64748B] mt-0.5">
-              Reference: <strong className="text-[#172033]">{referenceImage.filename}</strong> ↔ Match: <strong className="text-[#172033]">{candidateImage.filename}</strong>
+            <div className="text-xs text-[#858585] mt-1 font-mono">
+              Reference: {referenceImage.filename} &harr; Match: {candidateImage.filename}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-[#64748B] hover:text-[#172033] hover:bg-[#F1F5F9] rounded-lg transition-colors cursor-pointer"
+            className="text-xs px-3 py-1.5 border border-[#303030] text-[#b8b8b8] hover:text-white hover:border-white rounded-[2px] transition-colors cursor-pointer"
           >
-            <X size={18} />
+            Close &times;
           </button>
         </div>
 
         {/* View Mode Switcher */}
-        <div className="flex flex-wrap gap-2 border-b border-[#E2E8F0] pb-4">
+        <div className="flex flex-wrap gap-2 border-b border-[#303030] pb-4">
           <button
             type="button"
             onClick={() => setViewMode('SIDE_BY_SIDE')}
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+            className={`px-4 py-2 font-medium text-xs rounded-[2px] border transition-colors cursor-pointer ${
               viewMode === 'SIDE_BY_SIDE'
-                ? 'bg-[#5B5CE2] text-white shadow-xs'
-                : 'bg-[#F1F5F9] text-[#64748B] hover:text-[#172033]'
+                ? 'bg-white text-black border-white font-semibold'
+                : 'bg-[#080808] text-[#b8b8b8] border-[#303030] hover:text-white'
             }`}
           >
             Side-by-Side Comparison
@@ -59,10 +58,10 @@ export const DiffModal: React.FC<DiffModalProps> = ({
           <button
             type="button"
             onClick={() => setViewMode('OVERLAY_DIFFERENCE')}
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+            className={`px-4 py-2 font-medium text-xs rounded-[2px] border transition-colors cursor-pointer ${
               viewMode === 'OVERLAY_DIFFERENCE'
-                ? 'bg-[#5B5CE2] text-white shadow-xs'
-                : 'bg-[#F1F5F9] text-[#64748B] hover:text-[#172033]'
+                ? 'bg-white text-black border-white font-semibold'
+                : 'bg-[#080808] text-[#b8b8b8] border-[#303030] hover:text-white'
             }`}
           >
             Blended Overlay Difference
@@ -70,59 +69,59 @@ export const DiffModal: React.FC<DiffModalProps> = ({
           <button
             type="button"
             onClick={() => setViewMode('HISTOGRAM')}
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+            className={`px-4 py-2 font-medium text-xs rounded-[2px] border transition-colors cursor-pointer ${
               viewMode === 'HISTOGRAM'
-                ? 'bg-[#5B5CE2] text-white shadow-xs'
-                : 'bg-[#F1F5F9] text-[#64748B] hover:text-[#172033]'
+                ? 'bg-white text-black border-white font-semibold'
+                : 'bg-[#080808] text-[#b8b8b8] border-[#303030] hover:text-white'
             }`}
           >
             pHash Metric Details
           </button>
         </div>
 
-        {/* Canvas Area */}
-        <div className="border border-[#E2E8F0] bg-[#F8FAFC] rounded-xl p-4 min-h-[300px] flex items-center justify-center">
+        {/* Visual Inspection Canvas Area */}
+        <div className="border border-[#303030] bg-[#080808] rounded-[2px] p-4 min-h-[300px] flex items-center justify-center">
           {viewMode === 'SIDE_BY_SIDE' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
               {/* Reference */}
-              <div className="bg-white border border-[#E2E8F0] rounded-xl p-3.5 space-y-2 shadow-xs">
-                <div className="flex justify-between items-center text-xs border-b border-[#E2E8F0] pb-2">
-                  <span className="font-semibold text-[#172033]">Reference Image • {referenceImage.dimensions}</span>
-                  <span className="text-[#15803D] bg-[#DCFCE7] px-2 py-0.5 rounded-full font-semibold">100% Base</span>
+              <div className="border border-[#303030] rounded-[2px] p-3 space-y-2 bg-[#141414]">
+                <div className="flex justify-between text-xs border-b border-[#303030] pb-2 text-[#858585]">
+                  <span className="font-semibold text-white">Reference Image &bull; {referenceImage.dimensions}</span>
+                  <span className="text-[#57B887] font-semibold">100% Base</span>
                 </div>
-                <div className="relative aspect-video bg-[#0F172A]/5 rounded-lg overflow-hidden flex items-center justify-center border border-[#E2E8F0]">
+                <div className="relative aspect-video bg-[#000000] rounded-[2px] overflow-hidden flex items-center justify-center border border-[#303030]">
                   <img
                     src={referenceImage.imgUrl}
                     alt={referenceImage.altText}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover filter contrast-110"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
                 </div>
-                <div className="text-xs text-[#64748B] font-mono truncate">
-                  pHash: {referenceImage.pHash}
+                <div className="text-xs text-[#858585] font-mono truncate">
+                  pHash: <span className="text-[#b8b8b8]">{referenceImage.pHash}</span>
                 </div>
               </div>
 
               {/* Candidate */}
-              <div className="bg-white border-2 border-[#5B5CE2]/40 rounded-xl p-3.5 space-y-2 shadow-xs">
-                <div className="flex justify-between items-center text-xs border-b border-[#E2E8F0] pb-2">
-                  <span className="font-semibold text-[#172033]">Match Candidate • {candidateImage.dimensions}</span>
-                  <span className="text-[#5B5CE2] bg-[#EEF2FF] px-2 py-0.5 rounded-full font-semibold">{candidateImage.similarity} match</span>
+              <div className="border border-white/60 rounded-[2px] p-3 space-y-2 bg-[#141414]">
+                <div className="flex justify-between text-xs border-b border-[#303030] pb-2 text-[#858585]">
+                  <span className="font-semibold text-white">Match Candidate &bull; {candidateImage.dimensions}</span>
+                  <span className="text-[#e5ad55] font-semibold">{candidateImage.similarity} match</span>
                 </div>
-                <div className="relative aspect-video bg-[#0F172A]/5 rounded-lg overflow-hidden flex items-center justify-center border border-[#E2E8F0]">
+                <div className="relative aspect-video bg-[#000000] rounded-[2px] overflow-hidden flex items-center justify-center border border-[#303030]">
                   <img
                     src={candidateImage.imgUrl}
                     alt={candidateImage.altText}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover filter contrast-110"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
                 </div>
-                <div className="text-xs text-[#64748B] font-mono truncate">
-                  pHash: {candidateImage.pHash}
+                <div className="text-xs text-[#858585] font-mono truncate">
+                  pHash: <span className="text-[#b8b8b8]">{candidateImage.pHash}</span>
                 </div>
               </div>
             </div>
@@ -130,9 +129,9 @@ export const DiffModal: React.FC<DiffModalProps> = ({
 
           {viewMode === 'OVERLAY_DIFFERENCE' && (
             <div className="w-full space-y-4">
-              <div className="text-xs text-[#64748B] flex justify-between items-center">
-                <span>Slide to blend between reference and candidate:</span>
-                <span className="font-semibold text-[#172033]">Blend: {sliderPosition}%</span>
+              <div className="text-xs text-[#858585] flex justify-between items-center">
+                <span>Slide to adjust image blending:</span>
+                <span className="text-white font-mono font-semibold">Opacity: {sliderPosition}%</span>
               </div>
               <input
                 type="range"
@@ -140,68 +139,83 @@ export const DiffModal: React.FC<DiffModalProps> = ({
                 max="100"
                 value={sliderPosition}
                 onChange={(e) => setSliderPosition(Number(e.target.value))}
-                className="w-full accent-[#5B5CE2] cursor-pointer h-2 bg-[#E2E8F0] rounded-lg"
+                className="w-full accent-white cursor-pointer h-2 bg-[#242424] rounded-lg"
               />
-              <div className="relative aspect-video max-h-[340px] mx-auto w-full bg-slate-900 border border-[#E2E8F0] rounded-xl overflow-hidden shadow-xs">
+              <div className="relative aspect-video max-h-[340px] mx-auto w-full bg-black border border-[#303030] rounded-[2px] overflow-hidden">
                 <img
                   src={referenceImage.imgUrl}
                   alt="Reference baseline"
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover filter contrast-125"
                   style={{ opacity: (100 - sliderPosition) / 100 }}
                 />
                 <img
                   src={candidateImage.imgUrl}
-                  alt="Candidate match"
-                  className="absolute inset-0 w-full h-full object-cover"
+                  alt="Candidate derivative"
+                  className="absolute inset-0 w-full h-full object-cover filter contrast-125 mix-blend-difference"
                   style={{ opacity: sliderPosition / 100 }}
                 />
+                <div className="absolute bottom-3 left-3 bg-black/80 px-2.5 py-1 border border-[#454545] rounded-[2px] text-xs font-mono text-white">
+                  Hamming Distance: {candidateImage.hammingDistance} of 64 bits
+                </div>
               </div>
             </div>
           )}
 
           {viewMode === 'HISTOGRAM' && (
-            <div className="w-full space-y-3 bg-white p-4 rounded-xl border border-[#E2E8F0]">
-              <div className="text-sm font-semibold text-[#172033] border-b border-[#E2E8F0] pb-2">
-                64-Bit Discrete Cosine Transform (DCT) Metrics
+            <div className="w-full space-y-4 text-xs font-mono">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 border border-[#303030] p-4 bg-[#141414] rounded-[2px]">
+                <div>
+                  <span className="text-[#858585] block">ALGORITHM:</span>
+                  <span className="text-white font-bold text-sm">64-BIT DCT</span>
+                </div>
+                <div>
+                  <span className="text-[#858585] block">HAMMING DELTA:</span>
+                  <span className="text-white font-bold text-sm">{candidateImage.hammingDistance} BITS</span>
+                </div>
+                <div>
+                  <span className="text-[#858585] block">SIMILARITY:</span>
+                  <span className="text-white font-bold text-sm">{candidateImage.similarity}</span>
+                </div>
+                <div>
+                  <span className="text-[#858585] block">SAFETY:</span>
+                  <span className="text-[#e5ad55] font-bold text-sm">MANUAL AUDIT</span>
+                </div>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                <div className="bg-[#F8FAFC] p-3 rounded-lg border border-[#E2E8F0]">
-                  <span className="text-[#64748B] block">Hamming Bit Distance:</span>
-                  <span className="font-bold text-[#172033] text-sm">{candidateImage.hammingDistance}</span>
-                </div>
-                <div className="bg-[#F8FAFC] p-3 rounded-lg border border-[#E2E8F0]">
-                  <span className="text-[#64748B] block">Calculated Similarity:</span>
-                  <span className="font-bold text-[#15803D] text-sm">{candidateImage.similarity}</span>
-                </div>
-                <div className="bg-[#F8FAFC] p-3 rounded-lg border border-[#E2E8F0]">
-                  <span className="text-[#64748B] block">Hamming Tolerance:</span>
-                  <span className="font-bold text-[#5B5CE2] text-sm">&le; 8 bits</span>
+              <div className="border border-[#303030] p-4 bg-[#141414] rounded-[2px] space-y-2 text-xs">
+                <div className="text-[#858585] font-semibold uppercase">Perceptual Hash Values</div>
+                <div className="text-[#b8b8b8] break-all font-mono">Reference: {referenceImage.pHash}</div>
+                <div className="text-white font-bold break-all font-mono">Candidate: {candidateImage.pHash}</div>
+                <div className="text-[#858585] pt-2 text-xs">
+                  Similarity metric is calculated as (64 &minus; bit differences) &divide; 64. It ranks visual closeness, not byte-for-byte identity.
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Modal Actions */}
-        <div className="border-t border-[#E2E8F0] pt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <div className="text-xs text-[#64748B]">
-            Manual review confirmation: check that image is not an intentionally cropped or variant photo.
+        {/* Modal Footer Controls */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t border-[#303030]">
+          <div className="text-xs text-[#858585]">
+            Visual similarity based on DCT perceptual hashes. No automated deletion.
           </div>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 sm:flex-initial px-4 py-2 border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#334155] rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+              className="px-4 py-2 border border-[#454545] text-[#b8b8b8] hover:text-white rounded-[2px] text-xs font-medium transition-colors cursor-pointer"
             >
               Close
             </button>
             <button
               type="button"
-              onClick={() => onStageCandidate(candidateImage.id)}
-              className={`flex-1 sm:flex-initial px-5 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-xs ${
+              onClick={() => {
+                onStageCandidate(candidateImage.id);
+                onClose();
+              }}
+              className={`px-5 py-2 rounded-[2px] text-xs font-semibold cursor-pointer transition-colors ${
                 isStaged
-                  ? 'bg-[#15803D] text-white'
-                  : 'bg-[#5B5CE2] hover:bg-[#4849C7] text-white'
+                  ? 'border border-[#57B887] bg-[#57B887] text-black'
+                  : 'border border-white bg-white text-black hover:bg-neutral-200'
               }`}
             >
               {isStaged ? 'Queued for Review' : 'Queue for Review'}

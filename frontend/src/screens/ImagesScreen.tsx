@@ -1,17 +1,6 @@
 import React, { useState } from 'react';
 import { NavTab, PerceptualCluster, PerceptualImage } from '../types';
 import { DiffModal } from '../components/DiffModal';
-import {
-  Image,
-  Layers,
-  ShieldCheck,
-  Download,
-  ArrowRight,
-  Eye,
-  Sliders,
-  CheckCircle,
-  AlertTriangle
-} from 'lucide-react';
 
 interface ImagesScreenProps {
   onNavigate: (tab: NavTab) => void;
@@ -41,7 +30,6 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
 
   const totalImageGroups = clusters.length;
   const totalSimilarImages = clusters.reduce((acc, c) => acc + (c.images ? c.images.length : c.matchCount), 0);
-
   const handleExportManifest = () => {
     if (!activeCluster) return;
     const manifest = {
@@ -60,89 +48,85 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
     a.click();
     URL.revokeObjectURL(url);
     if (onShowNotice) {
-      onShowNotice('Similar-image cluster exported as JSON.');
+      onShowNotice('Similar-image group exported as JSON.');
     }
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 text-[#172033] pb-12">
+    <div className="w-full bg-[#080808] text-[#f5f5f5] font-sans flex flex-col gap-6">
       {/* HEADER SECTION */}
-      <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-2">
-        <div className="flex flex-col gap-1">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#303030] pb-5">
+        <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#172033] tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
               Similar Images
             </h1>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EEF2FF] text-[#5B5CE2] border border-[#C7D2FE]">
-              Perceptual Hashing (pHash)
+            <span className="text-xs bg-white text-black font-semibold px-2 py-0.5 rounded-[2px] uppercase">
+              Perceptual Hash
             </span>
           </div>
-          <p className="text-sm md:text-base text-[#64748B]">
-            Identify visually similar photos, resized images, and camera burst sequences using DCT pHash and Hamming distance.
+          <p className="text-base text-[#b8b8b8] max-w-2xl">
+            Detect visually similar photos, resized copies, and photo burst sequences using perceptual hashing (pHash) and Hamming distance correlation.
           </p>
         </div>
-
-        <div className="flex items-center gap-2 bg-[#F0FDF4] border border-[#BBF7D0] px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#15803D]">
-          <ShieldCheck size={16} className="text-[#16A34A]" />
-          <span>Manual review required • Zero auto-deletes</span>
+        <div className="flex flex-col md:items-end gap-1 text-sm bg-[#141414] border border-[#303030] p-3 rounded-[2px]">
+          <div className="text-white font-mono font-medium">
+            DCT_PHASH_64BIT &bull; Threshold &le; 8 bits
+          </div>
+          <div className="text-xs text-[#858585]">
+            Images matching within 8 bits are clustered for side-by-side review.
+          </div>
         </div>
-      </section>
+      </div>
 
       {/* SUMMARY STATS CARDS */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
-          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Image Clusters</div>
-          <div className="text-2xl lg:text-3xl font-bold text-[#172033] mt-1.5">{totalImageGroups}</div>
-          <div className="text-xs text-[#94A3B8] mt-1">Detected visual groups</div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Image Groups</span>
+          <span className="text-2xl md:text-3xl font-bold font-mono text-white">{totalImageGroups}</span>
+          <span className="text-xs text-[#b8b8b8]">Detected visual clusters</span>
         </div>
-
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
-          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Similar Images</div>
-          <div className="text-2xl lg:text-3xl font-bold text-[#172033] mt-1.5">{totalSimilarImages}</div>
-          <div className="text-xs text-[#94A3B8] mt-1">Candidate photos matched</div>
+        <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Similar Images</span>
+          <span className="text-2xl md:text-3xl font-bold font-mono text-white">{totalSimilarImages}</span>
+          <span className="text-xs text-[#b8b8b8]">Total candidate matches</span>
         </div>
-
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
-          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Bit Distance Threshold</div>
-          <div className="text-2xl lg:text-3xl font-bold text-[#5B5CE2] mt-1.5">&le; 8 bits</div>
-          <div className="text-xs text-[#94A3B8] mt-1">Hamming distance metric</div>
+        <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Tolerance</span>
+          <span className="text-2xl md:text-3xl font-bold font-mono text-white">&le; 8 bits</span>
+          <span className="text-xs text-[#b8b8b8]">Hamming bit distance</span>
         </div>
-
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
-          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Safety Safeguard</div>
-          <div className="text-xl lg:text-2xl font-bold text-[#15803D] mt-1.5">Manual Review</div>
-          <div className="text-xs text-[#94A3B8] mt-1">No automatic deletions</div>
+        <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Safety Rule</span>
+          <span className="text-base md:text-lg font-bold text-[#e5ad55] pt-1">Manual Audit</span>
+          <span className="text-xs text-[#858585]">No automatic deletions</span>
         </div>
-      </section>
+      </div>
 
-      {/* CLUSTERS CONTENT */}
+      {/* GROUP SELECTOR TABS & CONTENT */}
       {clusters.length === 0 ? (
-        <div className="w-full bg-white border border-[#E2E8F0] rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-xs">
-          <div className="w-14 h-14 bg-[#EEF2FF] text-[#5B5CE2] rounded-2xl flex items-center justify-center mb-4">
-            <Image size={28} />
+        <div className="w-full min-h-[350px] border border-[#303030] bg-[#141414] p-10 rounded-[2px] flex flex-col items-center justify-center gap-4 text-center">
+          <div className="text-xl font-bold text-white tracking-tight">
+            No Similar-Image Groups Found
           </div>
-          <h2 className="text-xl font-bold text-[#172033] tracking-tight">
-            No Similar-Image Clusters Found
-          </h2>
-          <p className="text-sm text-[#64748B] max-w-md mt-1 mb-6">
-            No image clusters matched within the 8-bit perceptual hash difference threshold for this scan.
-          </p>
+          <div className="text-base text-[#b8b8b8] max-w-lg leading-relaxed">
+            No similar image groups were found for this scan. Similar-image detection may have been unchecked, or no supported images matched the 8-bit difference threshold.
+          </div>
           <button
             type="button"
-            onClick={() => onNavigate('home')}
-            className="px-5 py-2.5 bg-[#5B5CE2] hover:bg-[#4849C7] text-white text-sm font-semibold rounded-lg shadow-xs transition-colors cursor-pointer"
+            onClick={() => onNavigate('storage')}
+            className="mt-2 px-6 py-2.5 border border-white bg-white text-black font-semibold text-sm hover:bg-neutral-200 cursor-pointer rounded-[2px] transition-all"
           >
-            Configure & Run New Scan
+            Explore Storage Dashboard &rarr;
           </button>
         </div>
       ) : (
         <>
-          {/* Cluster Selection Tabs */}
-          <section className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#64748B] mr-2">
-                Clusters:
-              </span>
+          <div className="flex flex-col gap-2.5">
+            <div className="text-xs text-[#858585] uppercase tracking-wider font-semibold">
+              Select Image Cluster to Review:
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
               {clusters.map((cluster) => {
                 const isSelected = cluster.id === selectedClusterId;
                 return (
@@ -150,10 +134,10 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
                     key={cluster.id}
                     type="button"
                     onClick={() => setSelectedClusterId(cluster.id)}
-                    className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                    className={`px-4 py-2 text-sm font-medium border rounded-[2px] cursor-pointer transition-colors ${
                       isSelected
-                        ? 'bg-[#5B5CE2] text-white shadow-xs'
-                        : 'bg-[#F1F5F9] text-[#64748B] hover:text-[#172033]'
+                        ? 'bg-white text-black border-white font-semibold'
+                        : 'bg-[#141414] text-[#b8b8b8] border-[#303030] hover:border-white hover:text-white'
                     }`}
                   >
                     {cluster.label}
@@ -161,20 +145,10 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
                 );
               })}
             </div>
+          </div>
 
-            <button
-              type="button"
-              onClick={handleExportManifest}
-              disabled={!activeCluster}
-              className="px-3.5 py-1.5 border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#334155] text-xs font-semibold rounded-lg cursor-pointer flex items-center gap-1.5 transition-colors shadow-xs"
-            >
-              <Download size={14} />
-              <span>Export Cluster JSON</span>
-            </button>
-          </section>
-
-          {/* Image Cards Grid */}
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* FORENSIC COMPARISON IMAGE GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {activeCluster?.images?.map((img) => {
               const isStaged = stagedCandidateIds.includes(img.id);
               const isRef = img.isReference;
@@ -182,97 +156,115 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
               return (
                 <div
                   key={img.id}
-                  className={`bg-white border rounded-xl overflow-hidden shadow-xs flex flex-col transition-all ${
-                    isRef ? 'border-[#5B5CE2] ring-1 ring-[#5B5CE2]' : 'border-[#E2E8F0]'
+                  className={`flex flex-col border rounded-[2px] bg-[#141414] overflow-hidden ${
+                    isRef ? 'border-white' : 'border-[#303030]'
                   }`}
                 >
-                  {/* Card Header */}
-                  <div className="px-4 py-2.5 bg-[#F8FAFC] border-b border-[#E2E8F0] flex items-center justify-between text-xs">
-                    <span className="font-semibold text-[#172033]">{img.sectorLabel}</span>
+                  {/* FRAME HEADER BAR */}
+                  <div className="h-10 bg-[#1b1b1b] px-3.5 flex items-center justify-between border-b border-[#303030] text-sm">
+                    <span className={`font-semibold ${isRef ? 'text-white' : 'text-[#b8b8b8]'}`}>
+                      {img.sectorLabel}
+                    </span>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                      className={`px-2 py-0.5 text-xs font-semibold uppercase rounded-[2px] border ${
                         isRef
-                          ? 'bg-[#DCFCE7] text-[#15803D]'
-                          : 'bg-[#EEF2FF] text-[#5B5CE2]'
+                          ? 'bg-white text-black border-white'
+                          : 'bg-[#242424] text-[#f5f5f5] border-[#454545]'
                       }`}
                     >
                       {img.badge}
                     </span>
                   </div>
 
-                  {/* Image Canvas */}
-                  <div className="relative aspect-video bg-slate-900 overflow-hidden flex items-center justify-center">
+                  {/* SENSOR FRAME PREVIEW CONTAINER */}
+                  <div className="relative w-full aspect-video bg-black border-b border-[#303030] flex flex-col justify-between p-3 overflow-hidden group">
                     <img
-                      className="w-full h-full object-cover"
+                      className={`absolute inset-0 w-full h-full object-cover filter contrast-110 ${
+                        isRef ? 'opacity-80' : 'opacity-65'
+                      }`}
                       src={img.imgUrl}
                       alt={img.altText}
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                       }}
                     />
-                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-xs text-white text-[10px] px-2 py-0.5 rounded-md font-mono">
-                      {img.pHash}
+
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
+
+                    <div className="relative z-10 flex justify-between text-xs text-white font-mono font-semibold">
+                      <span>{img.overlayType}</span>
+                      <span className="text-[#b8b8b8]">{img.pHash}</span>
+                    </div>
+
+                    <div className="relative z-10 flex justify-between text-xs text-[#b8b8b8] font-mono border-t border-[#303030]/60 pt-1">
+                      <span>Check: OK</span>
+                      <span className="text-white font-semibold">
+                        {isRef ? 'Reference Image' : 'Match Candidate'}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Card Metadata */}
-                  <div className="p-4 flex flex-col gap-2.5 text-xs flex-1">
-                    <div>
-                      <span className="text-[11px] text-[#64748B] uppercase font-semibold">Filename</span>
-                      <div className="font-semibold text-sm text-[#172033] truncate mt-0.5" title={img.filename}>
+                  {/* METADATA BLOCK */}
+                  <div className="p-4 flex flex-col gap-2.5 text-sm">
+                    <div className="flex flex-col border-b border-[#303030] pb-2">
+                      <span className="text-xs text-[#858585] uppercase font-semibold">Filename</span>
+                      <span className="font-semibold text-white text-base truncate font-mono mt-0.5" title={img.filename}>
                         {img.filename}
-                      </div>
+                      </span>
                     </div>
 
-                    <div className="flex justify-between border-b border-[#F1F5F9] pb-1.5">
-                      <span className="text-[#64748B]">Resolution</span>
-                      <span className="font-medium text-[#172033]">{img.dimensions}</span>
+                    <div className="flex justify-between border-b border-[#303030] pb-1.5 text-sm">
+                      <span className="text-[#858585]">Dimensions</span>
+                      <span className="text-white font-mono font-medium">{img.dimensions}</span>
                     </div>
 
-                    <div className="flex justify-between border-b border-[#F1F5F9] pb-1.5">
-                      <span className="text-[#64748B]">Hamming Dist.</span>
-                      <span className="font-medium text-[#172033]">{img.hammingDistance}</span>
+                    <div className="flex justify-between border-b border-[#303030] pb-1.5 text-sm">
+                      <span className="text-[#858585]">Hamming Distance</span>
+                      <span className="text-white font-mono font-medium">{img.hammingDistance}</span>
                     </div>
 
-                    <div className="flex justify-between border-b border-[#F1F5F9] pb-1.5">
-                      <span className="text-[#64748B]">Visual Match</span>
-                      <span className="font-semibold text-[#5B5CE2]">{img.similarity}</span>
+                    <div className="flex justify-between border-b border-[#303030] pb-1.5 text-sm">
+                      <span className="text-[#858585]">Visual Similarity</span>
+                      <span className="text-white font-semibold">{img.similarity}</span>
                     </div>
 
-                    <div className="pt-1">
-                      <span className="text-[11px] text-[#64748B] uppercase font-semibold">Location</span>
-                      <div className="text-[11px] text-[#64748B] truncate mt-0.5" title={img.path}>
+                    <div className="flex flex-col pt-1">
+                      <span className="text-xs text-[#858585] uppercase font-semibold">Folder Path</span>
+                      <span
+                        className="text-xs text-[#b8b8b8] font-mono truncate mt-0.5"
+                        title={img.path}
+                      >
                         {img.path}
-                      </div>
+                      </span>
                     </div>
 
-                    {/* Actions */}
+                    {/* Action Buttons */}
                     <div className="pt-3 mt-auto">
                       {isRef ? (
                         <button
                           type="button"
                           onClick={() => setActiveDiffImage(img)}
-                          className="w-full py-2 border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#334155] rounded-lg text-xs font-semibold cursor-pointer transition-colors shadow-xs"
+                          className="w-full py-2 border border-[#454545] text-sm text-[#b8b8b8] hover:text-white hover:bg-[#1b1b1b] hover:border-white rounded-[2px] cursor-pointer transition-colors font-medium"
                         >
-                          Inspect Reference
+                          Inspect Reference Details
                         </button>
                       ) : (
                         <div className="flex gap-2">
                           <button
                             type="button"
                             onClick={() => onStageImageCandidate(img.id)}
-                            className={`flex-1 py-2 text-xs rounded-lg font-semibold cursor-pointer transition-colors shadow-xs ${
+                            className={`flex-1 py-2 text-sm rounded-[2px] cursor-pointer transition-colors font-semibold ${
                               isStaged
-                                ? 'bg-[#15803D] text-white'
-                                : 'bg-[#5B5CE2] hover:bg-[#4849C7] text-white'
+                                ? 'bg-[#57B887] text-black border border-[#57B887]'
+                                : 'border border-white bg-white text-black hover:bg-neutral-200'
                             }`}
                           >
-                            {isStaged ? 'Queued' : 'Queue Review'}
+                            {isStaged ? 'Queued for Review' : 'Queue for Review'}
                           </button>
                           <button
                             type="button"
                             onClick={() => setActiveDiffImage(img)}
-                            className="px-3 py-2 border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#334155] rounded-lg text-xs font-semibold cursor-pointer transition-colors shadow-xs"
+                            className="px-3.5 py-2 border border-[#454545] text-sm text-[#b8b8b8] hover:text-white hover:border-white rounded-[2px] cursor-pointer transition-colors font-medium"
                             title="Side-by-side comparison"
                           >
                             Diff
@@ -284,30 +276,44 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
                 </div>
               );
             })}
-          </section>
+          </div>
         </>
       )}
 
-      {/* BOTTOM ACTION BAR */}
-      <section className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <div className="text-sm font-bold text-[#172033]">
-            Perceptual Image Review Queue
-          </div>
-          <div className="text-xs text-[#64748B] mt-0.5">
-            Queued images are transferred to the Cleanup Queue for final user confirmation before deletion.
+      {/* SAFETY NOTICE AND EXPORT BAR */}
+      <div className="w-full border border-[#303030] p-5 bg-[#141414] rounded-[2px] flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-white text-base">
+            Safety Precaution:
+          </span>
+          <span className="text-xs bg-[#e5ad55]/20 text-[#e5ad55] border border-[#e5ad55]/30 px-2 py-0.5 rounded-[2px] font-semibold">
+            Zero Auto-Delete
+          </span>
+        </div>
+        <p className="text-sm text-[#b8b8b8] leading-relaxed">
+          Perceptual similarity (pHash) does not prove identical content. Burst photos, cropped shots, or color-graded versions are often intentionally saved. Automated deletion is strictly prevented; manual review is required before taking any action.
+        </p>
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-[#303030] text-sm text-[#858585]">
+          <span>Review matched candidates carefully before queueing for cleanup.</span>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={handleExportManifest}
+              disabled={!activeCluster}
+              className="text-white font-medium hover:underline cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Export Cluster (JSON)
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('cleanup')}
+              className="text-black font-semibold bg-white border border-white px-4 py-2 rounded-[2px] hover:bg-neutral-200 cursor-pointer transition-colors text-sm"
+            >
+              Go to Cleanup Queue &rarr;
+            </button>
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => onNavigate('cleanup')}
-          className="px-5 py-2.5 bg-[#5B5CE2] hover:bg-[#4849C7] text-white text-xs font-semibold rounded-lg shadow-xs transition-colors cursor-pointer flex items-center gap-2"
-        >
-          <span>Open Cleanup Review</span>
-          <ArrowRight size={14} />
-        </button>
-      </section>
+      </div>
 
       {/* DIFF MODAL */}
       {activeDiffImage && referenceImage && (

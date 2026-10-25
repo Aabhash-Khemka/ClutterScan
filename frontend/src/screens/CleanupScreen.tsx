@@ -2,18 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { NavTab, CleanupCandidateRecord } from '../types';
 import { CleanupModal } from '../components/CleanupModal';
 import type { CleanupExecutionSummary } from '../types';
-import {
-  Trash2,
-  ShieldCheck,
-  Download,
-  ArrowRight,
-  Search,
-  Filter,
-  CheckCircle2,
-  AlertTriangle,
-  FolderOpen,
-  Info
-} from 'lucide-react';
 
 type CandidateFilter = 'ALL' | 'DUPLICATES' | 'TEMPORARY' | 'OLDER' | 'LARGE';
 
@@ -32,14 +20,14 @@ const filterMatches = (candidate: CleanupCandidateRecord, filter: CandidateFilte
 };
 
 const readableReason = (reason: string) => {
-  if (reason === 'EXACT_DUPLICATE') return 'Identical duplicate found elsewhere';
-  if (reason === 'LOWER_RESOLUTION') return 'Lower resolution version of another image';
-  if (reason === 'TEMPORARY_ARTIFACT') return 'Temporary build artifact or cache file';
-  if (reason === 'HIGH_STORAGE_IMPACT') return 'Large storage impact (>= 100 MB)';
-  if (reason === 'MODERATE_STORAGE_IMPACT') return 'Moderate storage impact (>= 10 MB)';
-  if (reason === 'RECENTLY_MODIFIED') return 'Recently modified file';
+  if (reason === 'EXACT_DUPLICATE') return 'An identical file was found elsewhere.';
+  if (reason === 'LOWER_RESOLUTION') return 'Another exact image copy has a higher resolution.';
+  if (reason === 'TEMPORARY_ARTIFACT') return 'The file matches a temporary-file rule.';
+  if (reason === 'HIGH_STORAGE_IMPACT') return 'The file is at least 100 MB.';
+  if (reason === 'MODERATE_STORAGE_IMPACT') return 'The file is at least 10 MB.';
+  if (reason === 'RECENTLY_MODIFIED') return 'Recent modification activity lowered its priority.';
   const ageMatch = reason.match(/^UNRESOLVED_INODE_AGE\s*>\s*(\d+)D$/i);
-  if (ageMatch) return `Untouched for ${ageMatch[1]}+ days`;
+  if (ageMatch) return `The file's recorded modification time is ${ageMatch[1]} days old.`;
   return reason.replaceAll('_', ' ').toLowerCase();
 };
 
@@ -118,6 +106,7 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
     const report = {
       reportType: 'ClutterScan cleanup review',
       exportedAt: new Date().toISOString(),
+      explanation: 'Impact scores rank review priority; they are not confidence or accuracy estimates. Paths and evidence come from this scan.',
       candidateCount: candidates.length,
       candidates: candidates.map((candidate) => ({
         path: candidate.targetPath,
@@ -140,163 +129,164 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 text-[#172033] pb-12">
+    <div className="w-full bg-[#080808] text-[#f5f5f5] font-sans flex flex-col gap-6">
       {/* HEADER SECTION */}
-      <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-2">
-        <div className="flex flex-col gap-1">
+      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-[#303030] pb-5 gap-4">
+        <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#172033] tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
               Cleanup Queue
             </h1>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EEF2FF] text-[#5B5CE2] border border-[#C7D2FE]">
-              Safe Staging
+            <span className="text-xs bg-white text-black font-semibold px-2 py-0.5 rounded-[2px] uppercase">
+              Operator Approval Required
             </span>
           </div>
-          <p className="text-sm md:text-base text-[#64748B]">
-            Review files staged for safe relocation. No files will be moved without your explicit confirmation.
+          <p className="text-base text-[#b8b8b8] max-w-2xl">
+            Review files flagged for safe relocation to the Recycle Bin or local recovery vault. No files will be moved without your explicit confirmation.
           </p>
         </div>
-
-        <div className="flex items-center gap-2 bg-[#F0FDF4] border border-[#BBF7D0] px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#15803D]">
-          <ShieldCheck size={16} className="text-[#16A34A]" />
-          <span>Zero Permanent Loss • 1-Click Recovery Vault</span>
+        <div className="flex flex-col md:items-end gap-1 text-sm bg-[#141414] border border-[#303030] p-3 rounded-[2px]">
+          <div className="text-white font-medium">
+            Safe Staging &bull; Zero Direct Deletion
+          </div>
+          <div className="text-xs text-[#858585]">
+            Moved files remain restorable via System Trash or History vault.
+          </div>
         </div>
-      </section>
+      </div>
 
-      {/* METRICS SUMMARY CARDS */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
-          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Suggested Items</div>
-          <div className="text-2xl lg:text-3xl font-bold text-[#172033] mt-1.5">{candidates.length}</div>
-          <div className="text-xs text-[#94A3B8] mt-1">Total candidate items</div>
+      {/* METRICS SUMMARY BAR */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Recommended Items</span>
+          <span className="text-2xl md:text-3xl font-bold font-mono text-white">{candidates.length}</span>
+          <span className="text-xs text-[#b8b8b8]">Detected cleanup targets</span>
         </div>
-
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
-          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Selected For Move</div>
-          <div className="text-2xl lg:text-3xl font-bold text-[#5B5CE2] mt-1.5">{selectedCandidates.length}</div>
-          <div className="text-xs text-[#94A3B8] mt-1">Staged by operator</div>
+        <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Selected For Move</span>
+          <span className="text-2xl md:text-3xl font-bold font-mono text-white">{selectedCandidates.length}</span>
+          <span className="text-xs text-[#b8b8b8]">Marked for relocation</span>
         </div>
-
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
-          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Reclaimable Storage</div>
-          <div className="text-2xl lg:text-3xl font-bold text-[#15803D] mt-1.5">{formattedSelectedSize}</div>
-          <div className="text-xs text-[#94A3B8] mt-1">Storage space to recover</div>
+        <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Reclaimable Storage</span>
+          <span className="text-2xl md:text-3xl font-bold font-mono text-white">{formattedSelectedSize}</span>
+          <span className="text-xs text-[#b8b8b8]">Storage space to free</span>
         </div>
-
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
-          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Destination</div>
-          <div className="text-xl lg:text-2xl font-bold text-[#172033] mt-1.5">Recycle Bin / Vault</div>
-          <div className="text-xs text-[#94A3B8] mt-1">Lossless restore guaranteed</div>
+        <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Destination</span>
+          <span className="text-base md:text-lg font-bold text-white pt-1">Recycle Bin / Vault</span>
+          <span className="text-xs text-[#858585]">Protected restore paths</span>
         </div>
-      </section>
+      </div>
 
-      {/* SEARCH & FILTERS BAR */}
-      <section className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-xs flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative min-w-[240px] flex-1 sm:flex-initial">
-            <Search size={15} className="absolute left-3.5 top-3 text-[#94A3B8]" />
+      {/* SEARCH AND FILTER TOOLBAR */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-[#303030] pb-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <label className="sr-only" htmlFor="candidate-search">Search cleanup suggestions</label>
             <input
+              id="candidate-search"
               type="search"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search file paths or reasons..."
-              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] pl-10 pr-3.5 py-2 text-xs text-[#172033] placeholder:text-[#94A3B8] rounded-lg focus:border-[#5B5CE2] focus:bg-white outline-none"
+              className="min-w-0 sm:w-80 bg-[#141414] border border-[#303030] px-3.5 py-2.5 text-sm text-white placeholder:text-[#858585] rounded-[2px] focus:border-white focus:outline-none font-mono"
             />
+            <label className="sr-only" htmlFor="candidate-filter">Filter suggestions</label>
+            <select
+              id="candidate-filter"
+              value={candidateFilter}
+              onChange={(event) => setCandidateFilter(event.target.value as CandidateFilter)}
+              className="bg-[#141414] border border-[#303030] px-3.5 py-2.5 text-sm text-white rounded-[2px] focus:border-white focus:outline-none"
+            >
+              <option value="ALL">All Categories</option>
+              <option value="DUPLICATES">Exact Duplicates</option>
+              <option value="TEMPORARY">Temporary / Cache Files</option>
+              <option value="OLDER">Older Inactive Files</option>
+              <option value="LARGE">Large Files (&gt; 10 MB)</option>
+            </select>
           </div>
-
-          <select
-            value={candidateFilter}
-            onChange={(e) => setCandidateFilter(e.target.value as CandidateFilter)}
-            className="bg-[#F8FAFC] border border-[#E2E8F0] px-3 py-2 text-xs text-[#172033] rounded-lg focus:border-[#5B5CE2] outline-none cursor-pointer"
-          >
-            <option value="ALL">All Categories</option>
-            <option value="DUPLICATES">Exact Duplicates</option>
-            <option value="TEMPORARY">Temporary / Cache Files</option>
-            <option value="OLDER">Older Inactive Files</option>
-            <option value="LARGE">Large Files (&gt; 10 MB)</option>
-          </select>
-        </div>
-
-        <div className="flex items-center gap-3 text-xs">
-          <span className="text-[#64748B]">{filteredCandidates.length} of {candidates.length} items</span>
-          <button
-            type="button"
-            onClick={() => onSelectCandidates(filteredCandidates.map((c) => c.id), true)}
-            className="text-[#5B5CE2] font-semibold hover:underline cursor-pointer"
-          >
-            Select All
-          </button>
-          <span className="text-[#CBD5E1]">•</span>
-          <button
-            type="button"
-            onClick={() => onSelectCandidates(filteredCandidates.map((c) => c.id), false)}
-            className="text-[#64748B] hover:text-[#172033] cursor-pointer"
-          >
-            Clear All
-          </button>
-          <span className="text-[#CBD5E1]">•</span>
-          <button
-            type="button"
-            onClick={handleExportReport}
-            disabled={candidates.length === 0}
-            className="border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#334155] px-3 py-1.5 rounded-lg font-medium cursor-pointer transition-colors shadow-xs"
-          >
-            Export JSON
-          </button>
-        </div>
-      </section>
-
-      {/* CANDIDATES GRID */}
-      {candidates.length === 0 ? (
-        <div className="w-full bg-white border border-[#E2E8F0] rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-xs">
-          <div className="w-14 h-14 bg-[#EEF2FF] text-[#5B5CE2] rounded-2xl flex items-center justify-center mb-4">
-            <Trash2 size={28} />
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <span className="text-[#858585] font-mono">{filteredCandidates.length} of {candidates.length} items</span>
+            <button
+              type="button"
+              onClick={() => onSelectCandidates(filteredCandidates.map((candidate) => candidate.id), true)}
+              className="text-white font-semibold hover:underline cursor-pointer"
+            >
+              Select All
+            </button>
+            <span className="text-[#454545]">&bull;</span>
+            <button
+              type="button"
+              onClick={() => onSelectCandidates(filteredCandidates.map((candidate) => candidate.id), false)}
+              className="text-[#858585] hover:text-white cursor-pointer"
+            >
+              Clear All
+            </button>
+            <span className="text-[#454545]">&bull;</span>
+            <button
+              type="button"
+              onClick={handleExportReport}
+              disabled={candidates.length === 0}
+              className="border border-[#303030] bg-[#141414] px-3.5 py-2 text-sm text-white hover:border-white rounded-[2px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              title="Export cleanup list as a JSON report"
+            >
+              Export Report
+            </button>
           </div>
-          <h2 className="text-xl font-bold text-[#172033] tracking-tight">
-            Cleanup Queue is Empty
-          </h2>
-          <p className="text-sm text-[#64748B] max-w-md mt-1 mb-6">
-            No items are queued for review. You can stage duplicates, old files, or temporary artifacts from their respective pages.
-          </p>
-          <button
-            type="button"
-            onClick={() => onNavigate('duplicates')}
-            className="px-5 py-2.5 bg-[#5B5CE2] hover:bg-[#4849C7] text-white text-sm font-semibold rounded-lg shadow-xs transition-colors cursor-pointer"
-          >
-            Review Duplicate Files
-          </button>
         </div>
-      ) : (
+
+        {candidates.length === 0 ? (
+          <div className="w-full min-h-[300px] border border-[#303030] bg-[#141414] p-10 rounded-[2px] flex flex-col items-center justify-center gap-3 text-center">
+            <div className="text-xl font-bold text-white tracking-tight">
+              No Cleanup Suggestions Available
+            </div>
+            <div className="text-base text-[#b8b8b8] max-w-lg leading-relaxed">
+              No files are currently queued for cleanup. You can stage duplicates, large files, or temporary artifacts from the Storage, Duplicates, or Files tabs.
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate('storage')}
+              className="mt-2 px-6 py-2.5 border border-white bg-white text-black font-semibold text-sm hover:bg-neutral-200 cursor-pointer rounded-[2px] transition-all"
+            >
+              Return to Storage Dashboard &rarr;
+            </button>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filteredCandidates.map((card) => {
             const isSelected = card.isSelected;
-
             return (
               <article
                 key={card.id}
-                className={`bg-white border rounded-xl p-5 shadow-xs flex flex-col justify-between gap-4 transition-all ${
-                  isSelected ? 'border-[#5B5CE2] ring-1 ring-[#5B5CE2]' : 'border-[#E2E8F0]'
+                className={`border rounded-[2px] p-5 bg-[#141414] flex flex-col justify-between gap-4 transition-colors ${
+                  isSelected ? 'border-white' : 'border-[#303030] hover:border-[#454545]'
                 }`}
               >
                 <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-3">
-                    <span className="font-semibold text-xs text-[#64748B] uppercase tracking-wider">
+                  <div className="flex items-center justify-between border-b border-[#303030] pb-2.5">
+                    <span
+                      className={`font-semibold uppercase text-xs tracking-wider ${
+                        isSelected ? 'text-white' : 'text-[#b8b8b8]'
+                      }`}
+                    >
                       {card.rank === 'MANUALLY_SELECTED' ? 'Manually Queued' : card.rank}
                     </span>
-
                     <div className="flex items-center gap-3">
                       {typeof card.impactScore === 'number' && (
-                        <span className="text-xs font-semibold text-[#5B5CE2]">
+                        <span className="text-xs font-mono text-[#b8b8b8]">
                           Priority {card.impactScore}/100
                         </span>
                       )}
                       <button
                         type="button"
+                        aria-pressed={isSelected}
+                        aria-label={`${isSelected ? 'Remove' : 'Add'} ${card.targetPath} ${isSelected ? 'from' : 'to'} cleanup review`}
                         onClick={() => onToggleCandidate(card.id)}
-                        className={`px-3 py-1 text-xs font-semibold rounded-lg cursor-pointer transition-colors shadow-xs ${
+                        className={`min-h-9 border px-4 text-xs font-semibold uppercase rounded-[2px] cursor-pointer transition-colors ${
                           isSelected
-                            ? 'bg-[#5B5CE2] text-white'
-                            : 'border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#334155]'
+                            ? 'border-white bg-white text-black'
+                            : 'border-[#454545] text-white hover:border-white'
                         }`}
                       >
                         {isSelected ? 'Selected' : 'Select'}
@@ -304,20 +294,24 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs text-[#64748B] font-medium">Target File</span>
-                    <div className="text-xs break-all bg-[#F8FAFC] p-2.5 border border-[#E2E8F0] rounded-lg text-[#172033]">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-xs text-[#858585] uppercase font-semibold">Target File</div>
+                    <div
+                      className={`text-sm break-all bg-[#080808] p-3 border rounded-[2px] font-mono ${
+                        isSelected ? 'border-white/50 text-white font-medium' : 'border-[#303030] text-[#b8b8b8]'
+                      }`}
+                    >
                       {card.targetPath}
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-xs text-[#64748B] font-medium">Reasons &amp; Evidence</span>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="text-xs text-[#858585] uppercase font-semibold">Evidence &amp; Reasons</div>
+                    <div className="flex flex-wrap gap-2">
                       {card.reasons.map((r, i) => (
                         <span
                           key={i}
-                          className="bg-[#F1F5F9] border border-[#E2E8F0] px-2.5 py-1 text-xs text-[#475569] rounded-md font-medium"
+                          className="border border-[#454545] bg-[#1b1b1b] px-2.5 py-1 text-xs text-[#f5f5f5] rounded-[2px]"
                         >
                           {readableReason(r)}
                         </span>
@@ -325,76 +319,125 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
                     </div>
 
                     {typeof card.impactScore === 'number' && (
-                      <div className="space-y-1 pt-1.5">
-                        <div className="flex justify-between text-[11px] text-[#64748B]">
-                          <span>Priority Ranking</span>
-                          <span className="font-semibold text-[#172033]">{card.impactScore} / 100</span>
+                      <div className="space-y-1.5 pt-1" aria-label={`Impact priority score ${card.impactScore} out of 100`}>
+                        <div className="flex justify-between text-xs text-[#858585]">
+                          <span>Review Priority Ranking</span>
+                          <span className="font-mono text-white font-medium">{card.impactScore} / 100</span>
                         </div>
-                        <div className="h-1.5 bg-[#E2E8F0] rounded-full overflow-hidden">
+                        <div
+                          role="meter"
+                          aria-label="Review priority"
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-valuenow={card.impactScore}
+                          className="h-2 border border-[#303030] bg-[#080808] rounded-[1px] overflow-hidden"
+                        >
                           <div
-                            className="h-full bg-[#5B5CE2] rounded-full transition-all"
+                            className="h-full bg-white transition-[width] duration-200"
                             style={{ width: `${Math.max(0, Math.min(100, card.impactScore))}%` }}
                           />
                         </div>
                       </div>
                     )}
+
+                    <details className="border-t border-[#303030] pt-3">
+                      <summary className="cursor-pointer text-xs font-semibold text-white hover:text-[#b8b8b8]">
+                        Why was this file suggested?
+                      </summary>
+                      <div className="mt-3 space-y-3 text-xs">
+                        {card.scoreBreakdown && card.scoreBreakdown.length > 0 ? (
+                          <>
+                            <div className="space-y-2">
+                              {card.scoreBreakdown.map((factor) => (
+                                <div key={factor.key} className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-1">
+                                  <span className="text-white font-medium">{factor.label}</span>
+                                  <span className={`font-mono ${factor.points < 0 ? 'text-[#e5ad55]' : 'text-white'}`}>
+                                    {factor.points > 0 ? '+' : ''}{factor.points}
+                                  </span>
+                                  <span className="text-[#858585]">{factor.explanation}</span>
+                                </div>
+                              ))}
+                            </div>
+                            <p className="border-t border-[#303030] pt-2 text-[#858585]">
+                              Files with priority &ge; {card.selectionThreshold ?? 60} are pre-selected for review. Always verify you don't need the file before moving.
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-[#858585]">
+                            {card.rank === 'MANUALLY_SELECTED'
+                              ? 'You selected this file manually from another screen.'
+                              : 'Standard priority score applied.'}
+                          </p>
+                        )}
+                      </div>
+                    </details>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-3 border-t border-[#F1F5F9] text-xs">
-                  <div className="text-[#64748B]">
-                    Size: <strong className="text-[#172033] font-semibold ml-1">{card.recoverableFormatted}</strong>
+                <div
+                  className={`flex items-center justify-between pt-3 border-t text-sm ${
+                    isSelected ? 'border-[#454545]' : 'border-[#303030]'
+                  }`}
+                >
+                  <div className="text-xs text-[#858585]">
+                    Size: <span className="text-white font-mono font-bold text-sm ml-1">{card.recoverableFormatted}</span>
                   </div>
-                  <span
-                    className={`font-semibold ${
-                      isSelected ? 'text-[#15803D]' : 'text-[#94A3B8]'
+                  <div
+                    className={`text-xs font-semibold uppercase ${
+                      isSelected ? 'text-[#57B887]' : 'text-[#858585]'
                     }`}
                   >
-                    {isSelected ? '✓ Marked for Safe Cleanup' : 'Unselected'}
-                  </span>
+                    {isSelected ? '✓ Marked for Cleanup' : 'Unselected'}
+                  </div>
                 </div>
               </article>
             );
           })}
+          {filteredCandidates.length === 0 && (
+            <div className="border border-[#303030] bg-[#141414] p-8 text-center text-sm text-[#858585] rounded-[2px]" role="status">
+              No suggestions match this search or filter. Try clearing the search or choosing “All Categories.”
+            </div>
+          )}
         </div>
-      )}
+        )}
+      </div>
 
-      {/* CONFIRMATION ACTION BOX */}
-      <section className="bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-xs flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E2E8F0] pb-3 gap-2">
-          <div>
-            <h3 className="text-base font-bold text-[#172033]">
-              Execute Safe Cleanup Migration
-            </h3>
-            <p className="text-xs text-[#64748B] mt-0.5">
-              Files remain intact on disk until you authorize the relocation.
-            </p>
+      {/* ACTION / AUTHORIZATION BLOCK */}
+      <div className="border border-[#303030] p-6 bg-[#141414] rounded-[2px] flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#303030] pb-3 gap-2">
+          <div className="text-base font-bold text-white tracking-tight">
+            Cleanup Execution Confirmation
           </div>
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] self-start sm:self-auto">
-            Lossless Recovery Vault
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          <div className="bg-[#F8FAFC] p-4 rounded-xl border border-[#E2E8F0]">
-            <span className="text-[#64748B] block font-medium mb-1">Selected For Move:</span>
-            <span className="text-lg font-bold text-[#172033]">
-              {selectedCandidates.length} Files • {formattedSelectedSize}
-            </span>
-          </div>
-
-          <div className="bg-[#F8FAFC] p-4 rounded-xl border border-[#E2E8F0]">
-            <span className="text-[#64748B] block font-medium mb-1">Safety Recovery Route:</span>
-            <span className="text-xs font-semibold text-[#172033] block">
-              Windows Recycle Bin (or ClutterScan local recovery vault)
-            </span>
-            <span className="text-[#64748B] mt-0.5 block">
-              Can be restored anytime in 1 click from the Scan History tab.
-            </span>
+          <div className="text-xs text-white border border-white px-2.5 py-1 rounded-[2px] font-semibold uppercase">
+            Explicit User Authorization Required
           </div>
         </div>
 
-        <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
+          <div className="flex flex-col gap-1 border-l-2 border-white pl-4">
+            <span className="text-xs text-[#858585] uppercase font-semibold">
+              Selected For Move:
+            </span>
+            <span className="text-white font-bold text-xl font-mono">
+              {selectedCandidates.length} Files &bull; {formattedSelectedSize}
+            </span>
+            <span className="text-xs text-[#858585]">
+              Files remain intact on disk until you explicitly confirm the action.
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-1 border-l-2 border-[#454545] pl-4">
+            <span className="text-xs text-[#858585] uppercase font-semibold">Safety Routing Target:</span>
+            <span className="text-white font-bold text-base">
+              System Recycle Bin (or encrypted local recovery vault if Bin unavailable)
+            </span>
+            <span className="text-xs text-[#858585]">
+              Can be restored through Windows Recycle Bin or ClutterScan History.
+            </span>
+          </div>
+        </div>
+
+        <div className="pt-4 flex flex-col items-stretch sm:items-start gap-2 border-t border-[#303030]">
           <button
             type="button"
             disabled={selectedCandidates.length === 0 || isExecuting}
@@ -402,40 +445,41 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
               setExecutionError(null);
               setShowConfirmModal(true);
             }}
-            className="bg-[#5B5CE2] hover:bg-[#4849C7] text-white font-semibold text-sm px-6 py-2.5 rounded-lg transition-colors cursor-pointer disabled:opacity-40 shadow-xs"
+            className="bg-white text-black font-bold text-base px-8 py-3 rounded-[2px] hover:bg-neutral-200 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Review &amp; Confirm Safe Move ({selectedCandidates.length} Items)
           </button>
+          <span className="text-xs text-[#858585]">
+            Selected files are safely relocated, never permanently destroyed without recovery access.
+          </span>
         </div>
 
-        {/* FEEDBACK BANNER */}
+        {/* EXECUTION FEEDBACK BOX */}
         {executionFeedback && (
-          <div className="bg-[#F0FDF4] border border-[#86EFAC] rounded-xl p-4 text-xs text-[#166534] flex flex-col gap-2 shadow-xs">
-            <div className="flex items-center gap-2 font-bold text-sm">
-              <CheckCircle2 size={18} className="text-[#16A34A]" />
-              <span>Cleanup Completed Successfully!</span>
+          <div className="border border-[#57B887] p-5 bg-[#141414] rounded-[2px] flex flex-col gap-2 text-sm text-white" role="status">
+            <div className="flex items-center justify-between font-bold text-base text-[#57B887]">
+              <span>✓ Cleanup Completed Successfully</span>
             </div>
-            <p className="text-xs text-[#15803D]">
-              {executionSummary?.movedCount ?? 0} files moved safely to recovery storage. {executionSummary?.failedCount ?? 0} files could not be accessed.
-            </p>
-            <div className="pt-1">
+            <div className="text-[#b8b8b8] leading-relaxed text-sm">
+              {executionSummary?.movedCount ?? 0} files moved safely to recovery storage. {executionSummary?.failedCount ?? 0} files could not be accessed. Review the recovery audit journal for details.
+            </div>
+            <div className="pt-2">
               <button
                 type="button"
                 onClick={() => onNavigate('history')}
-                className="px-4 py-1.5 border border-[#15803D] bg-white text-[#15803D] font-semibold text-xs rounded-md hover:bg-[#15803D] hover:text-white transition-colors cursor-pointer"
+                className="px-5 py-2 border border-white bg-white text-black font-semibold text-sm rounded-[2px] hover:bg-neutral-200 cursor-pointer"
               >
                 View History &amp; Recovery Journal &rarr;
               </button>
             </div>
           </div>
         )}
-
         {executionError && (
-          <div className="p-3 border border-[#FCA5A5] bg-[#FEF2F2] text-[#DC2626] rounded-lg text-xs" role="alert">
-            {executionError}
+          <div className="border border-[#F06464] bg-[#141414] p-4 text-sm text-[#F06464] rounded-[2px]" role="alert">
+            Cleanup could not be completed: {executionError}
           </div>
         )}
-      </section>
+      </div>
 
       {/* CONFIRMATION MODAL */}
       {showConfirmModal && (

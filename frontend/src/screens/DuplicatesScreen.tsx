@@ -5,7 +5,7 @@ import {
   Folder,
   Trash2,
   FileCheck,
-  ShieldCheck,
+  Shield,
   Layers,
   ChevronDown,
   ChevronRight,
@@ -14,11 +14,6 @@ import {
   MinusSquare,
   Search,
   Filter,
-  Check,
-  AlertTriangle,
-  ArrowRight,
-  Sparkles,
-  Info
 } from 'lucide-react';
 
 interface DuplicatesScreenProps {
@@ -40,6 +35,7 @@ interface FolderGroupData {
 
 export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
   onNavigate,
+  onStageDuplicates,
   hashGroups: propHashGroups,
   scanId,
   onRefreshData,
@@ -54,7 +50,7 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
     }
   }, [propHashGroups]);
 
-  // View mode: 'folder' or 'group'
+  // View mode: 'folder' (Folder-scoped view with bulk folder selection) or 'group' (Cryptographic SHA-256 group dossier)
   const [viewMode, setViewMode] = useState<'folder' | 'group'>('folder');
 
   // Selected duplicate file paths for deletion
@@ -78,6 +74,7 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
   const [deletionSuccessNotice, setDeletionSuccessNotice] = useState<string | null>(null);
 
   // Group file analysis: identify canonical retained copy per duplicate hash group
+  // Retained copy is either explicit file.isPreferred or the first file in the group
   const retainedPathSet = useMemo(() => {
     const retained = new Set<string>();
     groups.forEach((g) => {
@@ -239,7 +236,7 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
     return bytes + ' B';
   };
 
-  // Selected files count
+  // Selected files count (only count eligible duplicate files)
   const selectedEligiblePaths = useMemo(() => {
     const valid = new Set<string>();
     selectedPaths.forEach((p) => {
@@ -282,6 +279,7 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
   };
 
   const handleToggleSingleFile = (filePath: string) => {
+    // Retained copy is protected from selection
     if (retainedPathSet.has(filePath)) return;
 
     setSelectedPaths((prev) => {
@@ -340,6 +338,7 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
       const deletedCount = response.deletedCount;
       const failedCount = response.failedCount;
 
+      // Clean up local groups
       const successfullyDeleted = new Set(
         response.results
           .filter((r) => !r.status.startsWith('FAILED'))
@@ -360,6 +359,7 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
           .filter((g) => g.files.length >= 2);
       });
 
+      // Clear deleted files from selection
       setSelectedPaths((prev) => {
         const next = new Set(prev);
         successfullyDeleted.forEach((p) => next.delete(p));
@@ -370,8 +370,8 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
 
       const msg =
         failedCount > 0
-          ? `Bulk deletion completed: ${deletedCount} files moved to recovery vault, ${failedCount} files failed.`
-          : `Successfully removed ${deletedCount} duplicate file${deletedCount === 1 ? '' : 's'}. Moved safely to recovery.`;
+          ? `Bulk deletion completed: ${deletedCount} files moved to recovery, ${failedCount} files failed.`
+          : `Successfully deleted ${deletedCount} duplicate file${deletedCount === 1 ? '' : 's'}. Moved to recovery.`;
 
       setDeletionSuccessNotice(msg);
       if (onShowNotice) onShowNotice(msg);
@@ -386,6 +386,7 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
     }
   };
 
+  // Individual deletion
   const handleSingleDelete = async (filePath: string) => {
     if (retainedPathSet.has(filePath)) return;
     setSelectedPaths(new Set([filePath]));
@@ -393,6 +394,7 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
     setIsConfirmOpen(true);
   };
 
+  // Current group for group dossier view
   const currentGroup: HashGroup | undefined =
     groups.find((g) => g.id === selectedGroupId) || groups[0];
   const preferredFile = currentGroup?.files.find((f) => f.isPreferred) || currentGroup?.files[0];
@@ -400,159 +402,154 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
     currentGroup?.files.find((f) => !f.isPreferred) || currentGroup?.files[1] || currentGroup?.files[0];
 
   return (
-    <div className="w-full flex flex-col gap-6 text-[#172033] pb-12">
-      {/* HEADER SECTION */}
-      <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-2">
-        <div className="flex flex-col gap-1">
+    <div className="w-full flex flex-col gap-6 text-[#f5f5f5] pb-12">
+      {/* A. HEADER */}
+      <section className="w-full border-b border-[#303030] pb-5 flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
+        <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#172033] tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-bold text-[#f5f5f5] tracking-tight">
               Duplicate Files
             </h1>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EEF2FF] text-[#5B5CE2] border border-[#C7D2FE]">
-              SHA-256 Verified
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-[2px] bg-[#1b1b1b] border border-[#454545] text-[#b8b8b8]">
+              SHA-256 MATCHES
             </span>
           </div>
-          <p className="text-sm md:text-base text-[#64748B]">
-            Review redundant copies grouped by location or cryptographic hash. Original files are safely preserved.
+          <p className="text-sm md:text-base text-[#b8b8b8]">
+            Review identical copies grouped by folder or cryptographic hash. Original files are protected automatically.
           </p>
         </div>
-
-        <div className="flex items-center gap-2 bg-[#F0FDF4] border border-[#BBF7D0] px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#15803D]">
-          <ShieldCheck size={16} className="text-[#16A34A]" />
-          <span>Original copy protected automatically</span>
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-white font-semibold border border-[#303030] px-3 py-1.5 bg-[#141414] rounded-[2px] flex items-center gap-2">
+            <Shield size={14} className="text-[#57b887]" />
+            <span>ORIGINAL COPY PROTECTED</span>
+          </span>
         </div>
       </section>
 
-      {/* SUMMARY METRICS CARDS */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
-          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Duplicate Groups</div>
-          <div className="text-2xl lg:text-3xl font-bold text-[#172033] mt-1.5">{groups.length}</div>
-          <div className="text-xs text-[#94A3B8] mt-1">Identical hash clusters</div>
-        </div>
-
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
-          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Total Files</div>
-          <div className="text-2xl lg:text-3xl font-bold text-[#172033] mt-1.5">{totalDuplicateFiles}</div>
-          <div className="text-xs text-[#94A3B8] mt-1">Total matched across drives</div>
-        </div>
-
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
-          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Redundant Copies</div>
-          <div className="text-2xl lg:text-3xl font-bold text-[#5B5CE2] mt-1.5">{totalEligibleFilesCount}</div>
-          <div className="text-xs text-[#94A3B8] mt-1">Safe to remove without loss</div>
-        </div>
-
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
-          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Reclaimable Space</div>
-          <div className="text-2xl lg:text-3xl font-bold text-[#15803D] mt-1.5">{formatBytes(potentialRecoveryBytes)}</div>
-          <div className="text-xs text-[#94A3B8] mt-1">Potential space savings</div>
-        </div>
-      </section>
-
-      {/* SUCCESS NOTIFICATION */}
-      {deletionSuccessNotice && (
-        <div className="w-full bg-[#F0FDF4] border border-[#86EFAC] rounded-xl p-4 text-sm text-[#166534] flex items-center justify-between shadow-xs">
-          <div className="flex items-center gap-2 font-medium">
-            <Check size={18} className="text-[#16A34A] shrink-0" />
-            <span>{deletionSuccessNotice}</span>
+      {/* SUMMARY METRICS STRIP */}
+      <section className="w-full bg-[#141414] border border-[#303030] rounded-[2px] p-5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-sm">
+          <div className="flex flex-col gap-1">
+            <span className="text-[#858585] text-xs uppercase font-medium">Duplicate Groups</span>
+            <span className="text-white font-bold text-2xl md:text-3xl font-mono tabular-nums">{groups.length}</span>
           </div>
+          <div className="flex flex-col gap-1 border-l border-[#303030] pl-6">
+            <span className="text-[#858585] text-xs uppercase font-medium">Total Files</span>
+            <span className="text-white font-bold text-2xl md:text-3xl font-mono tabular-nums">{totalDuplicateFiles}</span>
+          </div>
+          <div className="flex flex-col gap-1 border-l border-[#303030] pl-6">
+            <span className="text-[#858585] text-xs uppercase font-medium">Redundant Copies</span>
+            <span className="text-white font-bold text-2xl md:text-3xl font-mono tabular-nums">{totalEligibleFilesCount}</span>
+          </div>
+          <div className="flex flex-col gap-1 border-l border-[#303030] pl-6">
+            <span className="text-[#858585] text-xs uppercase font-medium">Reclaimable Space</span>
+            <span className="text-[#57b887] font-bold text-2xl md:text-3xl font-mono tabular-nums">{formatBytes(potentialRecoveryBytes)}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* SUCCESS BANNER */}
+      {deletionSuccessNotice && (
+        <div className="w-full bg-[#141414] border border-[#57b887] rounded-[2px] p-4 text-sm text-white flex items-center justify-between">
+          <span className="font-medium flex items-center gap-2 text-[#57b887]">
+            <span>✓</span> {deletionSuccessNotice}
+          </span>
           <button
             type="button"
             onClick={() => setDeletionSuccessNotice(null)}
-            className="text-xs font-semibold text-[#15803D] hover:underline cursor-pointer ml-4"
+            className="text-[#858585] hover:text-white cursor-pointer uppercase text-xs"
           >
-            Dismiss
+            [Dismiss]
           </button>
         </div>
       )}
 
-      {/* FILTER & BULK CONTROLS TOOLBAR */}
-      <section className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-xs flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
-        {/* Search & Category Pills */}
+      {/* B. ACTION AREA & CONTROLS */}
+      <section className="w-full bg-[#141414] border border-[#303030] rounded-[2px] p-4 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
+        {/* Search & Filter */}
         <div className="flex flex-wrap items-center gap-3 flex-1">
           <div className="relative min-w-[240px] flex-1 sm:flex-initial">
-            <Search size={16} className="absolute left-3.5 top-3 text-[#94A3B8]" />
+            <Search size={15} className="absolute left-3.5 top-3 text-[#858585]" />
             <input
               type="search"
               aria-label="Search duplicate files or folders"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search duplicates by name or path..."
-              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] pl-10 pr-3.5 py-2 text-sm text-[#172033] placeholder:text-[#94A3B8] focus:border-[#5B5CE2] focus:bg-white focus:outline-none rounded-lg transition-colors"
+              placeholder="Search filename or path..."
+              className="w-full bg-[#080808] border border-[#303030] pl-10 pr-3 py-2 text-sm text-[#f5f5f5] placeholder:text-[#858585] focus:border-white focus:outline-none rounded-[2px]"
             />
           </div>
 
-          <div className="flex items-center bg-[#F1F5F9] p-1 rounded-lg border border-[#E2E8F0]">
+          <div className="flex items-center border border-[#303030] rounded-[2px] overflow-hidden">
             {(['ALL', 'IMAGE', 'DOC', 'ARCHIVE'] as const).map((mode) => (
               <button
                 key={mode}
                 type="button"
                 onClick={() => setFilterMode(mode)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
+                className={`px-3.5 py-2 text-xs font-semibold uppercase transition-all cursor-pointer ${
                   filterMode === mode
-                    ? 'bg-white text-[#172033] shadow-xs font-semibold'
-                    : 'text-[#64748B] hover:text-[#172033]'
+                    ? 'bg-white text-black'
+                    : 'bg-[#141414] text-[#b8b8b8] hover:text-white hover:bg-[#1b1b1b]'
                 }`}
               >
-                {mode === 'ALL' ? 'All Files' : mode === 'IMAGE' ? 'Images' : mode === 'DOC' ? 'Documents' : 'Archives'}
+                {mode}
               </button>
             ))}
           </div>
 
           {/* Toggle View Mode */}
-          <div className="flex items-center bg-[#F1F5F9] p-1 rounded-lg border border-[#E2E8F0] ml-auto">
+          <div className="flex items-center border border-[#303030] rounded-[2px] overflow-hidden ml-auto">
             <button
               type="button"
               onClick={() => setViewMode('folder')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-4 py-2 text-xs font-semibold uppercase transition-all cursor-pointer flex items-center gap-2 ${
                 viewMode === 'folder'
-                  ? 'bg-white text-[#5B5CE2] shadow-xs font-semibold'
-                  : 'text-[#64748B] hover:text-[#172033]'
+                  ? 'bg-white text-black'
+                  : 'bg-[#141414] text-[#b8b8b8] hover:text-white hover:bg-[#1b1b1b]'
               }`}
             >
-              <Folder size={14} /> By Folder
+              <Folder size={14} /> Folder View
             </button>
             <button
               type="button"
               onClick={() => setViewMode('group')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-4 py-2 text-xs font-semibold uppercase transition-all cursor-pointer flex items-center gap-2 ${
                 viewMode === 'group'
-                  ? 'bg-white text-[#5B5CE2] shadow-xs font-semibold'
-                  : 'text-[#64748B] hover:text-[#172033]'
+                  ? 'bg-white text-black'
+                  : 'bg-[#141414] text-[#b8b8b8] hover:text-white hover:bg-[#1b1b1b]'
               }`}
             >
-              <Layers size={14} /> By Hash Group
+              <Layers size={14} /> Hash Groups
             </button>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap items-center justify-between lg:justify-end gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 border-[#E2E8F0]">
+        {/* Global Bulk Action Toolbar */}
+        <div className="flex flex-wrap items-center justify-between lg:justify-end gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 border-[#303030]">
           <button
             type="button"
             onClick={handleSelectAllInView}
-            className="px-3.5 py-2 border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#334155] text-xs font-semibold rounded-lg cursor-pointer flex items-center gap-2 transition-colors shadow-xs"
+            className="px-4 py-2 border border-[#454545] bg-[#1b1b1b] text-[#f5f5f5] hover:border-white text-xs font-semibold uppercase cursor-pointer flex items-center gap-2 rounded-[2px]"
           >
             {selectedCount > 0 && selectedCount === totalEligibleFilesCount ? (
-              <CheckSquare size={16} className="text-[#5B5CE2]" />
+              <CheckSquare size={15} className="text-white" />
             ) : selectedCount > 0 ? (
-              <MinusSquare size={16} className="text-[#5B5CE2]" />
+              <MinusSquare size={15} className="text-white" />
             ) : (
-              <Square size={16} className="text-[#94A3B8]" />
+              <Square size={15} />
             )}
-            <span>Select All Eligible</span>
+            <span>Select All Duplicates</span>
           </button>
 
-          <div className="text-xs text-[#64748B] px-2">
-            <strong className="text-[#172033] font-semibold">{selectedCount}</strong> of {totalEligibleFilesCount} selected ({formatBytes(selectedBytes)})
+          <div className="text-sm text-[#b8b8b8]">
+            <span className="text-white font-bold font-mono">{selectedCount}</span> of {totalEligibleFilesCount} selected ({formatBytes(selectedBytes)})
           </div>
 
           <button
             type="button"
             disabled={selectedCount === 0 || isDeleting}
             onClick={() => handleTriggerBulkDelete()}
-            className="px-4 py-2 bg-[#DC2626] hover:bg-[#B91C1C] text-white font-medium text-xs rounded-lg transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-xs"
+            className="px-6 py-2.5 bg-[#c90000] text-white font-semibold text-sm uppercase tracking-wider transition-all hover:bg-[#a00000] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 rounded-[2px]"
           >
             <Trash2 size={15} />
             <span>Delete Selected ({selectedCount})</span>
@@ -560,32 +557,29 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
         </div>
       </section>
 
-      {/* ZERO DUPLICATES EMPTY STATE */}
+      {/* ZERO DUPLICATES STATE */}
       {groups.length === 0 ? (
-        <div className="w-full bg-white border border-[#E2E8F0] rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-xs">
-          <div className="w-14 h-14 bg-[#EEF2FF] text-[#5B5CE2] rounded-2xl flex items-center justify-center mb-4">
-            <ShieldCheck size={28} />
+        <div className="w-full min-h-[400px] border-b border-[#303030] bg-[#0b0b0b] p-8 flex flex-col items-center justify-center gap-4 text-center">
+          <div className="text-base font-bold text-white tracking-widest uppercase">
+            [ZERO_DUPLICATES_DETECTED]
           </div>
-          <h2 className="text-xl font-bold text-[#172033] tracking-tight">
-            No Duplicate Files Found
-          </h2>
-          <p className="text-sm text-[#64748B] max-w-md mt-1 mb-6">
-            All files in the scanned directories have unique cryptographic signatures. Your storage is clean and unfragmented.
-          </p>
+          <div className="text-xs text-[#858585] max-w-lg leading-relaxed uppercase">
+            All scanned files exhibit unique cryptographic hashes. No redundant file copies require cleanup.
+          </div>
           <button
             type="button"
-            onClick={() => onNavigate('home')}
-            className="px-5 py-2.5 bg-[#5B5CE2] hover:bg-[#4849C7] text-white text-sm font-semibold rounded-lg shadow-xs transition-colors cursor-pointer"
+            onClick={() => onNavigate('storage')}
+            className="mt-2 px-6 py-2.5 border border-white bg-white text-black font-bold uppercase transition-none hover:bg-neutral-200 cursor-pointer"
           >
-            Run Another Scan
+            → RETURN TO STORAGE
           </button>
         </div>
       ) : viewMode === 'folder' ? (
-        /* FOLDER ACCORDION VIEW */
-        <div className="flex flex-col gap-4">
+        /* C. FOLDER GROUPS VIEW */
+        <div className="w-full flex flex-col divide-y divide-[#303030]">
           {filteredFolderGroups.length === 0 ? (
-            <div className="bg-white border border-[#E2E8F0] rounded-xl p-8 text-center text-sm text-[#64748B]">
-              No duplicate files match your search criteria.
+            <div className="p-8 text-center text-xs text-[#858585]">
+              No duplicate files match your search and filter criteria.
             </div>
           ) : (
             filteredFolderGroups.map((fg) => {
@@ -593,76 +587,76 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
               const selectedInFolder = eligiblePaths.filter((p) => selectedEligiblePaths.has(p));
               const isAllSelected = eligiblePaths.length > 0 && selectedInFolder.length === eligiblePaths.length;
               const isPartiallySelected = selectedInFolder.length > 0 && !isAllSelected;
-              const isExpanded = expandedFolders[fg.folderPath] !== false;
+              const isExpanded = expandedFolders[fg.folderPath] !== false; // expanded by default
 
               return (
-                <div
+                <section
                   key={fg.folderPath}
-                  className="bg-white border border-[#E2E8F0] rounded-xl shadow-xs overflow-hidden transition-all"
+                  className="w-full bg-[#000000] flex flex-col transition-colors"
                 >
-                  {/* Folder Group Header Bar */}
-                  <div className="bg-[#F8FAFC] px-4 py-3 border-b border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  {/* FOLDER GROUP HEADER & SELECTION BAR */}
+                  <div className="w-full bg-[#0b0b0b] px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-l-2 border-white">
                     <div className="flex items-center gap-3 min-w-0">
+                      {/* Folder-level Select All Checkbox */}
                       <button
                         type="button"
                         aria-label={`Select all ${eligiblePaths.length} duplicates in folder ${fg.folderName}`}
                         onClick={() => handleToggleFolder(fg)}
                         disabled={eligiblePaths.length === 0}
-                        className="text-[#64748B] hover:text-[#172033] cursor-pointer disabled:opacity-40"
+                        className="p-1 text-white hover:text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
                       >
                         {isAllSelected ? (
-                          <CheckSquare size={18} className="text-[#5B5CE2]" />
+                          <CheckSquare size={16} className="text-white" />
                         ) : isPartiallySelected ? (
-                          <MinusSquare size={18} className="text-[#5B5CE2]" />
+                          <MinusSquare size={16} className="text-white" />
                         ) : (
-                          <Square size={18} className="text-[#CBD5E1]" />
+                          <Square size={16} className="text-[#858585]" />
                         )}
                       </button>
 
+                      {/* Expand / Collapse Toggle */}
                       <button
                         type="button"
                         onClick={() => toggleFolderExpanded(fg.folderPath)}
-                        className="flex items-center gap-2.5 text-left cursor-pointer group min-w-0"
+                        className="flex items-center gap-2 text-left cursor-pointer group truncate"
                       >
                         {isExpanded ? (
-                          <ChevronDown size={16} className="text-[#64748B] group-hover:text-[#172033] shrink-0" />
+                          <ChevronDown size={14} className="text-[#858585] group-hover:text-white shrink-0" />
                         ) : (
-                          <ChevronRight size={16} className="text-[#64748B] group-hover:text-[#172033] shrink-0" />
+                          <ChevronRight size={14} className="text-[#858585] group-hover:text-white shrink-0" />
                         )}
-                        <div className="w-8 h-8 rounded-lg bg-[#EEF2FF] text-[#5B5CE2] flex items-center justify-center shrink-0">
-                          <Folder size={16} />
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="font-semibold text-sm text-[#172033] group-hover:text-[#5B5CE2] transition-colors truncate">
+                        <Folder size={14} className="text-white shrink-0" />
+                        <div className="flex flex-col truncate">
+                          <span className="font-bold text-xs text-white uppercase tracking-wider group-hover:underline truncate">
                             {fg.folderName}/
                           </span>
-                          <span className="text-xs text-[#64748B] truncate font-normal" title={fg.folderPath}>
+                          <span className="text-[11px] text-[#858585] truncate font-mono" title={fg.folderPath}>
                             {fg.folderPath}
                           </span>
                         </div>
                       </button>
                     </div>
 
-                    <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
-                      <span className="text-xs text-[#64748B]">
-                        <strong className="text-[#172033] font-semibold">{selectedInFolder.length}</strong> / {eligiblePaths.length} selected
+                    {/* Folder Metrics & Bulk Action */}
+                    <div className="flex items-center gap-3 shrink-0 self-end sm:self-center text-xs">
+                      <span className="text-[#858585] text-[11px]">
+                        <span className="text-white font-bold">{selectedInFolder.length}</span> / {eligiblePaths.length} selected
                       </span>
 
                       <button
                         type="button"
                         disabled={selectedInFolder.length === 0 || isDeleting}
                         onClick={() => handleTriggerBulkDelete(`Folder ${fg.folderName} (${selectedInFolder.length} files)`)}
-                        className="px-3 py-1.5 border border-[#FCA5A5] bg-[#FEF2F2] hover:bg-[#FEE2E2] text-[#DC2626] text-xs font-medium rounded-lg cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 transition-colors"
+                        className="px-3 py-1 border border-[#c90000] bg-transparent text-[#ffffff] hover:bg-[#c90000] text-[11px] font-bold uppercase transition-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
                       >
-                        <Trash2 size={13} />
-                        <span>Delete {selectedInFolder.length}</span>
+                        <Trash2 size={11} /> Delete selected ({selectedInFolder.length})
                       </button>
                     </div>
                   </div>
 
-                  {/* File List Rows */}
+                  {/* D. FILE ROWS IN THIS FOLDER */}
                   {isExpanded && (
-                    <div className="divide-y divide-[#F1F5F9]">
+                    <div className="w-full flex flex-col divide-y divide-[#181818]">
                       {fg.files.map((file) => {
                         const isRetained = retainedPathSet.has(file.path);
                         const isSelected = selectedEligiblePaths.has(file.path);
@@ -670,57 +664,63 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
                         return (
                           <div
                             key={file.id}
-                            className={`px-4 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3 text-sm transition-colors ${
+                            className={`w-full px-4 py-2.5 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs transition-colors ${
                               isRetained
-                                ? 'bg-white'
+                                ? 'bg-[#000000]'
                                 : isSelected
-                                ? 'bg-[#EEF2FF]/40'
-                                : 'bg-white hover:bg-[#F8FAFC]'
+                                ? 'bg-[#181818] border-l-2 border-white'
+                                : 'bg-[#050505] hover:bg-[#0e0e0e]'
                             }`}
                           >
+                            {/* Checkbox + Name + Path */}
                             <div className="flex items-center gap-3 min-w-0 flex-1">
+                              {/* Selection checkbox */}
                               {isRetained ? (
                                 <span
-                                  title="Original copy preserved (Safe)"
-                                  className="w-5 h-5 flex items-center justify-center text-[#16A34A]"
+                                  title="Original copy preserved (Protected)"
+                                  className="p-1 cursor-default text-[#858585]"
                                 >
-                                  <FileCheck size={18} />
+                                  <FileCheck size={15} className="text-white" />
                                 </span>
                               ) : (
                                 <button
                                   type="button"
                                   aria-label={`Select ${file.name} for deletion`}
                                   onClick={() => handleToggleSingleFile(file.path)}
-                                  className="text-[#64748B] hover:text-[#172033] cursor-pointer"
+                                  className="p-1 text-white hover:text-white cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
                                 >
                                   {isSelected ? (
-                                    <CheckSquare size={18} className="text-[#5B5CE2]" />
+                                    <CheckSquare size={15} className="text-white" />
                                   ) : (
-                                    <Square size={18} className="text-[#CBD5E1]" />
+                                    <Square size={15} className="text-[#858585]" />
                                   )}
                                 </button>
                               )}
 
+                              {/* File Identity */}
                               <div className="flex flex-col min-w-0">
                                 <div className="flex items-center gap-2">
                                   <span
-                                    className="font-medium text-sm text-[#172033] truncate"
+                                    className={`font-semibold text-[15px] sm:text-base truncate ${
+                                      isRetained ? 'text-[#f5f5f5]' : isSelected ? 'text-white' : 'text-[#f5f5f5]'
+                                    }`}
                                     title={file.name}
                                   >
                                     {file.name}
                                   </span>
-                                  {isRetained ? (
-                                    <span className="text-xs px-2 py-0.5 bg-[#DCFCE7] text-[#15803D] font-medium rounded-full">
-                                      Original (Retained)
+                                  {isRetained && (
+                                    <span className="text-xs px-2 py-0.5 bg-white text-black font-semibold uppercase tracking-wider rounded-[2px]">
+                                      Original (Keep)
                                     </span>
-                                  ) : (
-                                    <span className="text-xs px-2 py-0.5 bg-[#F1F5F9] text-[#64748B] font-medium rounded-full">
+                                  )}
+                                  {!isRetained && (
+                                    <span className="text-xs px-2 py-0.5 border border-[#454545] text-[#b8b8b8] uppercase font-mono rounded-[2px]">
                                       Duplicate
                                     </span>
                                   )}
                                 </div>
                                 <span
-                                  className="text-xs text-[#64748B] truncate mt-0.5"
+                                  className="text-xs md:text-sm text-[#858585] truncate font-mono mt-0.5"
                                   title={file.path}
                                 >
                                   {file.path}
@@ -728,33 +728,35 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-3.5 shrink-0 pl-8 md:pl-0">
-                              <span className="text-xs font-semibold text-[#172033] tabular-nums">
+                            {/* Metadata & Actions */}
+                            <div className="flex items-center gap-4 shrink-0 pl-7 md:pl-0">
+                              <span className="text-sm font-semibold font-mono text-white tabular-nums whitespace-nowrap">
                                 {file.size}
                               </span>
 
                               {file.resolution && file.resolution !== 'N/A' && (
-                                <span className="text-xs text-[#64748B]">
+                                <span className="text-xs text-[#b8b8b8] whitespace-nowrap font-mono">
                                   {file.resolution}
                                 </span>
                               )}
 
-                              <span className="text-xs text-[#64748B] bg-[#F1F5F9] px-2 py-0.5 rounded-md font-mono">
+                              <span className="text-xs text-[#858585] border border-[#303030] px-2 py-0.5 rounded-[2px] whitespace-nowrap font-mono">
                                 {file.groupSector}
                               </span>
 
+                              {/* Individual Action */}
                               {isRetained ? (
-                                <span className="text-xs text-[#16A34A] font-medium px-2 py-1">
+                                <span className="text-[11px] text-[#858585] uppercase px-2 py-1">
                                   Protected
                                 </span>
                               ) : (
                                 <button
                                   type="button"
                                   onClick={() => handleSingleDelete(file.path)}
-                                  className="text-xs text-[#DC2626] hover:bg-[#FEF2F2] border border-[#FCA5A5] px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer"
-                                  title="Remove this individual duplicate copy"
+                                  className="text-[11px] text-[#c90000] hover:text-white hover:bg-[#c90000] border border-[#c90000] px-2 py-1 uppercase font-bold transition-none cursor-pointer"
+                                  title="Delete this individual duplicate copy"
                                 >
-                                  Delete
+                                  Delete copy
                                 </button>
                               )}
                             </div>
@@ -763,52 +765,62 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
                       })}
                     </div>
                   )}
-                </div>
+                </section>
               );
             })
           )}
         </div>
       ) : (
-        /* HASH DOSSIER SPLIT VIEW */
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left: Hash Group Selector */}
-          <div className="lg:col-span-4 bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-xs flex flex-col gap-3">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] text-xs font-semibold uppercase tracking-wider text-[#64748B]">
-              <span>Hash Groups</span>
-              <span>{groups.length} Total</span>
+        /* HASH DOSSIER SPLIT VIEW (Preserved from original implementation) */
+        <div className="w-full grid grid-cols-1 lg:grid-cols-12 min-h-[600px] border-b border-[#303030]">
+          {/* LEFT COLUMN: HASH GROUPS SELECTOR */}
+          <div className="lg:col-span-4 border-b lg:border-b-0 lg:border-r border-[#303030] p-4 flex flex-col gap-4 bg-[#0b0b0b]">
+            <div className="flex items-center justify-between pb-2 border-b border-[#303030] text-xs font-bold text-white tracking-widest">
+              <span>[HASH_GROUPS]</span>
+              <span className="text-[#858585]">SECTORS: 001 - {groups.length.toString().padStart(3, '0')}</span>
             </div>
 
-            <div className="flex flex-col gap-2 max-h-[600px] overflow-y-auto pr-1">
+            <div className="flex flex-col gap-3">
               {groups.map((group) => {
                 const isSelected = group.id === selectedGroupId;
                 return (
                   <div
                     key={group.id}
                     onClick={() => setSelectedGroupId(group.id)}
-                    className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col gap-1.5 ${
+                    className={`w-full p-4 border transition-none cursor-pointer flex flex-col gap-2 ${
                       isSelected
-                        ? 'bg-[#EEF2FF] border-[#5B5CE2] text-[#172033]'
-                        : 'bg-white border-[#E2E8F0] hover:border-[#CBD5E1] text-[#172033]'
+                        ? 'bg-white text-black border-white'
+                        : 'bg-[#000000] text-white border-[#303030] hover:border-[#484848]'
                     }`}
                   >
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-sm">Group #{group.id}</span>
+                    <div className="flex justify-between items-center text-xs font-bold tracking-widest">
+                      <span>HASH GROUP #{group.id}</span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
-                          isSelected ? 'bg-[#5B5CE2] text-white' : 'bg-[#F1F5F9] text-[#64748B]'
+                        className={`px-1.5 py-0.5 text-[10px] uppercase font-bold border ${
+                          isSelected
+                            ? 'bg-black text-white border-black'
+                            : 'border-[#484848] text-[#b0b0b0]'
                         }`}
                       >
-                        {group.matchCount} copies
+                        {isSelected ? '[ACTIVE]' : '[STANDBY]'}
                       </span>
                     </div>
 
-                    <div className="text-xs font-mono text-[#64748B] truncate">
-                      SHA: {group.shortHash}
+                    <div
+                      className={`text-xs font-mono break-all ${
+                        isSelected ? 'text-black font-bold' : 'text-[#b0b0b0]'
+                      }`}
+                    >
+                      SHA-256: {group.shortHash}
                     </div>
 
-                    <div className="flex justify-between items-center text-xs text-[#64748B] pt-1 border-t border-[#E2E8F0]/60">
-                      <span>{group.sectorName}</span>
-                      <span className="font-semibold text-[#172033]">{group.sizeFormatted}</span>
+                    <div
+                      className={`grid grid-cols-2 gap-2 pt-1 text-[11px] uppercase border-t ${
+                        isSelected ? 'border-neutral-300 text-black' : 'border-[#303030] text-[#858585]'
+                      }`}
+                    >
+                      <div>MATCHES: {group.matchCount} FILES</div>
+                      <div className="text-right font-bold">SIZE: {group.sizeFormatted}</div>
                     </div>
                   </div>
                 );
@@ -816,83 +828,83 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
             </div>
           </div>
 
-          {/* Right: Forensic Dossier View */}
-          <div className="lg:col-span-8 flex flex-col gap-4">
+          {/* RIGHT COLUMN: FORENSIC DOSSIER & RESOLUTION */}
+          <div className="lg:col-span-8 p-4 lg:p-6 flex flex-col gap-6 bg-[#000000]">
             {currentGroup && (
               <>
-                <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs flex flex-col gap-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#E2E8F0] gap-2">
-                    <div>
-                      <h3 className="text-base font-bold text-[#172033]">
-                        {currentGroup.sectorName}
-                      </h3>
-                      <p className="text-xs text-[#64748B] mt-0.5 font-mono">
-                        Full SHA-256: {currentGroup.hash}
-                      </p>
-                    </div>
-                    <span className="text-xs font-semibold px-2.5 py-1 bg-[#EEF2FF] text-[#5B5CE2] border border-[#C7D2FE] rounded-lg self-start sm:self-auto">
-                      Identical Digest
+                <div className="flex flex-col gap-2 border border-[#303030] p-4 bg-[#0b0b0b]">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#303030] pb-2 gap-2">
+                    <span className="text-white font-bold text-sm uppercase tracking-wider">
+                      [GROUP_ANALYSIS :: {currentGroup.sectorName}]
+                    </span>
+                    <span className="text-white text-[10px] uppercase border border-white px-2 py-0.5">
+                      IDENTICAL SHA-256
                     </span>
                   </div>
 
-                  <div className="flex flex-col gap-2 pt-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
-                      Files with this fingerprint ({currentGroup.files.length})
-                    </span>
-                    <div className="divide-y divide-[#F1F5F9] border border-[#E2E8F0] rounded-xl overflow-hidden">
-                      {currentGroup.files.map((file, idx) => {
-                        const isRetained = retainedPathSet.has(file.path);
-                        return (
-                          <div
-                            key={file.id}
-                            className={`p-3 flex items-center justify-between text-xs gap-3 ${
-                              isRetained ? 'bg-[#F0FDF4]' : 'bg-white'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <span className="text-xs text-[#94A3B8] font-mono shrink-0">{idx + 1}.</span>
-                              <span className="text-xs text-[#172033] truncate font-medium" title={file.path}>
-                                {file.path}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-xs font-semibold text-[#64748B]">{file.size}</span>
-                              {isRetained && (
-                                <span className="text-[11px] bg-[#DCFCE7] text-[#15803D] px-2 py-0.5 rounded-full font-semibold">
-                                  Original
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
+                  <div className="text-[11px] text-[#b0b0b0] pt-1 break-all">
+                    <span className="text-[#858585]">SHA-256: </span>
+                    {currentGroup.hash}
+                  </div>
+
+                  <div className="pt-2 flex flex-col gap-1.5">
+                    <div className="text-[#858585] text-[10px] uppercase tracking-wider">
+                      Files sharing this digest:
                     </div>
+                    {currentGroup.files.map((file, idx) => (
+                      <div
+                        key={file.id}
+                        className={`flex items-center justify-between border-l pl-3 py-1.5 bg-[#000000] text-xs ${
+                          retainedPathSet.has(file.path)
+                            ? 'border-white text-white font-bold'
+                            : 'border-[#484848] text-[#b0b0b0]'
+                        }`}
+                      >
+                        <span className="truncate max-w-xl">
+                          {idx + 1}. {file.path}
+                        </span>
+                        <div className="flex items-center gap-2 pl-2">
+                          <span className="text-[11px] text-[#858585] whitespace-nowrap">
+                            ({file.size})
+                          </span>
+                          {retainedPathSet.has(file.path) && (
+                            <span className="text-[9px] bg-white text-black px-1 font-bold">
+                              ORIGINAL
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Retained vs Duplicate Comparison Cards */}
+                {/* Retained copy vs matching copy rationale */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {preferredFile && (
-                    <div className="bg-white border-2 border-[#16A34A]/30 rounded-xl p-4 shadow-xs flex flex-col justify-between gap-3">
-                      <div>
-                        <div className="flex justify-between items-center pb-2 border-b border-[#E2E8F0]">
-                          <span className="text-xs font-bold uppercase tracking-wider text-[#15803D]">
-                            Original (Preserved)
+                    <div className="border border-white bg-[#0b0b0b] p-4 flex flex-col justify-between gap-3">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-start border-b border-[#303030] pb-2">
+                          <span className="text-xs font-bold text-white tracking-widest uppercase">
+                            Original (Retained)
                           </span>
-                          <span className="bg-[#DCFCE7] text-[#15803D] text-xs px-2 py-0.5 rounded-full font-semibold">
-                            Protected
+                          <span className="bg-white text-black text-[10px] px-1.5 py-0.5 uppercase font-bold">
+                            PROTECTED
                           </span>
                         </div>
-                        <div className="text-xs space-y-1.5 mt-3">
+                        <div className="text-xs space-y-1">
                           <div className="flex justify-between">
-                            <span className="text-[#64748B]">Resolution:</span>
-                            <span className="font-semibold text-[#172033]">{preferredFile.resolution}</span>
+                            <span className="text-[#858585]">STATUS:</span>
+                            <span className="text-white font-bold">{preferredFile.status}</span>
                           </div>
-                          <div>
-                            <span className="text-[#64748B] block text-[11px] mb-1">Path:</span>
-                            <div className="p-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-xs break-all text-[#172033]">
+                          <div className="flex justify-between">
+                            <span className="text-[#858585]">DIMENSIONS:</span>
+                            <span className="text-white font-bold">{preferredFile.resolution}</span>
+                          </div>
+                          <div className="pt-1">
+                            <span className="text-[#858585] block mb-0.5 text-[10px]">PATH:</span>
+                            <span className="text-white break-all block bg-[#000000] p-1.5 border border-[#303030] text-[11px]">
                               {preferredFile.path}
-                            </div>
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -900,32 +912,51 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
                   )}
 
                   {candidateFile && (
-                    <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-xs flex flex-col justify-between gap-3">
-                      <div>
-                        <div className="flex justify-between items-center pb-2 border-b border-[#E2E8F0]">
-                          <span className="text-xs font-bold uppercase tracking-wider text-[#64748B]">
-                            Candidate Copy
+                    <div className="border border-[#484848] bg-[#0b0b0b] p-4 flex flex-col justify-between gap-3">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-start border-b border-[#303030] pb-2">
+                          <span className="text-xs font-bold text-[#b0b0b0] tracking-widest uppercase">
+                            Duplicate copy
                           </span>
-                          <span className="bg-[#FEF2F2] text-[#DC2626] text-xs px-2 py-0.5 rounded-full font-semibold">
-                            Duplicate
+                          <span className="border border-[#484848] text-[#b0b0b0] text-[10px] px-1.5 py-0.5 uppercase">
+                            CANDIDATE
                           </span>
                         </div>
-                        <div className="text-xs space-y-1.5 mt-3">
+                        <div className="text-xs space-y-1">
                           <div className="flex justify-between">
-                            <span className="text-[#64748B]">Resolution:</span>
-                            <span className="font-semibold text-[#172033]">{candidateFile.resolution}</span>
+                            <span className="text-[#858585]">STATUS:</span>
+                            <span className="text-white font-bold">{candidateFile.status}</span>
                           </div>
-                          <div>
-                            <span className="text-[#64748B] block text-[11px] mb-1">Path:</span>
-                            <div className="p-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-xs break-all text-[#172033]">
+                          <div className="flex justify-between">
+                            <span className="text-[#858585]">DIMENSIONS:</span>
+                            <span className="text-white font-bold">{candidateFile.resolution}</span>
+                          </div>
+                          <div className="pt-1">
+                            <span className="text-[#858585] block mb-0.5 text-[10px]">PATH:</span>
+                            <span className="text-[#b0b0b0] break-all block bg-[#000000] p-1.5 border border-[#303030] text-[11px]">
                               {candidateFile.path}
-                            </div>
+                            </span>
                           </div>
                         </div>
                       </div>
                     </div>
                   )}
                 </div>
+
+                {/* Hex Stream View */}
+                {currentGroup.hexSample && currentGroup.hexSample.length > 0 && (
+                  <div className="border border-[#303030] p-4 bg-[#0b0b0b] space-y-2">
+                    <div className="flex justify-between items-center text-[#858585] text-[11px] border-b border-[#303030] pb-2 uppercase">
+                      <span>HEX_STREAM_INSPECTION :: BYTE_RANGE [0x0000 - 0x003F]</span>
+                      <span>ENCODING: RAW_LITTLE_ENDIAN</span>
+                    </div>
+                    <div className="text-xs text-[#b0b0b0] overflow-x-auto whitespace-pre leading-relaxed select-all font-mono">
+                      {currentGroup.hexSample.map((line, idx) => (
+                        <div key={idx}>{line}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -935,68 +966,65 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
       {/* CONFIRMATION MODAL */}
       {isConfirmOpen && (
         <div
-          className="fixed inset-0 z-50 bg-[#0F172A]/50 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
           role="presentation"
         >
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="confirm-duplicate-deletion-title"
-            className="bg-white border border-[#E2E8F0] rounded-2xl shadow-xl p-6 max-w-lg w-full space-y-5 text-sm text-[#172033]"
+            className="border-2 border-white bg-[#0b0b0b] p-6 max-w-lg w-full space-y-5 font-mono text-xs text-white"
           >
-            <div className="flex items-start gap-3.5 pb-2">
-              <div className="w-10 h-10 rounded-xl bg-[#FEF2F2] text-[#DC2626] flex items-center justify-center shrink-0">
-                <AlertTriangle size={20} />
-              </div>
+            <div className="border-b border-[#303030] pb-3 flex justify-between items-start">
               <div>
-                <h3 id="confirm-duplicate-deletion-title" className="text-lg font-bold text-[#172033]">
-                  Confirm Duplicate Deletion
-                </h3>
-                <p className="text-xs text-[#64748B] mt-0.5">
+                <div id="confirm-duplicate-deletion-title" className="text-sm font-bold text-white uppercase tracking-widest">
+                  [CONFIRM_BULK_DUPLICATE_DELETION]
+                </div>
+                <div className="text-[11px] text-[#858585] mt-0.5 uppercase">
                   Scope: {targetContext}
-                </p>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-3 leading-relaxed text-sm">
-              <p>
-                You are about to delete <strong className="text-[#DC2626]">{selectedCount} duplicate file{selectedCount === 1 ? '' : 's'}</strong> ({formatBytes(selectedBytes)}).
+            <div className="space-y-3 leading-relaxed text-xs">
+              <p className="font-bold text-white">
+                You are about to delete <span className="text-[#c90000] underline">{selectedCount} eligible duplicate file{selectedCount === 1 ? '' : 's'}</span> ({formatBytes(selectedBytes)}).
               </p>
-              <div className="border border-[#BBF7D0] bg-[#F0FDF4] rounded-xl p-3.5 space-y-1.5 text-xs text-[#166534]">
-                <div className="flex items-center gap-1.5 font-bold">
-                  <ShieldCheck size={16} className="text-[#16A34A]" /> Safe Protection Guarantee
+              <div className="border border-[#303030] bg-[#000000] p-3 space-y-1.5 text-[11px] text-[#b0b0b0]">
+                <div className="flex items-center gap-1.5 text-white font-bold">
+                  <Shield size={13} className="text-white" /> Retained copy protection active:
                 </div>
                 <div>
-                  At least one original copy in each group is preserved and will NOT be touched.
+                  At least one original copy of each duplicate group is protected and will NOT be deleted.
                 </div>
-                <div className="text-[#15803D] pt-1">
-                  Reversible: Files are safely moved to the local recovery vault and can be restored.
+                <div className="text-[#858585] pt-1">
+                  Reversibility: Files are moved to OS Recycle Bin when supported; otherwise stored in ClutterScan local recovery vault.
                 </div>
               </div>
             </div>
 
             {deletionError && (
-              <div className="p-3 border border-[#FCA5A5] bg-[#FEF2F2] text-[#DC2626] rounded-lg text-xs" role="alert">
+              <div className="p-3 border border-[#c90000] bg-[#1a0000] text-white text-xs" role="alert">
                 {deletionError}
               </div>
             )}
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-[#E2E8F0]">
+            <div className="flex justify-end gap-3 pt-2 border-t border-[#303030]">
               <button
                 type="button"
                 disabled={isDeleting}
                 onClick={() => setIsConfirmOpen(false)}
-                className="px-4 py-2 border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#334155] rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                className="px-4 py-2 border border-[#484848] text-[#b0b0b0] hover:text-white transition-none uppercase cursor-pointer"
               >
-                Cancel
+                [ CANCEL ]
               </button>
               <button
                 type="button"
                 disabled={isDeleting || selectedCount === 0}
                 onClick={() => { void handleExecuteDeletion(); }}
-                className="px-5 py-2 bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer disabled:opacity-40 shadow-xs"
+                className="px-6 py-2 border border-[#c90000] bg-[#c90000] text-white font-bold uppercase transition-none hover:bg-[#a00000] cursor-pointer disabled:opacity-40"
               >
-                {isDeleting ? 'Deleting Files...' : `Delete ${selectedCount} File${selectedCount === 1 ? '' : 's'}`}
+                {isDeleting ? 'DELETING FILES...' : `DELETE ${selectedCount} FILES`}
               </button>
             </div>
           </div>
