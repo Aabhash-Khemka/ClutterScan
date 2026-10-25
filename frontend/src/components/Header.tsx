@@ -35,28 +35,29 @@ export const Header: React.FC<HeaderProps> = ({
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#000000] border-b border-[#303030]">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#101010] border-b border-[#303030]">
       <div className="flex flex-col">
         {/* Top Diagnostic Title Bar */}
-        <div className="h-11 px-4 sm:px-6 md:px-8 flex items-center justify-between border-b border-[#303030] bg-[#0b0b0b]">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-xs sm:text-sm text-white tracking-widest uppercase">
-              CLUTTERSCAN <span className="text-[#858585]">/</span> LOCAL STORAGE CLEANUP
+        <div className="h-12 px-4 sm:px-6 md:px-8 flex items-center justify-between border-b border-[#303030] bg-[#0c0c0c]">
+          <div className="flex items-center gap-3">
+            <span className="font-bold text-sm sm:text-base text-[#f5f5f5] tracking-wide">
+              ClutterScan <span className="text-[#858585] font-normal mx-1">/</span> <span className="text-[#b8b8b8] font-normal text-xs sm:text-sm">Local Storage Cleanup</span>
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] font-bold text-white tracking-widest uppercase border border-[#303030] px-2 py-0.5 bg-[#000000]">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xs font-semibold text-[#57b887] border border-[#303030] px-2.5 py-1 bg-[#141414] tracking-wider flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#57b887] inline-block animate-pulse"></span>
               READY
             </span>
-            <div className="hidden sm:flex h-6 border border-[#303030] bg-[#000000] items-center justify-center px-2 text-[10px] font-bold text-[#b0b0b0] select-none">
+            <div className="hidden sm:flex border border-[#303030] bg-[#141414] items-center justify-center px-2.5 py-1 text-xs text-[#b8b8b8] select-none font-mono">
               LOCAL ONLY
             </div>
           </div>
         </div>
 
         {/* Navigation Tabs Bar */}
-        <nav aria-label="Main navigation" className="min-h-14 px-4 sm:px-6 md:px-8 flex items-center overflow-x-auto select-none bg-[#000000]">
-          <div className="flex items-center border-l border-[#303030]">
+        <nav aria-label="Main navigation" className="min-h-16 px-2 sm:px-4 md:px-8 flex items-center overflow-x-auto select-none bg-[#101010]">
+          <div className="flex items-center gap-1">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.key;
               const Icon = tab.icon;
@@ -66,29 +67,29 @@ export const Header: React.FC<HeaderProps> = ({
                   type="button"
                   onClick={() => onSelectTab(tab.key)}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`min-h-14 border-r border-[#303030] px-3.5 md:px-5 py-2 transition-colors whitespace-nowrap cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white flex flex-col items-start justify-center gap-0.5 ${
+                  className={`min-h-[52px] px-3.5 sm:px-4 py-2 transition-all whitespace-nowrap cursor-pointer rounded-[2px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white flex flex-col items-start justify-center gap-0.5 ${
                     isActive
-                      ? 'bg-white text-black font-bold'
-                      : 'bg-[#000000] text-[#b0b0b0] hover:text-white hover:bg-[#111111]'
+                      ? 'bg-white text-black font-semibold shadow-sm'
+                      : 'text-[#b8b8b8] hover:text-[#f5f5f5] hover:bg-[#1b1b1b]'
                   }`}
                 >
-                  <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider">
-                    <Icon size={13} aria-hidden="true" />
+                  <span className="flex items-center gap-2 text-[15px] leading-tight font-medium">
+                    <Icon size={16} aria-hidden="true" className={isActive ? 'text-black' : 'text-[#b8b8b8]'} />
                     <span>{tab.label}</span>
                     {tab.badgeCount !== undefined && tab.badgeCount > 0 && (
                       <span
-                        className={`text-[9px] px-1 border ${
+                        className={`text-xs px-1.5 py-0.2 rounded font-bold ${
                           isActive
-                            ? 'border-black text-black font-extrabold bg-transparent'
-                            : 'border-white text-white font-bold bg-black'
+                            ? 'bg-black text-white'
+                            : 'bg-[#c90000] text-white'
                         }`}
                       >
                         {tab.badgeCount}
                       </span>
                     )}
                   </span>
-                  <span className={`pl-[19px] text-[9px] normal-case tracking-normal ${
-                    isActive ? 'text-[#484848]' : 'text-[#858585]'
+                  <span className={`text-[12px] pl-6 font-normal ${
+                    isActive ? 'text-[#333333]' : 'text-[#858585]'
                   }`}>
                     {tab.description}
                   </span>

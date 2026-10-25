@@ -125,44 +125,46 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 font-mono text-xs text-white">
+    <div className="w-full flex flex-col gap-8 text-[#f5f5f5]">
       {/* SECTION HEADER */}
-      <section className="border-b border-[#303030] pb-3 flex flex-col md:flex-row justify-between items-start md:items-end gap-2">
-        <div className="flex flex-col gap-1">
-          <div className="text-sm md:text-base font-bold text-white tracking-widest uppercase flex items-center gap-2">
-            <span>Start a scan</span>
-            <span className="text-white font-bold">■</span>
-          </div>
-          <div className="text-[11px] text-[#858585] uppercase tracking-wider">
-            Choose a drive or folder to find large files, duplicates, and cleanup suggestions.
-          </div>
+      <section className="border-b border-[#303030] pb-5 flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#f5f5f5] tracking-tight flex items-center gap-3">
+            <span>Disk Scanner</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-white inline-block"></span>
+          </h1>
+          <p className="text-sm md:text-base text-[#b8b8b8]">
+            Analyze local disks or folders to locate duplicates, redundant files, and reclaim storage safely.
+          </p>
         </div>
-        <div className="text-[11px] text-[#858585] uppercase tracking-widest font-mono">
-          YOUR FILES STAY ON THIS DEVICE
+        <div className="text-xs text-[#858585] uppercase tracking-wider font-mono border border-[#303030] px-3 py-1 bg-[#141414]">
+          100% OFFLINE // NO CLOUD ACCESS
         </div>
       </section>
 
       {/* SAFETY PROTOCOL BANNER */}
-      <div className="border border-[#303030] p-3 bg-[#0b0b0b] flex flex-col md:flex-row md:items-center justify-between text-xs gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-white font-bold tracking-wider">YOUR FILES ARE SAFE:</span>
-          <span className="text-[#b0b0b0] tracking-wider">
-            Scanning only finds files. Nothing is removed unless you review and confirm it.
+      <div className="border border-[#303030] p-4 bg-[#141414] rounded-[2px] flex flex-col md:flex-row md:items-center justify-between text-sm gap-3">
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 bg-[#57b887]/20 border border-[#57b887]/40 text-[#57b887]">
+            SAFE MODE
+          </span>
+          <span className="text-[#b8b8b8]">
+            Scanning is strictly read-only. No files are ever moved or deleted without your explicit confirmation.
           </span>
         </div>
-        <div className="text-[11px] text-[#858585] font-mono tracking-wider">
-          Confirmed cleanup goes to Trash or the recovery vault.
+        <div className="text-xs text-[#858585] font-mono">
+          Confirmed cleanup routes to Trash or Local Vault
         </div>
       </div>
 
       {/* 1. SELECT SCAN TARGET VOLUME */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div>
-          <div className="text-xs text-white uppercase tracking-widest font-bold">
-            1. Choose a drive or folder
-          </div>
-          <p className="text-[11px] text-[#858585] mt-1">
-            Pick a location to analyze. You can scan a whole drive or just one folder.
+          <h2 className="text-lg md:text-xl font-bold text-[#f5f5f5] tracking-tight">
+            1. Select scan target
+          </h2>
+          <p className="text-sm text-[#b8b8b8] mt-0.5">
+            Choose a drive or pick a specific user folder to analyze.
           </p>
         </div>
 
@@ -179,31 +181,33 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 setTargetPath(folders[0].path);
               }
             }}
-            className={`w-full text-left border p-6 cursor-pointer select-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+            className={`w-full text-left border p-6 cursor-pointer select-none transition-all rounded-[2px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white ${
               selectedVolume === 'PRIMARY'
-                ? 'bg-white text-black border-white'
-                : 'bg-[#0b0b0b] text-white border-[#303030] hover:border-[#484848]'
+                ? 'bg-white text-black border-white shadow-sm'
+                : 'bg-[#141414] text-[#f5f5f5] border-[#303030] hover:border-[#454545] hover:bg-[#1b1b1b]'
             }`}
           >
             <div
-              className={`text-xs tracking-widest uppercase mb-3 ${
-                selectedVolume === 'PRIMARY' ? 'text-black font-bold' : 'text-[#858585]'
+              className={`text-xs uppercase font-semibold tracking-wider mb-2 ${
+                selectedVolume === 'PRIMARY' ? 'text-black' : 'text-[#858585]'
               }`}
             >
-              System drive
+              System Drive
             </div>
-            <div className="text-lg md:text-xl font-bold tracking-tight mb-1">
-              {volumes[0]?.name || 'SYSTEM DRIVE'}
+            <div className="text-xl md:text-2xl font-bold tracking-tight mb-1">
+              {volumes[0]?.name || 'Local Disk'}
             </div>
-            <div className="text-3xl font-bold mb-4">{volumes[0]?.path || 'C:\\'}</div>
+            <div className="text-3xl md:text-4xl font-bold font-mono mb-3">
+              {volumes[0]?.path || 'C:\\'}
+            </div>
             <div
-              className={`text-[11px] tracking-wider ${
-                selectedVolume === 'PRIMARY' ? 'text-black font-bold' : 'text-[#858585]'
+              className={`text-sm ${
+                selectedVolume === 'PRIMARY' ? 'text-neutral-800' : 'text-[#b8b8b8]'
               }`}
             >
               {volumes[0]
-                ? `${volumes[0].formattedFree} free · ${volumes[0].percentUsed}% used`
-                : 'Default scan location'}
+                ? `${volumes[0].formattedFree} free (${volumes[0].percentUsed}% used)`
+                : 'Primary storage volume'}
             </div>
           </button>
 
@@ -218,35 +222,35 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 setTargetPath(volumes[1].path);
               }
             }}
-            className={`w-full text-left border p-6 select-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+            className={`w-full text-left border p-6 select-none transition-all rounded-[2px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white ${
               selectedVolume === 'EXTERNAL'
-                ? 'bg-white text-black border-white'
-                : 'bg-[#0b0b0b] text-white border-[#303030] hover:border-[#484848]'
+                ? 'bg-white text-black border-white shadow-sm'
+                : 'bg-[#141414] text-[#f5f5f5] border-[#303030] hover:border-[#454545] hover:bg-[#1b1b1b]'
             } ${
-              volumes.length < 2 ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+              volumes.length < 2 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
             }`}
           >
             <div
-              className={`text-xs tracking-widest uppercase mb-3 ${
-                selectedVolume === 'EXTERNAL' ? 'text-black font-bold' : 'text-[#858585]'
+              className={`text-xs uppercase font-semibold tracking-wider mb-2 ${
+                selectedVolume === 'EXTERNAL' ? 'text-black' : 'text-[#858585]'
               }`}
             >
-              Other drive
+              Secondary Drive
             </div>
-            <div className="text-lg md:text-xl font-bold tracking-tight mb-1">
-              {volumes.length > 1 ? volumes[1].name : 'No other drive found'}
+            <div className="text-xl md:text-2xl font-bold tracking-tight mb-1">
+              {volumes.length > 1 ? volumes[1].name : 'No Secondary Drive'}
             </div>
-            <div className="text-2xl font-bold mb-4">
-              {volumes.length > 1 ? volumes[1].path : 'Connect another drive'}
+            <div className="text-2xl md:text-3xl font-bold font-mono mb-3 truncate">
+              {volumes.length > 1 ? volumes[1].path : '—'}
             </div>
             <div
-              className={`text-[11px] tracking-wider ${
-                selectedVolume === 'EXTERNAL' ? 'text-black font-bold' : 'text-[#858585]'
+              className={`text-sm ${
+                selectedVolume === 'EXTERNAL' ? 'text-neutral-800' : 'text-[#b8b8b8]'
               }`}
             >
               {volumes.length > 1
-                ? `${volumes[1].formattedFree} free · ${volumes[1].percentUsed}% used`
-                : 'This option is unavailable until a drive is connected.'}
+                ? `${volumes[1].formattedFree} free (${volumes[1].percentUsed}% used)`
+                : 'Connect an external or backup drive'}
             </div>
           </button>
 
@@ -260,49 +264,49 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 setTargetPath(folders[0].path);
               }
             }}
-            className={`w-full text-left border p-6 cursor-pointer select-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+            className={`w-full text-left border p-6 cursor-pointer select-none transition-all rounded-[2px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white ${
               selectedVolume === 'CUSTOM'
-                ? 'bg-white text-black border-white'
-                : 'bg-[#0b0b0b] text-white border-[#303030] hover:border-[#484848]'
+                ? 'bg-white text-black border-white shadow-sm'
+                : 'bg-[#141414] text-[#f5f5f5] border-[#303030] hover:border-[#454545] hover:bg-[#1b1b1b]'
             }`}
           >
             <div
-              className={`text-xs tracking-widest uppercase mb-3 ${
-                selectedVolume === 'CUSTOM' ? 'text-black font-bold' : 'text-[#858585]'
+              className={`text-xs uppercase font-semibold tracking-wider mb-2 ${
+                selectedVolume === 'CUSTOM' ? 'text-black' : 'text-[#858585]'
               }`}
             >
-              Suggested folder
+              Specific Folder
             </div>
-            <div className="text-lg md:text-xl font-bold tracking-tight mb-1">
-              Choose a folder
+            <div className="text-xl md:text-2xl font-bold tracking-tight mb-1">
+              User Directory
             </div>
-            <div className="text-2xl font-bold mb-4 truncate">
-              {folders.length > 0 ? folders[0].name : 'Enter a path below'}
+            <div className="text-2xl md:text-3xl font-bold font-mono mb-3 truncate">
+              {folders.length > 0 ? folders[0].name : 'Custom Path'}
             </div>
             <div
-              className={`text-[11px] tracking-wider ${
-                selectedVolume === 'CUSTOM' ? 'text-black font-bold' : 'text-[#858585]'
+              className={`text-sm ${
+                selectedVolume === 'CUSTOM' ? 'text-neutral-800' : 'text-[#b8b8b8]'
               }`}
             >
               {folders.length > 0
-                ? `${folders.length} suggested folders · click to select`
-                : 'Type or paste a folder path below.'}
+                ? `${folders.length} accessible user folders ready`
+                : 'Choose custom directory path below'}
             </div>
           </button>
         </div>
       </div>
 
       {/* TARGET PATH SPECIFICATION */}
-      <div className="border border-[#303030] p-5 bg-[#0b0b0b] space-y-4">
+      <div className="border border-[#303030] p-6 bg-[#141414] rounded-[2px] space-y-4">
         <div>
-          <label htmlFor="scan-target-path" className="text-xs text-white uppercase tracking-widest font-bold">
-            2. Confirm the folder to scan
+          <label htmlFor="scan-target-path" className="text-lg font-bold text-[#f5f5f5] tracking-tight block">
+            2. Directory path to scan
           </label>
-          <p className="text-[11px] text-[#858585] mt-1">
-            You can edit this path or paste another folder location.
+          <p className="text-sm text-[#b8b8b8] mt-1">
+            Enter or paste any path on your computer. Subdirectories will be recursively inspected.
           </p>
         </div>
-        <div className="flex flex-col md:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <input
             id="scan-target-path"
             type="text"
@@ -312,8 +316,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               setSelectedVolume('CUSTOM');
             }}
             aria-label="Folder or drive path to scan"
-            className="bg-black border border-[#303030] px-4 py-2.5 text-xs md:text-sm text-white flex-1 focus:border-white focus:outline-none"
-            placeholder="For example: C:\\Users\\You\\Documents"
+            className="bg-[#080808] border border-[#303030] px-4 py-3 text-base text-[#f5f5f5] font-mono flex-1 rounded-[2px] focus:border-white focus:outline-none"
+            placeholder="e.g. C:\Users\Username\Downloads"
           />
           <button
             type="button"
@@ -325,54 +329,56 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 setTargetPath(nextFolder.path);
               }
             }}
-            className="px-4 py-2.5 border border-[#303030] text-[#b0b0b0] hover:text-white hover:border-[#484848] transition-colors cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-3 border border-[#303030] bg-[#1b1b1b] text-sm text-[#b8b8b8] hover:text-white hover:border-[#454545] transition-colors cursor-pointer whitespace-nowrap rounded-[2px] disabled:opacity-50"
           >
-            Use next suggested folder
+            Switch suggested folder
           </button>
           <button
             type="button"
             onClick={handleExecuteScan}
             disabled={scanStatus === 'SCANNING'}
-            className="px-6 py-2.5 border border-white bg-white text-black font-bold uppercase tracking-wider transition-none hover:bg-neutral-200 cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-8 py-3 border border-white bg-white text-black font-semibold text-base uppercase tracking-wider transition-all hover:bg-neutral-200 cursor-pointer whitespace-nowrap rounded-[2px] disabled:opacity-50"
           >
-            {scanStatus === 'SCANNING'
-              ? 'Scanning…'
-              : 'Start scan'}
+            {scanStatus === 'SCANNING' ? 'Scanning…' : 'Start Scan'}
           </button>
         </div>
         {statusMessage && (
-          <div className="text-[11px] text-[#b0b0b0] tracking-wider font-mono">
+          <div className="text-xs text-[#b8b8b8] tracking-wide font-mono pt-1">
             &gt; {statusMessage}
           </div>
         )}
       </div>
 
       {/* ANALYSIS ALGORITHMS PIPELINE */}
-      <div className="border border-[#303030] p-5 bg-[#0b0b0b]">
-        <div className="mb-4">
-          <h2 className="text-xs text-white uppercase tracking-widest font-bold">
-            3. Choose what to look for
+      <div className="border border-[#303030] p-6 bg-[#141414] rounded-[2px]">
+        <div className="mb-5">
+          <h2 className="text-lg md:text-xl font-bold text-[#f5f5f5] tracking-tight">
+            3. Detection categories
           </h2>
-          <p className="text-[11px] text-[#858585] mt-1">
-            All options are on by default. Select an option to turn it off.
+          <p className="text-sm text-[#b8b8b8] mt-0.5">
+            Select the forensic analysis rules to run during this scan.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <button
             type="button"
             aria-pressed={pipelineOptions.exactDupes}
             onClick={() => toggleOption('exactDupes')}
-            className="w-full flex items-start gap-3 text-left cursor-pointer select-none group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] ${
+              pipelineOptions.exactDupes
+                ? 'bg-[#1b1b1b] border-white text-white'
+                : 'bg-[#101010] border-[#303030] text-[#858585]'
+            }`}
           >
-            <span className="font-bold text-white group-hover:text-neutral-300">
+            <span className="font-mono text-base font-bold">
               {pipelineOptions.exactDupes ? '[✓]' : '[ ]'}
             </span>
             <div>
-              <div className="text-xs text-white uppercase font-bold tracking-wider">
+              <div className="text-base font-medium text-[#f5f5f5]">
                 Exact copies
               </div>
-              <div className="text-[10px] text-[#858585]">
-                Find files with identical contents.
+              <div className="text-xs text-[#b8b8b8] mt-0.5">
+                Cryptographic SHA-256 byte-by-byte match.
               </div>
             </div>
           </button>
@@ -381,17 +387,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             type="button"
             aria-pressed={pipelineOptions.similarImages}
             onClick={() => toggleOption('similarImages')}
-            className="w-full flex items-start gap-3 text-left cursor-pointer select-none group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] ${
+              pipelineOptions.similarImages
+                ? 'bg-[#1b1b1b] border-white text-white'
+                : 'bg-[#101010] border-[#303030] text-[#858585]'
+            }`}
           >
-            <span className="font-bold text-white group-hover:text-neutral-300">
+            <span className="font-mono text-base font-bold">
               {pipelineOptions.similarImages ? '[✓]' : '[ ]'}
             </span>
             <div>
-              <div className="text-xs text-white uppercase font-bold tracking-wider">
+              <div className="text-base font-medium text-[#f5f5f5]">
                 Similar images
               </div>
-              <div className="text-[10px] text-[#858585]">
-                Find photos that look alike, even if edited.
+              <div className="text-xs text-[#b8b8b8] mt-0.5">
+                Perceptual pHash clustering for photos.
               </div>
             </div>
           </button>
@@ -400,17 +410,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             type="button"
             aria-pressed={pipelineOptions.oldFiles}
             onClick={() => toggleOption('oldFiles')}
-            className="w-full flex items-start gap-3 text-left cursor-pointer select-none group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] ${
+              pipelineOptions.oldFiles
+                ? 'bg-[#1b1b1b] border-white text-white'
+                : 'bg-[#101010] border-[#303030] text-[#858585]'
+            }`}
           >
-            <span className="font-bold text-white group-hover:text-neutral-300">
+            <span className="font-mono text-base font-bold">
               {pipelineOptions.oldFiles ? '[✓]' : '[ ]'}
             </span>
             <div>
-              <div className="text-xs text-white uppercase font-bold tracking-wider">
+              <div className="text-base font-medium text-[#f5f5f5]">
                 Older files
               </div>
-              <div className="text-[10px] text-[#858585]">
-                Modified more than 180 days ago.
+              <div className="text-xs text-[#b8b8b8] mt-0.5">
+                Inactive files unmodified for &gt;180 days.
               </div>
             </div>
           </button>
@@ -419,17 +433,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             type="button"
             aria-pressed={pipelineOptions.tempFiles}
             onClick={() => toggleOption('tempFiles')}
-            className="w-full flex items-start gap-3 text-left cursor-pointer select-none group focus-visible:outline-extra focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] ${
+              pipelineOptions.tempFiles
+                ? 'bg-[#1b1b1b] border-white text-white'
+                : 'bg-[#101010] border-[#303030] text-[#858585]'
+            }`}
           >
-            <span className="font-bold text-white group-hover:text-neutral-300">
+            <span className="font-mono text-base font-bold">
               {pipelineOptions.tempFiles ? '[✓]' : '[ ]'}
             </span>
             <div>
-              <div className="text-xs text-white uppercase font-bold tracking-wider">
+              <div className="text-base font-medium text-[#f5f5f5]">
                 Temporary files
               </div>
-              <div className="text-[10px] text-[#858585]">
-                Find common temporary and cache files.
+              <div className="text-xs text-[#b8b8b8] mt-0.5">
+                Caches, crash dumps, and build artifacts.
               </div>
             </div>
           </button>
@@ -438,17 +456,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             type="button"
             aria-pressed={pipelineOptions.storageAnalytics}
             onClick={() => toggleOption('storageAnalytics')}
-            className="w-full flex items-start gap-3 text-left cursor-pointer select-none group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] ${
+              pipelineOptions.storageAnalytics
+                ? 'bg-[#1b1b1b] border-white text-white'
+                : 'bg-[#101010] border-[#303030] text-[#858585]'
+            }`}
           >
-            <span className="font-bold text-white group-hover:text-neutral-300">
+            <span className="font-mono text-base font-bold">
               {pipelineOptions.storageAnalytics ? '[✓]' : '[ ]'}
             </span>
             <div>
-              <div className="text-xs text-white uppercase font-bold tracking-wider">
+              <div className="text-base font-medium text-[#f5f5f5]">
                 Storage overview
               </div>
-              <div className="text-[10px] text-[#858585]">
-                See how much space folders use.
+              <div className="text-xs text-[#b8b8b8] mt-0.5">
+                Deep folder sizing &amp; directory tree.
               </div>
             </div>
           </button>
@@ -456,48 +478,46 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </div>
 
       {/* DIAGNOSTIC STATE TELEMETRY */}
-      <div className="border border-[#303030] p-6 bg-[#0b0b0b] space-y-4">
-        <div className="text-xs text-white uppercase tracking-widest font-bold">
-          Scan progress
+      <div className="border border-[#303030] p-6 bg-[#141414] rounded-[2px] space-y-4">
+        <div className="text-lg font-bold text-[#f5f5f5] tracking-tight">
+          Scan status
         </div>
 
         {scanStatus === 'READY' && (
-          <div className="space-y-2 text-xs md:text-sm">
-            <div className="text-white font-bold tracking-wider">Ready when you are</div>
-            <div className="text-[#858585]">
-              Select a location above and start a scan to see results.
+          <div className="space-y-1.5 py-2">
+            <div className="text-base font-medium text-[#f5f5f5]">System ready</div>
+            <div className="text-sm text-[#b8b8b8]">
+              Target path confirmed above. Click "Start Scan" to run the pipeline.
             </div>
           </div>
         )}
 
         {scanStatus === 'SCANNING' && (
-          <div className="space-y-4">
-            <div className="text-white font-bold tracking-widest text-sm flex items-center justify-between">
-              <span>Scanning your files…</span>
-              <span className="border border-white px-2 py-0.5 bg-white text-black font-bold text-[10px]">
+          <div className="space-y-5">
+            <div className="text-base font-semibold text-white flex items-center justify-between">
+              <span>Scanning files…</span>
+              <span className="border border-[#57b887] px-2.5 py-0.5 bg-[#57b887]/20 text-[#57b887] font-bold text-xs">
                 IN PROGRESS
               </span>
             </div>
 
             <div>
-              <div className="text-[11px] text-[#858585] uppercase mb-1">Scan progress</div>
-              <div className="text-white tracking-widest text-xs md:text-sm break-all font-mono">
+              <div className="text-xs text-[#858585] uppercase mb-1">Directory traversal</div>
+              <div className="text-white text-sm md:text-base font-mono">
                 {renderBlocks(workersPercent)} [{workersPercent}%]
               </div>
             </div>
 
             <div>
-              <div className="text-[11px] text-[#858585] uppercase mb-1">
-                Files checked
-              </div>
-              <div className="text-white tracking-widest text-xs md:text-sm break-all font-mono">
+              <div className="text-xs text-[#858585] uppercase mb-1">File hashing</div>
+              <div className="text-white text-sm md:text-base font-mono">
                 {renderBlocks(inodesPercent)} [{inodesPercent}%]
               </div>
             </div>
 
-            <div className="pt-2 border-t border-[#303030] text-xs flex justify-between">
-              <span className="text-[#858585]">Files found:</span>
-              <span className="text-white font-bold">
+            <div className="pt-3 border-t border-[#303030] flex justify-between items-center text-sm">
+              <span className="text-[#b8b8b8]">Files found:</span>
+              <span className="text-2xl font-bold font-mono text-white">
                 {discoveredFiles.toLocaleString()}
               </span>
             </div>
@@ -505,47 +525,47 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         )}
 
         {scanStatus === 'COMPLETE' && (
-          <div className="space-y-4">
-            <div className="text-white font-bold text-sm tracking-wider flex items-center justify-between">
+          <div className="space-y-5">
+            <div className="text-base font-bold text-[#f5f5f5] flex items-center justify-between">
               <span>Scan complete</span>
-              <span className="text-xs border border-white px-2 py-0.5 bg-white text-black font-bold">
-                DONE
+              <span className="text-xs border border-[#57b887] px-2.5 py-0.5 bg-[#57b887]/20 text-[#57b887] font-bold">
+                COMPLETED
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[#303030] text-xs">
-              <div>
-                <span className="text-[#858585] text-[10px] block uppercase">
-                  FILES FOUND
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[#303030]">
+              <div className="border border-[#303030] p-4 bg-[#1b1b1b] rounded-[2px]">
+                <span className="text-xs text-[#858585] block uppercase font-medium">
+                  Files scanned
                 </span>
-                <span className="text-white text-xl font-bold font-mono">
+                <span className="text-3xl font-bold font-mono text-white mt-1 block">
                   {discoveredFiles.toLocaleString()}
                 </span>
               </div>
-              <div>
-                <span className="text-[#858585] text-[10px] block uppercase">
-                  SPACE ANALYZED
+              <div className="border border-[#303030] p-4 bg-[#1b1b1b] rounded-[2px]">
+                <span className="text-xs text-[#858585] block uppercase font-medium">
+                  Space analyzed
                 </span>
-                <span className="text-white text-xl font-bold font-mono">
+                <span className="text-3xl font-bold font-mono text-white mt-1 block">
                   {discoveredFormattedSize}
                 </span>
               </div>
             </div>
 
-            <div className="pt-3 flex flex-wrap gap-3">
+            <div className="pt-2 flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={() => onNavigate('storage')}
-                className="px-4 py-2 border border-white bg-white text-black font-bold uppercase transition-none hover:bg-neutral-200 cursor-pointer"
+                className="px-5 py-2.5 border border-white bg-white text-black font-semibold text-sm uppercase tracking-wider transition-all hover:bg-neutral-200 cursor-pointer rounded-[2px]"
               >
-                View storage
+                Browse storage
               </button>
               <button
                 type="button"
                 onClick={() => onNavigate('duplicates')}
-                className="px-4 py-2 border border-[#484848] bg-[#0b0b0b] text-[#b0b0b0] hover:text-white hover:border-white uppercase transition-none cursor-pointer"
+                className="px-5 py-2.5 border border-[#454545] bg-[#1b1b1b] text-sm text-[#f5f5f5] hover:border-white uppercase transition-all cursor-pointer rounded-[2px]"
               >
-                Review exact copies
+                Review duplicate files
               </button>
             </div>
           </div>

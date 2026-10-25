@@ -90,85 +90,85 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
   };
 
   return (
-    <div className="w-full bg-[#000000] text-white font-mono text-xs flex flex-col gap-6">
+    <div className="w-full text-[#f5f5f5] flex flex-col gap-8">
       {/* SUB-HEADER / TARGET IDENTIFIER */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#303030] pb-4 gap-3">
-        <div className="flex flex-col gap-1">
-          <div className="text-base md:text-xl font-bold text-white tracking-widest uppercase">
-            [METADATA_ANALYSIS_TARGETS]
-          </div>
-          <div className="text-[11px] text-[#858585] uppercase tracking-wider">
-            AGE / TEMPORARY FILE RULE HEURISTICS // STAT_INODE INSPECTION
-          </div>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#303030] pb-5 gap-3">
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#f5f5f5] tracking-tight">
+            File Review
+          </h1>
+          <p className="text-sm md:text-base text-[#b8b8b8]">
+            Heuristic analysis of old files, temporary caches, and review recommendations based on timestamp metadata.
+          </p>
         </div>
-        <div className="text-[11px] text-[#858585] border border-[#484848] px-3 py-1 uppercase tracking-widest bg-black">
-          FILTER_PROTOCOL: ACCESS_TIMESTAMP + REGEX_FILENAME_PATTERNS
+        <div className="text-xs text-[#858585] border border-[#303030] px-3 py-1 uppercase tracking-wider bg-[#141414] rounded-[2px] font-mono">
+          STAT_INODE // ACCESS_TIMESTAMP
         </div>
       </div>
 
       {/* SUMMARY METRICS STRIP */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border border-[#303030] bg-[#0b0b0b]">
-        <div className="p-4 border-b sm:border-b-0 border-r-0 sm:border-r border-[#303030] flex flex-col gap-1">
-          <span className="text-[11px] text-[#858585] uppercase tracking-widest">
-            OLDER FILES (&gt;180D MODIFIED)
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-5 border border-[#303030] bg-[#141414] rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase font-medium">
+            Older Files (&gt;180 Days)
           </span>
-          <span className="text-xl md:text-2xl font-bold text-white tracking-widest">{oldCount}</span>
+          <span className="text-2xl md:text-3xl font-bold font-mono text-white mt-1">{oldCount}</span>
         </div>
-        <div className="p-4 border-b sm:border-b-0 lg:border-r border-[#303030] flex flex-col gap-1">
-          <span className="text-[11px] text-[#858585] uppercase tracking-widest">
-            TEMPORARY FILES (.TMP/.LOG)
+        <div className="p-5 border border-[#303030] bg-[#141414] rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase font-medium">
+            Temporary Files (.tmp/.log)
           </span>
-          <span className="text-xl md:text-2xl font-bold text-white tracking-widest">{tempCount}</span>
+          <span className="text-2xl md:text-3xl font-bold font-mono text-white mt-1">{tempCount}</span>
         </div>
-        <div className="p-4 border-b sm:border-b-0 border-r-0 sm:border-r border-[#303030] flex flex-col gap-1">
-          <span className="text-[11px] text-[#858585] uppercase tracking-widest">
-            TOTAL CANDIDATES
+        <div className="p-5 border border-[#303030] bg-[#141414] rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase font-medium">
+            Total Candidates
           </span>
-          <span className="text-xl md:text-2xl font-bold text-white tracking-widest">{totalCandidateCount}</span>
+          <span className="text-2xl md:text-3xl font-bold font-mono text-white mt-1">{totalCandidateCount}</span>
         </div>
-        <div className="p-4 flex flex-col gap-1">
-          <span className="text-[11px] text-[#858585] uppercase tracking-widest">
-            POTENTIAL RECOVERY
+        <div className="p-5 border border-[#303030] bg-[#141414] rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase font-medium">
+            Potential Recovery
           </span>
-          <span className="text-xl md:text-2xl font-bold text-white tracking-widest">{formattedPotentialRecovery}</span>
+          <span className="text-2xl md:text-3xl font-bold font-mono text-[#57b887] mt-1">{formattedPotentialRecovery}</span>
         </div>
       </div>
 
       {/* FILTER BAR & BULK DISPATCH */}
-      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 bg-[#141414] p-4 border border-[#303030] rounded-[2px]">
         <div className="flex items-center flex-wrap gap-2">
           <button
             type="button"
             onClick={() => setFilterType('ALL')}
-            className={`uppercase font-bold text-xs px-4 py-2 border transition-none cursor-pointer ${
+            className={`font-semibold text-xs uppercase px-4 py-2 border transition-all cursor-pointer rounded-[2px] ${
               filterType === 'ALL'
                 ? 'border-white bg-white text-black'
-                : 'border-[#303030] bg-black text-[#b0b0b0] hover:border-[#484848] hover:text-white'
+                : 'border-[#303030] bg-[#1b1b1b] text-[#b8b8b8] hover:border-[#454545] hover:text-white'
             }`}
           >
-            [ ALL ({totalCandidateCount}) ]
+            All ({totalCandidateCount})
           </button>
           <button
             type="button"
             onClick={() => setFilterType('OLD')}
-            className={`uppercase font-bold text-xs px-4 py-2 border transition-none cursor-pointer ${
+            className={`font-semibold text-xs uppercase px-4 py-2 border transition-all cursor-pointer rounded-[2px] ${
               filterType === 'OLD'
                 ? 'border-white bg-white text-black'
-                : 'border-[#303030] bg-black text-[#b0b0b0] hover:border-[#484848] hover:text-white'
+                : 'border-[#303030] bg-[#1b1b1b] text-[#b8b8b8] hover:border-[#454545] hover:text-white'
             }`}
           >
-            [ OLD ({oldCount}) ]
+            Old Files ({oldCount})
           </button>
           <button
             type="button"
             onClick={() => setFilterType('TEMPORARY')}
-            className={`uppercase font-bold text-xs px-4 py-2 border transition-none cursor-pointer ${
+            className={`font-semibold text-xs uppercase px-4 py-2 border transition-all cursor-pointer rounded-[2px] ${
               filterType === 'TEMPORARY'
                 ? 'border-white bg-white text-black'
-                : 'border-[#303030] bg-black text-[#b0b0b0] hover:border-[#484848] hover:text-white'
+                : 'border-[#303030] bg-[#1b1b1b] text-[#b8b8b8] hover:border-[#454545] hover:text-white'
             }`}
           >
-            [ TEMPORARY ({tempCount}) ]
+            Temporary Files ({tempCount})
           </button>
         </div>
 
@@ -176,79 +176,79 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
           <button
             type="button"
             onClick={handleBulkToggle}
-            className="w-full sm:w-auto uppercase font-bold text-xs px-4 py-2 border border-[#484848] bg-black text-white hover:bg-white hover:text-black transition-none cursor-pointer"
+            className="w-full sm:w-auto font-semibold text-xs px-4 py-2 border border-[#454545] bg-[#1b1b1b] text-[#f5f5f5] hover:border-white transition-all cursor-pointer rounded-[2px]"
           >
-            {allFilteredStaged ? '[ UNSTAGE ALL CANDIDATES ]' : '[ BULK SELECT CANDIDATES ]'}
+            {allFilteredStaged ? 'Unstage All Candidates' : 'Bulk Select Candidates'}
           </button>
         </div>
       </div>
 
       {/* FORENSIC TABLE */}
-      <div className="w-full border border-[#303030] bg-black overflow-x-auto">
+      <div className="w-full border border-[#303030] bg-[#141414] rounded-[2px] overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[800px]">
           <thead>
-            <tr className="border-b border-[#303030] text-[11px] text-[#858585] uppercase bg-[#0b0b0b]">
+            <tr className="border-b border-[#303030] text-xs text-[#858585] uppercase bg-[#101010]">
               <th
-                className="py-2.5 px-4 w-12 text-center select-none cursor-pointer"
+                className="py-3 px-4 w-12 text-center select-none cursor-pointer"
                 onClick={handleBulkToggle}
               >
                 {allFilteredStaged ? '[✓]' : '[ ]'}
               </th>
-              <th className="py-2.5 px-4 tracking-wider">FILE PATH</th>
-              <th className="py-2.5 px-4 tracking-wider whitespace-nowrap">INODE AGE</th>
-              <th className="py-2.5 px-4 tracking-wider">TYPE</th>
-              <th className="py-2.5 px-4 tracking-wider text-right">SIZE</th>
-              <th className="py-2.5 px-4 tracking-wider">CLASSIFICATION REASON</th>
-              <th className="py-2.5 px-4 tracking-wider text-right">STAGE</th>
+              <th className="py-3 px-4 font-semibold">File Path</th>
+              <th className="py-3 px-4 font-semibold whitespace-nowrap">Age</th>
+              <th className="py-3 px-4 font-semibold">Type</th>
+              <th className="py-3 px-4 font-semibold text-right">Size</th>
+              <th className="py-3 px-4 font-semibold">Rule Reason</th>
+              <th className="py-3 px-4 font-semibold text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#303030] text-xs">
+          <tbody className="divide-y divide-[#222222] text-sm">
             {filteredFiles.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-[#858585] uppercase">
-                  ZERO CANDIDATE INODES MATCH CURRENT FILTER PROTOCOL // DISK CLEAN
+                <td colSpan={7} className="py-12 text-center text-[#858585] text-sm">
+                  No files match current filter criteria.
                 </td>
               </tr>
             ) : (
               filteredFiles.map((file) => (
               <tr
                 key={file.id}
-                className="transition-none hover:bg-[#111111] group"
+                className="transition-colors hover:bg-[#1b1b1b] group"
               >
                 <td
                   className="py-3 px-4 text-center cursor-pointer select-none"
                   onClick={() => onToggleStageFile(file.id)}
                 >
                   <span
-                    className={`font-bold ${
+                    className={`font-bold font-mono ${
                       file.isStaged ? 'text-white' : 'text-[#858585]'
                     }`}
                   >
                     {file.isStaged ? '[✓]' : '[ ]'}
                   </span>
                 </td>
-                <td className="py-3 px-4 text-white font-mono break-all max-w-sm">
+                <td className="py-3 px-4 text-[#f5f5f5] font-mono text-xs md:text-sm break-all max-w-sm">
                   {file.path}
                 </td>
-                <td className="py-3 px-4 text-[#b0b0b0] whitespace-nowrap">
+                <td className="py-3 px-4 text-[#b8b8b8] whitespace-nowrap text-xs font-mono">
                   {file.inodeAge}
                 </td>
-                <td className="py-3 px-4 text-white font-bold">{file.type}</td>
-                <td className="py-3 px-4 text-right text-white font-bold whitespace-nowrap">
+                <td className="py-3 px-4 text-white font-mono text-xs">{file.type}</td>
+                <td className="py-3 px-4 text-right text-white font-semibold font-mono whitespace-nowrap">
                   {file.size}
                 </td>
-                <td className="py-3 px-4 text-[#b0b0b0]">{file.reason}</td>
+                <td className="py-3 px-4 text-[#b8b8b8] text-xs">{file.reason}</td>
                 <td className="py-3 px-4 text-right whitespace-nowrap">
                   <button
                     type="button"
                     onClick={() => onToggleStageFile(file.id)}
-                    className={`text-[10px] font-bold px-2 py-0.5 border uppercase transition-none cursor-pointer ${
+                    className={`text-xs font-semibold px-3 py-1 border transition-all cursor-pointer rounded-[2px] ${
                       file.isStaged
                         ? 'border-white bg-white text-black'
-                        : 'border-[#484848] bg-black text-[#b0b0b0] hover:border-white hover:text-white'
+                        : 'border-[#454545] bg-[#101010] text-[#b8b8b8] hover:border-white hover:text-white'
                     }`}
                   >
-                    {file.isStaged ? '[ QUEUED ]' : '[ STAGE ]'}
+                    {file.isStaged ? 'Queued' : 'Stage'}
                   </button>
                 </td>
               </tr>
@@ -259,16 +259,13 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
       </div>
 
       {/* BOTTOM TELEMETRY / STAGING STATUS */}
-      <div className="border border-[#303030] bg-[#0b0b0b] p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex flex-col gap-1">
-          <div className="text-xs font-bold text-white tracking-widest uppercase">
-            [STAGING_TELEMETRY]
+          <div className="text-base font-bold text-white tracking-tight">
+            Staged for Cleanup: {stagedFiles.length} Files ({formattedStagedSize})
           </div>
-          <div className="text-sm font-bold text-white tracking-wider">
-            STAGED FOR CANDIDATE QUEUE: {stagedFiles.length} FILES ({formattedStagedSize})
-          </div>
-          <div className="text-[11px] text-[#858585] uppercase tracking-wider">
-            NOTICE: NO MUTATION PERFORMED ON DISK. CANDIDATES FORWARDED TO [EXECUTION_QUEUE].
+          <div className="text-xs text-[#858585]">
+            Staged items are forwarded to the Cleanup review queue. No files are moved yet.
           </div>
         </div>
 
@@ -276,9 +273,9 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('cleanup')}
-            className="w-full md:w-auto text-center font-bold text-xs px-6 py-2.5 border border-white bg-white text-black uppercase hover:bg-neutral-200 transition-none cursor-pointer"
+            className="w-full md:w-auto text-center font-semibold text-sm px-6 py-2.5 border border-white bg-white text-black uppercase hover:bg-neutral-200 transition-all cursor-pointer rounded-[2px]"
           >
-            FORWARD TO CLEANUP &gt;&gt;
+            Forward to Cleanup Queue →
           </button>
         </div>
       </div>

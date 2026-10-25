@@ -402,91 +402,94 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
     currentGroup?.files.find((f) => !f.isPreferred) || currentGroup?.files[1] || currentGroup?.files[0];
 
   return (
-    <div className="w-full flex flex-col font-mono text-xs text-white pb-12">
+    <div className="w-full flex flex-col gap-6 text-[#f5f5f5] pb-12">
       {/* A. HEADER */}
-      <section className="w-full border-b border-[#303030] pb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
-        <div className="flex flex-col gap-1">
-          <div className="text-base md:text-xl font-bold text-white tracking-widest uppercase flex items-center gap-2">
-            <span>Duplicate files</span>
-            <span className="text-[#858585] text-xs">/</span>
-            <span className="text-[#b0b0b0] text-xs font-normal">EXACT SHA-256 MATCHES</span>
+      <section className="w-full border-b border-[#303030] pb-5 flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold text-[#f5f5f5] tracking-tight">
+              Duplicate Files
+            </h1>
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-[2px] bg-[#1b1b1b] border border-[#454545] text-[#b8b8b8]">
+              SHA-256 MATCHES
+            </span>
           </div>
-          <div className="text-[12px] text-[#858585] uppercase tracking-wider">
-            Find and safely clean duplicate files folder by folder. Canonical original copies are always protected.
-          </div>
+          <p className="text-sm md:text-base text-[#b8b8b8]">
+            Review identical copies grouped by folder or cryptographic hash. Original files are protected automatically.
+          </p>
         </div>
-        <div className="flex items-center gap-2 text-[11px]">
-          <span className="text-[#858585] uppercase">PROTECTION RULE:</span>
-          <span className="text-white font-bold uppercase border border-[#303030] px-2 py-0.5 bg-[#0b0b0b] flex items-center gap-1.5">
-            <Shield size={12} className="text-[#b0b0b0]" /> RETAINED COPY PROTECTED
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-white font-semibold border border-[#303030] px-3 py-1.5 bg-[#141414] rounded-[2px] flex items-center gap-2">
+            <Shield size={14} className="text-[#57b887]" />
+            <span>ORIGINAL COPY PROTECTED</span>
           </span>
         </div>
       </section>
 
       {/* SUMMARY METRICS STRIP */}
-      <section className="w-full bg-[#0b0b0b] border-b border-[#303030] px-4 py-3">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[#858585] text-[10px] uppercase tracking-wider">DUPLICATE GROUPS</span>
-            <span className="text-white font-bold text-base md:text-lg tabular-nums">{groups.length}</span>
+      <section className="w-full bg-[#141414] border border-[#303030] rounded-[2px] p-5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-sm">
+          <div className="flex flex-col gap-1">
+            <span className="text-[#858585] text-xs uppercase font-medium">Duplicate Groups</span>
+            <span className="text-white font-bold text-2xl md:text-3xl font-mono tabular-nums">{groups.length}</span>
           </div>
-          <div className="flex flex-col gap-0.5 border-l border-[#303030] pl-4">
-            <span className="text-[#858585] text-[10px] uppercase tracking-wider">TOTAL FILES</span>
-            <span className="text-white font-bold text-base md:text-lg tabular-nums">{totalDuplicateFiles}</span>
+          <div className="flex flex-col gap-1 border-l border-[#303030] pl-6">
+            <span className="text-[#858585] text-xs uppercase font-medium">Total Files</span>
+            <span className="text-white font-bold text-2xl md:text-3xl font-mono tabular-nums">{totalDuplicateFiles}</span>
           </div>
-          <div className="flex flex-col gap-0.5 border-l border-[#303030] pl-4">
-            <span className="text-[#858585] text-[10px] uppercase tracking-wider">REDUNDANT COPIES</span>
-            <span className="text-white font-bold text-base md:text-lg tabular-nums">{totalEligibleFilesCount}</span>
+          <div className="flex flex-col gap-1 border-l border-[#303030] pl-6">
+            <span className="text-[#858585] text-xs uppercase font-medium">Redundant Copies</span>
+            <span className="text-white font-bold text-2xl md:text-3xl font-mono tabular-nums">{totalEligibleFilesCount}</span>
           </div>
-          <div className="flex flex-col gap-0.5 border-l border-[#303030] pl-4">
-            <span className="text-[#858585] text-[10px] uppercase tracking-wider">RECLAIMABLE SPACE</span>
-            <span className="text-white font-bold text-base md:text-lg tabular-nums">{formatBytes(potentialRecoveryBytes)}</span>
+          <div className="flex flex-col gap-1 border-l border-[#303030] pl-6">
+            <span className="text-[#858585] text-xs uppercase font-medium">Reclaimable Space</span>
+            <span className="text-[#57b887] font-bold text-2xl md:text-3xl font-mono tabular-nums">{formatBytes(potentialRecoveryBytes)}</span>
           </div>
         </div>
       </section>
 
       {/* SUCCESS BANNER */}
       {deletionSuccessNotice && (
-        <div className="w-full bg-[#0b0b0b] border-b border-[#303030] p-3 text-xs text-white flex items-center justify-between">
-          <span className="font-bold flex items-center gap-2">
-            <span className="text-white">■</span> {deletionSuccessNotice}
+        <div className="w-full bg-[#141414] border border-[#57b887] rounded-[2px] p-4 text-sm text-white flex items-center justify-between">
+          <span className="font-medium flex items-center gap-2 text-[#57b887]">
+            <span>✓</span> {deletionSuccessNotice}
           </span>
           <button
             type="button"
             onClick={() => setDeletionSuccessNotice(null)}
-            className="text-[#858585] hover:text-white cursor-pointer uppercase text-[10px]"
+            className="text-[#858585] hover:text-white cursor-pointer uppercase text-xs"
           >
-            [DISMISS]
+            [Dismiss]
           </button>
         </div>
       )}
 
       {/* B. ACTION AREA & CONTROLS */}
-      <section className="w-full bg-[#000000] border-b border-[#303030] p-4 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
+      <section className="w-full bg-[#141414] border border-[#303030] rounded-[2px] p-4 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
         {/* Search & Filter */}
-        <div className="flex flex-wrap items-center gap-2 flex-1">
-          <div className="relative min-w-[220px] flex-1 sm:flex-initial">
-            <Search size={13} className="absolute left-3 top-2.5 text-[#858585]" />
+        <div className="flex flex-wrap items-center gap-3 flex-1">
+          <div className="relative min-w-[240px] flex-1 sm:flex-initial">
+            <Search size={15} className="absolute left-3.5 top-3 text-[#858585]" />
             <input
               type="search"
               aria-label="Search duplicate files or folders"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search filename or path..."
-              className="w-full bg-[#0b0b0b] border border-[#303030] pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-[#858585] focus:border-white focus:outline-none"
+              className="w-full bg-[#080808] border border-[#303030] pl-10 pr-3 py-2 text-sm text-[#f5f5f5] placeholder:text-[#858585] focus:border-white focus:outline-none rounded-[2px]"
             />
           </div>
 
-          <div className="flex items-center border border-[#303030]">
+          <div className="flex items-center border border-[#303030] rounded-[2px] overflow-hidden">
             {(['ALL', 'IMAGE', 'DOC', 'ARCHIVE'] as const).map((mode) => (
               <button
                 key={mode}
                 type="button"
                 onClick={() => setFilterMode(mode)}
-                className={`px-3 py-1.5 text-[11px] font-bold uppercase transition-none cursor-pointer ${
+                className={`px-3.5 py-2 text-xs font-semibold uppercase transition-all cursor-pointer ${
                   filterMode === mode
                     ? 'bg-white text-black'
-                    : 'bg-[#000000] text-[#b0b0b0] hover:text-white hover:bg-[#111111]'
+                    : 'bg-[#141414] text-[#b8b8b8] hover:text-white hover:bg-[#1b1b1b]'
                 }`}
               >
                 {mode}
@@ -495,61 +498,61 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
           </div>
 
           {/* Toggle View Mode */}
-          <div className="flex items-center border border-[#303030] ml-auto">
+          <div className="flex items-center border border-[#303030] rounded-[2px] overflow-hidden ml-auto">
             <button
               type="button"
               onClick={() => setViewMode('folder')}
-              className={`px-3 py-1.5 text-[11px] font-bold uppercase transition-none cursor-pointer flex items-center gap-1.5 ${
+              className={`px-4 py-2 text-xs font-semibold uppercase transition-all cursor-pointer flex items-center gap-2 ${
                 viewMode === 'folder'
                   ? 'bg-white text-black'
-                  : 'bg-[#000000] text-[#b0b0b0] hover:text-white hover:bg-[#111111]'
+                  : 'bg-[#141414] text-[#b8b8b8] hover:text-white hover:bg-[#1b1b1b]'
               }`}
             >
-              <Folder size={12} /> Folder groups
+              <Folder size={14} /> Folder View
             </button>
             <button
               type="button"
               onClick={() => setViewMode('group')}
-              className={`px-3 py-1.5 text-[11px] font-bold uppercase transition-none cursor-pointer flex items-center gap-1.5 ${
+              className={`px-4 py-2 text-xs font-semibold uppercase transition-all cursor-pointer flex items-center gap-2 ${
                 viewMode === 'group'
                   ? 'bg-white text-black'
-                  : 'bg-[#000000] text-[#b0b0b0] hover:text-white hover:bg-[#111111]'
+                  : 'bg-[#141414] text-[#b8b8b8] hover:text-white hover:bg-[#1b1b1b]'
               }`}
             >
-              <Layers size={12} /> Hash dossiers
+              <Layers size={14} /> Hash Groups
             </button>
           </div>
         </div>
 
         {/* Global Bulk Action Toolbar */}
-        <div className="flex flex-wrap items-center justify-between lg:justify-end gap-3 pt-2 lg:pt-0 border-t lg:border-t-0 border-[#303030]">
+        <div className="flex flex-wrap items-center justify-between lg:justify-end gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 border-[#303030]">
           <button
             type="button"
             onClick={handleSelectAllInView}
-            className="px-3 py-2 border border-[#303030] bg-[#0b0b0b] text-[#b0b0b0] hover:text-white hover:border-[#484848] text-xs uppercase font-bold cursor-pointer flex items-center gap-1.5"
+            className="px-4 py-2 border border-[#454545] bg-[#1b1b1b] text-[#f5f5f5] hover:border-white text-xs font-semibold uppercase cursor-pointer flex items-center gap-2 rounded-[2px]"
           >
             {selectedCount > 0 && selectedCount === totalEligibleFilesCount ? (
-              <CheckSquare size={13} className="text-white" />
+              <CheckSquare size={15} className="text-white" />
             ) : selectedCount > 0 ? (
-              <MinusSquare size={13} className="text-white" />
+              <MinusSquare size={15} className="text-white" />
             ) : (
-              <Square size={13} />
+              <Square size={15} />
             )}
-            <span>Select all duplicates</span>
+            <span>Select All Duplicates</span>
           </button>
 
-          <div className="text-xs text-[#858585]">
-            <span className="text-white font-bold">{selectedCount}</span> of {totalEligibleFilesCount} selected ({formatBytes(selectedBytes)})
+          <div className="text-sm text-[#b8b8b8]">
+            <span className="text-white font-bold font-mono">{selectedCount}</span> of {totalEligibleFilesCount} selected ({formatBytes(selectedBytes)})
           </div>
 
           <button
             type="button"
             disabled={selectedCount === 0 || isDeleting}
             onClick={() => handleTriggerBulkDelete()}
-            className="px-5 py-2 border border-[#c90000] bg-[#c90000] text-white font-bold text-xs uppercase tracking-wider transition-none hover:bg-[#a00000] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+            className="px-6 py-2.5 bg-[#c90000] text-white font-semibold text-sm uppercase tracking-wider transition-all hover:bg-[#a00000] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 rounded-[2px]"
           >
-            <Trash2 size={13} />
-            <span>Delete selected ({selectedCount})</span>
+            <Trash2 size={15} />
+            <span>Delete Selected ({selectedCount})</span>
           </button>
         </div>
       </section>
@@ -698,26 +701,26 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
                               <div className="flex flex-col min-w-0">
                                 <div className="flex items-center gap-2">
                                   <span
-                                    className={`font-bold text-xs truncate ${
-                                      isRetained ? 'text-white' : isSelected ? 'text-white' : 'text-[#b0b0b0]'
+                                    className={`font-semibold text-[15px] sm:text-base truncate ${
+                                      isRetained ? 'text-[#f5f5f5]' : isSelected ? 'text-white' : 'text-[#f5f5f5]'
                                     }`}
                                     title={file.name}
                                   >
                                     {file.name}
                                   </span>
                                   {isRetained && (
-                                    <span className="text-[10px] px-1.5 py-0.2 bg-white text-black font-bold uppercase tracking-wider">
-                                      ORIGINAL (KEEP)
+                                    <span className="text-xs px-2 py-0.5 bg-white text-black font-semibold uppercase tracking-wider rounded-[2px]">
+                                      Original (Keep)
                                     </span>
                                   )}
                                   {!isRetained && (
-                                    <span className="text-[10px] px-1.5 py-0.2 border border-[#484848] text-[#858585] uppercase">
-                                      DUPLICATE
+                                    <span className="text-xs px-2 py-0.5 border border-[#454545] text-[#b8b8b8] uppercase font-mono rounded-[2px]">
+                                      Duplicate
                                     </span>
                                   )}
                                 </div>
                                 <span
-                                  className="text-[11px] text-[#858585] truncate font-mono"
+                                  className="text-xs md:text-sm text-[#858585] truncate font-mono mt-0.5"
                                   title={file.path}
                                 >
                                   {file.path}
@@ -727,17 +730,17 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
 
                             {/* Metadata & Actions */}
                             <div className="flex items-center gap-4 shrink-0 pl-7 md:pl-0">
-                              <span className="text-xs text-[#b0b0b0] font-bold tabular-nums whitespace-nowrap">
+                              <span className="text-sm font-semibold font-mono text-white tabular-nums whitespace-nowrap">
                                 {file.size}
                               </span>
 
                               {file.resolution && file.resolution !== 'N/A' && (
-                                <span className="text-[11px] text-[#858585] whitespace-nowrap">
+                                <span className="text-xs text-[#b8b8b8] whitespace-nowrap font-mono">
                                   {file.resolution}
                                 </span>
                               )}
 
-                              <span className="text-[10px] text-[#858585] border border-[#303030] px-1.5 py-0.5 whitespace-nowrap">
+                              <span className="text-xs text-[#858585] border border-[#303030] px-2 py-0.5 rounded-[2px] whitespace-nowrap font-mono">
                                 {file.groupSector}
                               </span>
 

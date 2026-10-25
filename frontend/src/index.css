@@ -1,41 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  /* Dark Swiss Minimalist Authoritative Design Tokens */
-  --dp-color-ground: #000000;
-  --dp-color-surface: #0b0b0b;
-  --dp-color-surface-secondary: #111111;
-  --dp-color-surface-elevated: #181818;
-  --dp-color-ink: #ffffff;
-  --dp-color-ink-secondary: #b0b0b0;
+  /* Refined Swiss Minimalist Dark Theme Tokens */
+  --dp-color-ground: #080808;
+  --dp-color-nav: #101010;
+  --dp-color-surface: #141414;
+  --dp-color-surface-secondary: #1b1b1b;
+  --dp-color-surface-hover: #242424;
+  --dp-color-ink: #f5f5f5;
+  --dp-color-ink-secondary: #b8b8b8;
   --dp-color-ink-muted: #858585;
   --dp-color-border: #303030;
-  --dp-color-border-strong: #484848;
+  --dp-color-border-strong: #454545;
   --dp-color-accent: #c90000;
-  --dp-color-destructive-bg: #c90000;
-  --dp-color-destructive-ink: #ffffff;
+  --dp-color-success: #57b887;
+  --dp-color-warning: #e5ad55;
+  --dp-color-error: #f06464;
   
-  --dp-typography-face: "Space Mono", Menlo, Monaco, Consolas, "JetBrains Mono", monospace;
-  --dp-typography-body: 15px;
-  --dp-typography-label: 12px;
-  --dp-typography-metadata: 13px;
-  --dp-typography-lead: 17px;
-  --dp-typography-item-title: 22px;
-  --dp-typography-regular: 400;
-  --dp-typography-strong: 700;
-  --dp-typography-label-tracking: 0.10em;
+  --dp-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --dp-font-mono: "Space Mono", Menlo, Monaco, Consolas, "JetBrains Mono", monospace;
+  
+  --dp-typography-face: var(--dp-font-sans);
+  --dp-typography-body: 16px;
   --dp-typography-body-leading: 1.5;
   
   --dp-spacing-gutter: clamp(16px, 3cqw, 48px);
-  --dp-radius-control: 0px;
+  --dp-radius-control: 2px;
   --dp-border-rule: 1px;
-  --dp-border-rule-strong: 2px;
-  --dp-motion-feedback: 0s;
 }
 
 @layer base {
   * {
-    border-radius: 0px !important;
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -46,7 +41,7 @@
     padding: 0;
     background-color: var(--dp-color-ground);
     color: var(--dp-color-ink);
-    font-family: var(--dp-typography-face);
+    font-family: var(--dp-font-sans);
     font-size: var(--dp-typography-body);
     line-height: var(--dp-typography-body-leading);
     overflow-x: hidden;
@@ -82,4 +77,12 @@
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+.font-mono {
+  font-family: var(--dp-font-mono), monospace !important;
+}
+
+.font-sans {
+  font-family: var(--dp-font-sans), sans-serif !important;
 }

@@ -129,156 +129,127 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
   };
 
   return (
-    <div className="w-full bg-[#000000] text-white font-mono text-xs flex flex-col gap-6">
-      {/* SUB-NAV / BREADCRUMB METADATA */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#303030] pb-3 gap-2 text-[11px] text-[#858585]">
-        <div>DISPATCH // FORENSIC_TRIAGE_PIPELINE // STAGE_06</div>
-        <div className="text-white font-bold">[SUBSYSTEM_VER: 4.19.0-CLR]</div>
-      </div>
-
-      {/* CORE INVIOLABLE SAFETY BANNER */}
-      <div className="border border-white p-4 bg-black flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="flex items-start sm:items-center gap-3">
-          <span className="text-xs px-2 py-1 bg-white text-black font-bold tracking-widest uppercase">
-            CORE RULE
-          </span>
-          <div className="text-sm sm:text-base font-bold text-white tracking-widest uppercase">
-            A SUGGESTION IS NOT A DELETION
-          </div>
-        </div>
-        <div className="text-[11px] text-[#b0b0b0] tracking-wider uppercase border border-[#484848] px-3 py-1">
-          Scores rank review priority; inspect the evidence before confirming.
-        </div>
-      </div>
-
+    <div className="w-full bg-[#080808] text-[#f5f5f5] font-sans flex flex-col gap-6">
       {/* HEADER SECTION */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between border-b border-[#303030] pb-4 gap-4">
-        <div className="flex flex-col gap-1">
-          <div className="text-[11px] text-[#858585] uppercase tracking-widest">
-            // ROUTING_DIRECTIVE_STAGING
+      <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-[#303030] pb-5 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+              Cleanup Queue
+            </h1>
+            <span className="text-xs bg-white text-black font-semibold px-2 py-0.5 rounded-[2px] uppercase">
+              Operator Approval Required
+            </span>
           </div>
-          <div className="text-lg md:text-2xl font-bold text-white tracking-widest uppercase">
-            [EXECUTION_QUEUE]
-          </div>
-          <div className="text-xs text-[#b0b0b0] uppercase tracking-wider">
-            USER AUDIT &amp; APPROVAL // SAFE RECOVERY ROUTING
-          </div>
+          <p className="text-base text-[#b8b8b8] max-w-2xl">
+            Review files flagged for safe relocation to the Recycle Bin or local recovery vault. No files will be moved without your explicit confirmation.
+          </p>
         </div>
-        <div className="flex flex-col lg:items-end gap-1 text-[11px]">
-          <div className="text-white tracking-widest uppercase font-bold">
-            Nothing moves until you confirm.
+        <div className="flex flex-col md:items-end gap-1 text-sm bg-[#141414] border border-[#303030] p-3 rounded-[2px]">
+          <div className="text-white font-medium">
+            Safe Staging &bull; Zero Direct Deletion
           </div>
-          <div className="text-[#858585] tracking-wider">
-            System Trash when available; otherwise ClutterScan's local recovery vault.
+          <div className="text-xs text-[#858585]">
+            Moved files remain restorable via System Trash or History vault.
           </div>
         </div>
       </div>
 
-      {/* SUMMARY BAR */}
-      <div className="border border-[#303030] p-4 bg-[#0b0b0b] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-        <div className="flex flex-col gap-0.5 border-l border-[#303030] pl-3 sm:border-l-0 sm:pl-0">
-          <span className="text-[#858585] text-[10px] uppercase">
-            CANDIDATE RECOMMENDATIONS
-          </span>
-          <span className="text-white font-bold text-base md:text-lg">{candidates.length} RECORDS</span>
+      {/* METRICS SUMMARY BAR */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Recommended Items</span>
+          <span className="text-2xl md:text-3xl font-bold font-mono text-white">{candidates.length}</span>
+          <span className="text-xs text-[#b8b8b8]">Detected cleanup targets</span>
         </div>
-        <div className="flex flex-col gap-0.5 border-l border-[#303030] pl-3">
-          <span className="text-[#858585] text-[10px] uppercase">
-            CURRENTLY SELECTED
-          </span>
-          <span className="text-white font-bold text-base md:text-lg">
-            {selectedCandidates.length} FILES
-          </span>
+        <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Selected For Move</span>
+          <span className="text-2xl md:text-3xl font-bold font-mono text-white">{selectedCandidates.length}</span>
+          <span className="text-xs text-[#b8b8b8]">Marked for relocation</span>
         </div>
-        <div className="flex flex-col gap-0.5 border-l border-[#303030] pl-3">
-          <span className="text-[#858585] text-[10px] uppercase">
-            ESTIMATED RECOVERY
-          </span>
-          <span className="text-white font-bold text-base md:text-lg">
-            {formattedSelectedSize}
-          </span>
+        <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Reclaimable Storage</span>
+          <span className="text-2xl md:text-3xl font-bold font-mono text-white">{formattedSelectedSize}</span>
+          <span className="text-xs text-[#b8b8b8]">Storage space to free</span>
         </div>
-        <div className="flex flex-col gap-0.5 border-l border-[#303030] pl-3">
-          <span className="text-[#858585] text-[10px] uppercase">DESTINATION</span>
-          <span className="text-white font-bold text-sm md:text-base">
-            SYSTEM TRASH / LOCAL VAULT
-          </span>
+        <div className="border border-[#303030] bg-[#141414] p-4 rounded-[2px] flex flex-col gap-1">
+          <span className="text-xs text-[#858585] uppercase tracking-wider font-semibold">Destination</span>
+          <span className="text-base md:text-lg font-bold text-white pt-1">Recycle Bin / Vault</span>
+          <span className="text-xs text-[#858585]">Protected restore paths</span>
         </div>
       </div>
 
-      {/* FORENSIC CANDIDATE CARDS GRID */}
+      {/* SEARCH AND FILTER TOOLBAR */}
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-[#303030] pb-3">
-          <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-[#303030] pb-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <label className="sr-only" htmlFor="candidate-search">Search cleanup suggestions</label>
             <input
               id="candidate-search"
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search paths or evidence…"
-              className="min-w-0 sm:w-80 bg-black border border-[#484848] px-3 py-2 text-xs text-white placeholder:text-[#858585] focus:border-white focus:outline-none"
+              placeholder="Search file paths or reasons..."
+              className="min-w-0 sm:w-80 bg-[#141414] border border-[#303030] px-3.5 py-2.5 text-sm text-white placeholder:text-[#858585] rounded-[2px] focus:border-white focus:outline-none font-mono"
             />
             <label className="sr-only" htmlFor="candidate-filter">Filter suggestions</label>
             <select
               id="candidate-filter"
               value={candidateFilter}
               onChange={(event) => setCandidateFilter(event.target.value as CandidateFilter)}
-              className="bg-black border border-[#484848] px-3 py-2 text-xs text-white focus:border-white focus:outline-none"
+              className="bg-[#141414] border border-[#303030] px-3.5 py-2.5 text-sm text-white rounded-[2px] focus:border-white focus:outline-none"
             >
-              <option value="ALL">All evidence</option>
-              <option value="DUPLICATES">Exact duplicates</option>
-              <option value="TEMPORARY">Temporary-file evidence</option>
-              <option value="OLDER">Older files</option>
-              <option value="LARGE">Storage impact</option>
+              <option value="ALL">All Categories</option>
+              <option value="DUPLICATES">Exact Duplicates</option>
+              <option value="TEMPORARY">Temporary / Cache Files</option>
+              <option value="OLDER">Older Inactive Files</option>
+              <option value="LARGE">Large Files (&gt; 10 MB)</option>
             </select>
           </div>
-          <div className="flex flex-wrap items-center gap-3 text-[11px]">
-            <span className="text-[#858585]">{filteredCandidates.length} OF {candidates.length} SUGGESTIONS</span>
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <span className="text-[#858585] font-mono">{filteredCandidates.length} of {candidates.length} items</span>
             <button
               type="button"
               onClick={() => onSelectCandidates(filteredCandidates.map((candidate) => candidate.id), true)}
-              className="text-white font-bold hover:underline cursor-pointer"
+              className="text-white font-semibold hover:underline cursor-pointer"
             >
-              Select all
+              Select All
             </button>
+            <span className="text-[#454545]">&bull;</span>
             <button
               type="button"
               onClick={() => onSelectCandidates(filteredCandidates.map((candidate) => candidate.id), false)}
               className="text-[#858585] hover:text-white cursor-pointer"
             >
-              Clear all
+              Clear All
             </button>
+            <span className="text-[#454545]">&bull;</span>
             <button
               type="button"
               onClick={handleExportReport}
               disabled={candidates.length === 0}
-              className="border border-[#484848] px-3 py-2 text-white hover:border-white disabled:opacity-40 disabled:cursor-not-allowed"
-              title="The report includes file paths and scan evidence."
+              className="border border-[#303030] bg-[#141414] px-3.5 py-2 text-sm text-white hover:border-white rounded-[2px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              title="Export cleanup list as a JSON report"
             >
-              Export report
+              Export Report
             </button>
           </div>
         </div>
 
-        <p className="text-[11px] text-[#858585]">
-          Impact scores are a 0–100 review-priority ranking, not confidence or accuracy. Selection never moves a file; only confirmation does.
-        </p>
-
         {candidates.length === 0 ? (
-          <div className="w-full min-h-[300px] border border-[#303030] bg-[#0b0b0b] p-8 flex flex-col items-center justify-center gap-3 text-center">
-            <div className="text-base font-bold text-white tracking-widest uppercase">
-              No cleanup suggestions yet
+          <div className="w-full min-h-[300px] border border-[#303030] bg-[#141414] p-10 rounded-[2px] flex flex-col items-center justify-center gap-3 text-center">
+            <div className="text-xl font-bold text-white tracking-tight">
+              No Cleanup Suggestions Available
             </div>
-            <div className="text-xs text-[#858585] max-w-lg leading-relaxed uppercase">
-              A completed scan with cleanup evidence will show suggestions here. Run a scan or review another results section.
+            <div className="text-base text-[#b8b8b8] max-w-lg leading-relaxed">
+              No files are currently queued for cleanup. You can stage duplicates, large files, or temporary artifacts from the Storage, Duplicates, or Files tabs.
             </div>
             <button
               type="button"
               onClick={() => onNavigate('storage')}
-              className="mt-2 px-6 py-2 border border-white bg-white text-black font-bold uppercase transition-none hover:bg-neutral-200 cursor-pointer"
+              className="mt-2 px-6 py-2.5 border border-white bg-white text-black font-semibold text-sm hover:bg-neutral-200 cursor-pointer rounded-[2px] transition-all"
             >
-              → RETURN TO STORAGE
+              Return to Storage Dashboard &rarr;
             </button>
           </div>
         ) : (
@@ -288,22 +259,22 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
             return (
               <article
                 key={card.id}
-                className={`border p-5 bg-black flex flex-col justify-between gap-4 transition-colors duration-150 ${
-                  isSelected ? 'border-white' : 'border-[#1f1f1f] hover:border-[#444748]'
+                className={`border rounded-[2px] p-5 bg-[#141414] flex flex-col justify-between gap-4 transition-colors ${
+                  isSelected ? 'border-white' : 'border-[#303030] hover:border-[#454545]'
                 }`}
               >
                 <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between border-b border-[#1f1f1f] pb-2">
+                  <div className="flex items-center justify-between border-b border-[#303030] pb-2.5">
                     <span
-                      className={`font-bold tracking-widest uppercase text-xs ${
-                        isSelected ? 'text-white' : 'text-[#c4c7c8]'
+                      className={`font-semibold uppercase text-xs tracking-wider ${
+                        isSelected ? 'text-white' : 'text-[#b8b8b8]'
                       }`}
                     >
-                      {card.rank === 'MANUALLY_SELECTED' ? 'MANUALLY SELECTED' : card.rank}
+                      {card.rank === 'MANUALLY_SELECTED' ? 'Manually Queued' : card.rank}
                     </span>
                     <div className="flex items-center gap-3">
                       {typeof card.impactScore === 'number' && (
-                        <span className="text-[10px] tracking-wider text-[#c4c7c8]">
+                        <span className="text-xs font-mono text-[#b8b8b8]">
                           Priority {card.impactScore}/100
                         </span>
                       )}
@@ -312,8 +283,10 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
                         aria-pressed={isSelected}
                         aria-label={`${isSelected ? 'Remove' : 'Add'} ${card.targetPath} ${isSelected ? 'from' : 'to'} cleanup review`}
                         onClick={() => onToggleCandidate(card.id)}
-                        className={`min-h-9 border px-3 text-[10px] uppercase font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
-                          isSelected ? 'border-white bg-white text-black' : 'border-[#444748] text-white hover:border-white'
+                        className={`min-h-9 border px-4 text-xs font-semibold uppercase rounded-[2px] cursor-pointer transition-colors ${
+                          isSelected
+                            ? 'border-white bg-white text-black'
+                            : 'border-[#454545] text-white hover:border-white'
                         }`}
                       >
                         {isSelected ? 'Selected' : 'Select'}
@@ -321,24 +294,24 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-1">
-                    <div className="text-[10px] text-[#8e9192] uppercase">TARGET PATH:</div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-xs text-[#858585] uppercase font-semibold">Target File</div>
                     <div
-                      className={`text-xs break-all bg-[#131313] p-2 border border-[#1f1f1f] ${
-                        isSelected ? 'text-white font-bold' : 'text-[#c4c7c8]'
+                      className={`text-sm break-all bg-[#080808] p-3 border rounded-[2px] font-mono ${
+                        isSelected ? 'border-white/50 text-white font-medium' : 'border-[#303030] text-[#b8b8b8]'
                       }`}
                     >
                       {card.targetPath}
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-1">
-                    <div className="text-[10px] text-[#8e9192] uppercase">REASONS:</div>
-                    <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-xs text-[#858585] uppercase font-semibold">Evidence &amp; Reasons</div>
+                    <div className="flex flex-wrap gap-2">
                       {card.reasons.map((r, i) => (
                         <span
                           key={i}
-                          className="border border-[#444748] px-1.5 py-0.5 text-[10px] text-[#e2e2e2] uppercase"
+                          className="border border-[#454545] bg-[#1b1b1b] px-2.5 py-1 text-xs text-[#f5f5f5] rounded-[2px]"
                         >
                           {readableReason(r)}
                         </span>
@@ -346,10 +319,10 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
                     </div>
 
                     {typeof card.impactScore === 'number' && (
-                      <div className="space-y-1.5" aria-label={`Impact priority score ${card.impactScore} out of 100`}>
-                        <div className="flex justify-between text-[10px] text-[#8e9192]">
-                          <span>REVIEW PRIORITY</span>
-                          <span>{card.impactScore} / 100</span>
+                      <div className="space-y-1.5 pt-1" aria-label={`Impact priority score ${card.impactScore} out of 100`}>
+                        <div className="flex justify-between text-xs text-[#858585]">
+                          <span>Review Priority Ranking</span>
+                          <span className="font-mono text-white font-medium">{card.impactScore} / 100</span>
                         </div>
                         <div
                           role="meter"
@@ -357,7 +330,7 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
                           aria-valuemin={0}
                           aria-valuemax={100}
                           aria-valuenow={card.impactScore}
-                          className="h-2 border border-[#444748] bg-[#131313]"
+                          className="h-2 border border-[#303030] bg-[#080808] rounded-[1px] overflow-hidden"
                         >
                           <div
                             className="h-full bg-white transition-[width] duration-200"
@@ -367,83 +340,62 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
                       </div>
                     )}
 
-                    <details className="border-t border-[#1f1f1f] pt-3">
-                      <summary className="cursor-pointer text-xs font-bold text-white hover:text-[#c4c7c8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">
-                        Why was this suggested?
+                    <details className="border-t border-[#303030] pt-3">
+                      <summary className="cursor-pointer text-xs font-semibold text-white hover:text-[#b8b8b8]">
+                        Why was this file suggested?
                       </summary>
-                      <div className="mt-3 space-y-3 text-[11px]">
+                      <div className="mt-3 space-y-3 text-xs">
                         {card.scoreBreakdown && card.scoreBreakdown.length > 0 ? (
                           <>
                             <div className="space-y-2">
                               {card.scoreBreakdown.map((factor) => (
                                 <div key={factor.key} className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-1">
-                                  <span className="text-white">{factor.label}</span>
-                                  <span className={factor.points < 0 ? 'text-[#c4c7c8]' : 'text-white'}>
+                                  <span className="text-white font-medium">{factor.label}</span>
+                                  <span className={`font-mono ${factor.points < 0 ? 'text-[#e5ad55]' : 'text-white'}`}>
                                     {factor.points > 0 ? '+' : ''}{factor.points}
                                   </span>
-                                  <span className="text-[#8e9192]">{factor.explanation}</span>
-                                  <span className="sr-only">score contribution</span>
-                                  <div
-                                    role="meter"
-                                    aria-label={`${factor.label} score contribution`}
-                                    aria-valuemin={-100}
-                                    aria-valuemax={100}
-                                    aria-valuenow={factor.points}
-                                    className="col-span-2 h-1.5 bg-[#1f1f1f]"
-                                  >
-                                    <div
-                                      className={`h-full ${factor.points < 0 ? 'bg-[#8e9192]' : 'bg-white'}`}
-                                      style={{ width: `${Math.min(100, Math.abs(factor.points))}%` }}
-                                    />
-                                  </div>
+                                  <span className="text-[#858585]">{factor.explanation}</span>
                                 </div>
                               ))}
                             </div>
-                            <p className="border-t border-[#1f1f1f] pt-2 text-[#c4c7c8]">
-                              Calculation: {card.scoreBreakdown.map((factor) => factor.points).join(' + ')} = {card.scoreBeforeClamp ?? card.scoreBreakdown.reduce((sum, factor) => sum + factor.points, 0)}; clamped to 0–100 = {card.impactScore}.
-                            </p>
-                            <p className="text-[#8e9192]">
-                              Scores at or above {card.selectionThreshold ?? 60} are selected by default. This ranks review priority; it is not a confidence estimate. Review the path and keep anything you still need.
+                            <p className="border-t border-[#303030] pt-2 text-[#858585]">
+                              Files with priority &ge; {card.selectionThreshold ?? 60} are pre-selected for review. Always verify you don't need the file before moving.
                             </p>
                           </>
                         ) : (
-                          <p className="text-[#8e9192]">
+                          <p className="text-[#858585]">
                             {card.rank === 'MANUALLY_SELECTED'
-                              ? 'You selected this file manually. No algorithmic impact score was generated.'
-                              : 'A detailed point breakdown was not recorded for this saved result. The listed evidence is available, but the score calculation cannot be reconstructed.'}
+                              ? 'You selected this file manually from another screen.'
+                              : 'Standard priority score applied.'}
                           </p>
                         )}
-                        <p className="text-[#c4c7c8]">
-                          Next step: confirm that this is the file you want to move. Scanning and selection do not change files.
-                        </p>
                       </div>
                     </details>
                   </div>
                 </div>
 
                 <div
-                  className={`flex items-center justify-between pt-3 border-t text-xs ${
-                    isSelected ? 'border-[#444748]' : 'border-[#1f1f1f]'
+                  className={`flex items-center justify-between pt-3 border-t text-sm ${
+                    isSelected ? 'border-[#454545]' : 'border-[#303030]'
                   }`}
                 >
-                  <div className="text-[#8e9192] text-[11px] uppercase">
-                    RECOVERABLE:{' '}
-                    <span className="text-white font-bold">{card.recoverableFormatted}</span>
+                  <div className="text-xs text-[#858585]">
+                    Size: <span className="text-white font-mono font-bold text-sm ml-1">{card.recoverableFormatted}</span>
                   </div>
                   <div
-                    className={`text-[11px] tracking-widest uppercase ${
-                      isSelected ? 'text-white font-bold' : 'text-[#8e9192]'
+                    className={`text-xs font-semibold uppercase ${
+                      isSelected ? 'text-[#57B887]' : 'text-[#858585]'
                     }`}
                   >
-                    {isSelected ? 'Selected for review' : 'Not selected'}
+                    {isSelected ? '✓ Marked for Cleanup' : 'Unselected'}
                   </div>
                 </div>
               </article>
             );
           })}
           {filteredCandidates.length === 0 && (
-            <div className="border border-[#1f1f1f] bg-black p-8 text-center text-sm text-[#8e9192]" role="status">
-              No suggestions match this search and filter. Try clearing the search or choosing “All evidence.”
+            <div className="border border-[#303030] bg-[#141414] p-8 text-center text-sm text-[#858585] rounded-[2px]" role="status">
+              No suggestions match this search or filter. Try clearing the search or choosing “All Categories.”
             </div>
           )}
         </div>
@@ -451,41 +403,41 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
       </div>
 
       {/* ACTION / AUTHORIZATION BLOCK */}
-      <div className="border border-[#484848] p-5 bg-black flex flex-col gap-4">
+      <div className="border border-[#303030] p-6 bg-[#141414] rounded-[2px] flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#303030] pb-3 gap-2">
-          <div className="text-sm font-bold text-white tracking-widest uppercase">
-            [CLEANUP_AUTHORIZATION]
+          <div className="text-base font-bold text-white tracking-tight">
+            Cleanup Execution Confirmation
           </div>
-          <div className="text-[11px] text-white tracking-widest uppercase border border-white px-2 py-0.5">
-            REQUIREMENT: EXPLICIT_OPERATOR_SIGN_OFF
+          <div className="text-xs text-white border border-white px-2.5 py-1 rounded-[2px] font-semibold uppercase">
+            Explicit User Authorization Required
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
           <div className="flex flex-col gap-1 border-l-2 border-white pl-4">
-            <span className="text-[#858585] uppercase text-[10px]">
-              SELECTED FOR REVIEW:
+            <span className="text-xs text-[#858585] uppercase font-semibold">
+              Selected For Move:
             </span>
-            <span className="text-white font-bold text-base md:text-lg">
-              {selectedCandidates.length} FILES // {formattedSelectedSize}
+            <span className="text-white font-bold text-xl font-mono">
+              {selectedCandidates.length} Files &bull; {formattedSelectedSize}
             </span>
-            <span className="text-[#858585] text-[11px] uppercase">
-              Files remain on disk until you confirm the move.
+            <span className="text-xs text-[#858585]">
+              Files remain intact on disk until you explicitly confirm the action.
             </span>
           </div>
 
-          <div className="flex flex-col gap-1 border-l-2 border-[#484848] pl-4">
-            <span className="text-[#858585] uppercase text-[10px]">OPERATION TARGET:</span>
-            <span className="text-white font-bold text-base md:text-lg">
-              System Trash, or local recovery vault if Trash is unavailable
+          <div className="flex flex-col gap-1 border-l-2 border-[#454545] pl-4">
+            <span className="text-xs text-[#858585] uppercase font-semibold">Safety Routing Target:</span>
+            <span className="text-white font-bold text-base">
+              System Recycle Bin (or encrypted local recovery vault if Bin unavailable)
             </span>
-            <span className="text-[#858585] text-[11px] uppercase">
-              Restore from system Trash or ClutterScan History, depending on destination.
+            <span className="text-xs text-[#858585]">
+              Can be restored through Windows Recycle Bin or ClutterScan History.
             </span>
           </div>
         </div>
 
-        <div className="pt-3 flex flex-col items-stretch sm:items-start gap-2 border-t border-[#303030]">
+        <div className="pt-4 flex flex-col items-stretch sm:items-start gap-2 border-t border-[#303030]">
           <button
             type="button"
             disabled={selectedCandidates.length === 0 || isExecuting}
@@ -493,52 +445,40 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
               setExecutionError(null);
               setShowConfirmModal(true);
             }}
-            className="bg-white text-black font-bold text-sm px-8 py-3.5 border border-white tracking-widest uppercase hover:bg-neutral-200 transition-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            className="bg-white text-black font-bold text-base px-8 py-3 rounded-[2px] hover:bg-neutral-200 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Review and confirm move
+            Review &amp; Confirm Safe Move ({selectedCandidates.length} Items)
           </button>
-          <span className="text-[10px] text-[#858585] uppercase tracking-wider">
-            Selected files may move to system Trash or the local recovery vault.
+          <span className="text-xs text-[#858585]">
+            Selected files are safely relocated, never permanently destroyed without recovery access.
           </span>
         </div>
 
         {/* EXECUTION FEEDBACK BOX */}
         {executionFeedback && (
-          <div className="border border-white p-4 bg-[#0b0b0b] flex flex-col gap-2 text-xs text-white" role="status">
-            <div className="flex items-center justify-between font-bold">
-              <span className="tracking-widest uppercase">Cleanup request completed</span>
+          <div className="border border-[#57B887] p-5 bg-[#141414] rounded-[2px] flex flex-col gap-2 text-sm text-white" role="status">
+            <div className="flex items-center justify-between font-bold text-base text-[#57B887]">
+              <span>✓ Cleanup Completed Successfully</span>
             </div>
-            <div className="text-[#b0b0b0] uppercase leading-relaxed text-[11px]">
-              {executionSummary?.movedCount ?? 0} files moved. {executionSummary?.failedCount ?? 0} files could not be moved and remain in place. Review the recovery history for item outcomes.
+            <div className="text-[#b8b8b8] leading-relaxed text-sm">
+              {executionSummary?.movedCount ?? 0} files moved safely to recovery storage. {executionSummary?.failedCount ?? 0} files could not be accessed. Review the recovery audit journal for details.
             </div>
-            <div className="pt-1">
+            <div className="pt-2">
               <button
                 type="button"
                 onClick={() => onNavigate('history')}
-                className="px-4 py-1.5 border border-white bg-white text-black font-bold uppercase transition-none hover:bg-neutral-200 cursor-pointer"
+                className="px-5 py-2 border border-white bg-white text-black font-semibold text-sm rounded-[2px] hover:bg-neutral-200 cursor-pointer"
               >
-                → VIEW RESTORATION JOURNAL IN /HISTORY
+                View History &amp; Recovery Journal &rarr;
               </button>
             </div>
           </div>
         )}
         {executionError && (
-          <div className="border border-[#c90000] p-3 text-sm text-white" role="alert">
-            Cleanup was not completed: {executionError}
+          <div className="border border-[#F06464] bg-[#141414] p-4 text-sm text-[#F06464] rounded-[2px]" role="alert">
+            Cleanup could not be completed: {executionError}
           </div>
         )}
-      </div>
-
-      {/* SAFETY PROTOCOL VERIFICATION BOX */}
-      <div className="border border-[#484848] p-5 bg-black flex flex-col gap-2 text-xs">
-        <div className="font-bold text-white tracking-widest uppercase border-b border-[#303030] pb-2 flex items-center justify-between">
-          <span>Before you confirm</span>
-        </div>
-        <div className="flex flex-col gap-1.5 text-[#b0b0b0] leading-relaxed pt-1 text-[11px]">
-          <div>Review file paths and evidence. Your selection alone does not change files.</div>
-          <div>Confirmed files go to system Trash when available, otherwise the local recovery vault.</div>
-          <div>Files in system Trash must be restored through your operating system. Vault items can be restored from History.</div>
-        </div>
       </div>
 
       {/* CONFIRMATION MODAL */}

@@ -19,76 +19,76 @@ export const CleanupModal: React.FC<CleanupModalProps> = ({
   errorMessage,
 }) => {
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" role="presentation">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-[2px] flex items-center justify-center p-4 font-sans" role="presentation">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="cleanup-confirm-title"
-        className="border-2 border-white bg-[#0b0b0b] p-6 md:p-8 max-w-xl w-full space-y-6 font-mono text-xs text-white"
+        className="border border-[#454545] bg-[#141414] p-6 md:p-8 max-w-xl w-full space-y-6 text-sm text-[#f5f5f5] rounded-[2px] shadow-2xl"
       >
-        <div className="border-b border-[#303030] pb-3 flex justify-between items-start">
+        <div className="border-b border-[#303030] pb-4 flex justify-between items-start">
           <div>
-            <div id="cleanup-confirm-title" className="text-sm font-bold text-white uppercase tracking-widest">
-              [CONFIRMATION_REQUIRED]
-            </div>
-            <div className="text-[11px] text-[#858585] mt-0.5 uppercase">
-              Confirm the files and destination before continuing
+            <h2 id="cleanup-confirm-title" className="text-xl font-bold text-white tracking-tight">
+              Confirm Cleanup Action
+            </h2>
+            <div className="text-xs text-[#858585] mt-1">
+              Confirm the files and destination before proceeding.
             </div>
           </div>
         </div>
 
-        <div className="space-y-3 text-xs leading-relaxed">
-          <p className="font-bold text-white">
-            Selected files will be moved to system Trash when available, otherwise to ClutterScan's local recovery vault.
+        <div className="space-y-2 text-sm leading-relaxed text-[#b8b8b8]">
+          <p className="font-semibold text-white">
+            Selected files will be relocated safely to the Windows Recycle Bin or to ClutterScan's encrypted local recovery vault.
           </p>
-          <p className="text-[#b0b0b0]">
-            Files moved to system Trash must be restored using your operating system. Vault items can be restored from ClutterScan History.
+          <p>
+            Files sent to the Recycle Bin can be restored through Windows. Vault items can be restored with 1-click in the History tab.
           </p>
         </div>
 
         {/* Transaction Manifest */}
-        <div className="border border-[#303030] bg-[#000000] p-3 space-y-2">
-          <div className="flex justify-between border-b border-[#303030] pb-1 text-[#858585]">
-            <span>OPERATION SPECIFICATION:</span>
-            <span className="text-white font-bold">MOVE TO RECOVERY</span>
+        <div className="border border-[#303030] bg-[#080808] p-4 rounded-[2px] space-y-2.5 text-sm">
+          <div className="flex justify-between border-b border-[#303030] pb-2 text-xs">
+            <span className="text-[#858585] uppercase font-semibold">Action:</span>
+            <span className="text-white font-semibold">Safe Move to Recovery Storage</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[#858585]">ITEMS TO RELOCATE:</span>
-            <span className="text-white font-bold">{selectedCandidates.length} INODES</span>
+            <span className="text-[#858585]">Files to Relocate:</span>
+            <span className="text-white font-bold font-mono">{selectedCandidates.length} Files</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[#858585]">FOOTPRINT TO RECLAIM:</span>
-            <span className="text-white font-bold">{totalFormatted}</span>
+            <span className="text-[#858585]">Storage to Reclaim:</span>
+            <span className="text-white font-bold font-mono">{totalFormatted}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[#858585]">DESTINATION:</span>
-            <span className="text-white">SYSTEM TRASH / LOCAL VAULT</span>
+            <span className="text-[#858585]">Destination:</span>
+            <span className="text-white">Windows Recycle Bin / Local Vault</span>
           </div>
         </div>
 
         {errorMessage && (
-          <div className="p-3 border border-[#c90000] text-white" role="alert">
+          <div className="p-3.5 border border-[#F06464] bg-[#F06464]/10 text-[#F06464] text-sm rounded-[2px]" role="alert">
             {errorMessage}
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-2">
+        <div className="flex justify-end gap-3 pt-3 border-t border-[#303030]">
           <button
             type="button"
             disabled={isProcessing}
             onClick={onCancel}
-            className="px-4 py-2 border border-[#484848] text-[#b0b0b0] hover:text-white transition-none uppercase cursor-pointer"
+            className="px-5 py-2.5 border border-[#454545] text-[#b8b8b8] hover:text-white hover:border-white rounded-[2px] font-medium text-sm transition-colors cursor-pointer"
           >
-            [ CANCEL ]
+            Cancel
           </button>
           <button
             type="button"
             disabled={isProcessing}
             onClick={onConfirm}
-            className="px-6 py-2 border border-white bg-white text-black font-bold uppercase transition-none hover:bg-neutral-200 cursor-pointer"
+            className="px-6 py-2.5 border border-white bg-white text-black font-semibold text-sm rounded-[2px] hover:bg-neutral-200 transition-colors cursor-pointer"
           >
-            {isProcessing ? 'MOVING FILES…' : '[ CONFIRM MOVE ]'}
+            {isProcessing ? 'Moving Files...' : `Confirm Move (${selectedCandidates.length} Files)`}
           </button>
         </div>
       </div>
