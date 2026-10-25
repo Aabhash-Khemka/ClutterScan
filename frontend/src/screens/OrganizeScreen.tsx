@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import {
   FolderTree,
@@ -109,11 +109,13 @@ export const OrganizeScreen: React.FC<OrganizeScreenProps> = ({
       if (onShowNotice) {
         onShowNotice(`Undo complete: ${res.restored} files restored.`);
       }
-      loadHistory();
+      await loadHistory();
     } catch (err: any) {
+      const errorMsg = err?.message || (typeof err === 'string' ? err : 'Operation failed');
       if (onShowNotice) {
-        onShowNotice(`Undo failed: ${err.message}`);
+        onShowNotice(`Undo failed: ${errorMsg}`);
       }
+      await loadHistory();
     } finally {
       setUndoingId(null);
     }

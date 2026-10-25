@@ -232,7 +232,8 @@ export const api = {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: 'Undo failed' }));
-      throw new Error(err.detail || 'Undo failed');
+      const msg = typeof err.detail === 'string' ? err.detail : (typeof err.message === 'string' ? err.message : JSON.stringify(err.detail || err));
+      throw new Error(msg || 'Undo failed');
     }
     return await res.json();
   },
