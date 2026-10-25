@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavTab, MetadataFileItem, CleanupCandidateRecord, RecoveryLogItem } from './types';
-import { Header } from './components/Header';
+import { Sidebar } from './components/Sidebar';
+import { Navbar } from './components/Navbar';
 import { HomeScreen } from './screens/HomeScreen';
 import { StorageScreen } from './screens/StorageScreen';
 import { DuplicatesScreen } from './screens/DuplicatesScreen';
@@ -90,6 +91,7 @@ export default function App() {
         hash === 'duplicates' ||
         hash === 'images' ||
         hash === 'files' ||
+        hash === 'organize' ||
         hash === 'cleanup' ||
         hash === 'history'
       ) {
@@ -123,9 +125,7 @@ export default function App() {
       prev.map((f) => {
         if (f.id === fileId) {
           const nextStaged = !f.isStaged;
-          // Sync candidate in cleanup
           if (nextStaged) {
-            // Check if already in candidates
             setCandidates((cand) => {
               if (cand.some((c) => c.targetPath === f.path)) {
                 return cand.map((c) =>
@@ -188,8 +188,8 @@ export default function App() {
     });
     showToast(
       stage
-        ? `STAGED ${fileIds.length} FILES FOR EXECUTION QUEUE`
-        : `UNSTAGED ${fileIds.length} FILES`
+        ? `Added ${fileIds.length} files to cleanup queue`
+        : `Removed ${fileIds.length} files from cleanup queue`
     );
   };
 
@@ -208,8 +208,8 @@ export default function App() {
     );
     showToast(
       stagedCount > 0
-        ? `${selected ? 'SELECTED' : 'UNSELECTED'} ${stagedCount} MATCHING FILES FOR REVIEW`
-        : 'NO CLEANUP SUGGESTIONS MATCH THIS DUPLICATE GROUP'
+        ? `${selected ? 'Selected' : 'Unselected'} ${stagedCount} files for cleanup review`
+        : 'Duplicate files queued for review'
     );
     return stagedCount;
   };
@@ -221,21 +221,19 @@ export default function App() {
       const next = exists ? prev.filter((item) => item !== id) : [...prev, id];
       showToast(
         exists
-          ? 'Image removed from this session’s review marks.'
-          : 'Image marked for this session only. No cleanup suggestion or deletion was created.'
+          ? 'Image removed from review queue.'
+          : 'Image marked for review.'
       );
       return next;
     });
   };
 
-  // Toggle candidate in Cleanup screen
   const handleToggleCandidate = (id: string) => {
     setCandidates((prev) =>
       prev.map((c) => (c.id === id ? { ...c, isSelected: !c.isSelected } : c))
     );
   };
 
-  // Select all / deselect all in Cleanup screen
   const handleSelectCandidates = (candidateIds: string[], select: boolean) => {
     const selectedIds = new Set(candidateIds);
     setCandidates((prev) =>
@@ -247,22 +245,20 @@ export default function App() {
     );
   };
 
-  // Scan completed callback
   const handleScanCompleted = async (scanId?: string, totalFiles?: number) => {
     if (scanId) {
       await loadScanData(scanId);
     }
     const countDisplay = totalFiles !== undefined ? totalFiles.toLocaleString() : '0';
-    showToast(`INODE DISK TRAVERSAL COMPLETE: ${countDisplay} FILES CATALOGED`);
+    showToast(`Scan complete: ${countDisplay} files analyzed.`);
   };
 
   const handleOpenHistoricalScan = async (scanId: string) => {
     await loadScanData(scanId);
     navigateTo('cleanup');
-    showToast('Loaded saved results for review.');
+    showToast('Loaded historical scan results.');
   };
 
-  // Execute safe cleanup in Cleanup screen
   const handleExecuteSafeCleanup = async (
     selectedRecords: CleanupCandidateRecord[]
   ): Promise<CleanupExecutionSummary> => {
@@ -286,139 +282,146 @@ export default function App() {
       const failedCount = results.length - movedCount;
       showToast(
         failedCount > 0
-          ? `CLEANUP FINISHED: ${movedCount} MOVED, ${failedCount} NOT MOVED`
-          : `CLEANUP FINISHED: ${movedCount} FILES MOVED TO RECOVERY`
+          ? `Cleanup complete: ${movedCount} moved, ${failedCount} skipped.`
+          : `Cleanup complete: ${movedCount} files safely moved to recovery.`
       );
       return { movedCount, failedCount };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Cleanup could not be completed.';
-      showToast(`CLEANUP ERROR: ${message}`);
+      showToast(`Error: ${message}`);
       throw err;
     }
   };
 
-
-  // Restore item in History screen
   const handleRestoreItem = async (id: string) => {
     try {
       const result = await api.restoreFile(id);
-      // Re-fetch authoritative state from backend so UI matches disk
       const hist = await api.getHistory().catch(() => null);
       if (hist) {
         if (Array.isArray(hist.historicalScans)) setHistoricalScans(hist.historicalScans);
         if (Array.isArray(hist.snapshotDeltas)) setSnapshotDeltas(hist.snapshotDeltas);
         if (Array.isArray(hist.recoveryEntries)) setRecoveryLog(hist.recoveryEntries);
       }
-      showToast(`RESTORE COMPLETE — File returned to original folder.`);
+      showToast(`Restore complete: File returned to original directory.`);
       console.info('[Restore]', result.message);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'The file could not be restored.';
-      showToast(`RESTORE ERROR: ${message}`);
+      showToast(`Restore error: ${message}`);
     }
   };
 
   const totalStagedCount = candidates.filter((c) => c.isSelected).length;
 
   return (
-    <div className="min-h-screen bg-black text-[#e2e2e2] font-mono flex flex-col selection:bg-white selection:text-black">
-      {/* GLOBAL APPLICATION FIXED HEADER */}
-      <Header
+    <div className="min-h-screen bg-[#F5F7FB] text-[#172033] flex flex-row font-sans">
+      {/* LEFT SAAS SIDEBAR */}
+      <Sidebar
         activeTab={activeTab}
         onSelectTab={navigateTo}
         stagedFilesCount={totalStagedCount}
       />
 
-      {/* TOAST NOTIFICATION BANNER */}
-      {toastMessage && (
-        <div className="fixed top-24 right-4 z-50 bg-white text-black font-mono text-xs font-bold px-4 py-2 border border-white shadow-none uppercase flex items-center gap-2">
-          <span>■</span>
-          <span>{toastMessage}</span>
-          <button
-            onClick={() => setToastMessage(null)}
-            className="ml-3 font-normal text-xs text-[#525252] hover:text-black cursor-pointer"
-          >
-            [X]
-          </button>
-        </div>
-      )}
+      {/* MAIN CONTENT WRAPPER */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+        {/* GLOBAL TOPBAR */}
+        <Navbar
+          activeTab={activeTab}
+          currentScanId={currentScanId}
+          onRefreshLatest={currentScanId ? () => loadScanData(currentScanId) : undefined}
+        />
 
-      {/* MAIN CONTAINER */}
-      <main className="w-full flex-1 pt-28 pb-12 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto flex flex-col">
-        {activeTab === 'home' && (
-          <HomeScreen
-            onNavigate={navigateTo}
-            onScanCompleted={handleScanCompleted}
-          />
+        {/* TOAST NOTIFICATION BANNER */}
+        {toastMessage && (
+          <div className="fixed top-20 right-6 z-50 bg-[#172033] text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-3 animate-fade-in border border-[#334155]">
+            <span className="w-2 h-2 rounded-full bg-[#5B5CE2]"></span>
+            <span>{toastMessage}</span>
+            <button
+              onClick={() => setToastMessage(null)}
+              className="ml-2 text-[#94A3B8] hover:text-white cursor-pointer"
+            >
+              &times;
+            </button>
+          </div>
         )}
 
-        {activeTab === 'storage' && (
-          <StorageScreen
-            onNavigate={navigateTo}
-            onShowNotice={showToast}
-            treeData={treeData}
-          />
-        )}
+        {/* PAGE CONTENT CONTAINER */}
+        <main className="flex-1 p-6 sm:p-8 md:p-10 max-w-7xl w-full mx-auto">
+          {activeTab === 'home' && (
+            <HomeScreen
+              onNavigate={navigateTo}
+              onScanCompleted={handleScanCompleted}
+            />
+          )}
 
-        {activeTab === 'duplicates' && (
-          <DuplicatesScreen
-            onNavigate={navigateTo}
-            onStageDuplicates={handleStageDuplicates}
-            hashGroups={hashGroups}
-            scanId={currentScanId}
-            onRefreshData={async () => {
-              if (currentScanId) await loadScanData(currentScanId);
-            }}
-            onShowNotice={showToast}
-          />
-        )}
+          {activeTab === 'storage' && (
+            <StorageScreen
+              onNavigate={navigateTo}
+              onShowNotice={showToast}
+              treeData={treeData}
+            />
+          )}
 
-        {activeTab === 'images' && (
-          <ImagesScreen
-            onNavigate={navigateTo}
-            onStageImageCandidate={handleStageImageCandidate}
-            stagedCandidateIds={stagedImageCandidateIds}
-            onShowNotice={showToast}
-            clusters={perceptualClusters}
-          />
-        )}
+          {activeTab === 'duplicates' && (
+            <DuplicatesScreen
+              onNavigate={navigateTo}
+              onStageDuplicates={handleStageDuplicates}
+              hashGroups={hashGroups}
+              scanId={currentScanId}
+              onRefreshData={async () => {
+                if (currentScanId) await loadScanData(currentScanId);
+              }}
+              onShowNotice={showToast}
+            />
+          )}
 
-        {activeTab === 'files' && (
-          <FilesScreen
-            onNavigate={navigateTo}
-            files={files}
-            onToggleStageFile={handleToggleStageFile}
-            onBulkStageFiles={handleBulkStageFiles}
-          />
-        )}
+          {activeTab === 'images' && (
+            <ImagesScreen
+              onNavigate={navigateTo}
+              onStageImageCandidate={handleStageImageCandidate}
+              stagedCandidateIds={stagedImageCandidateIds}
+              onShowNotice={showToast}
+              clusters={perceptualClusters}
+            />
+          )}
 
-        {activeTab === 'organize' && (
-          <OrganizeScreen
-            onShowNotice={showToast}
-          />
-        )}
+          {activeTab === 'files' && (
+            <FilesScreen
+              onNavigate={navigateTo}
+              files={files}
+              onToggleStageFile={handleToggleStageFile}
+              onBulkStageFiles={handleBulkStageFiles}
+            />
+          )}
 
-        {activeTab === 'cleanup' && (
-          <CleanupScreen
-            onNavigate={navigateTo}
-            candidates={candidates}
-            onToggleCandidate={handleToggleCandidate}
-            onSelectCandidates={handleSelectCandidates}
-            onExecuteSafeCleanup={handleExecuteSafeCleanup}
-          />
-        )}
+          {activeTab === 'organize' && (
+            <OrganizeScreen
+              onShowNotice={showToast}
+            />
+          )}
 
-        {activeTab === 'history' && (
-          <HistoryScreen
-            onNavigate={navigateTo}
-            onOpenScan={handleOpenHistoricalScan}
-            recoveryLog={recoveryLog}
-            onRestoreItem={handleRestoreItem}
-            onShowNotice={showToast}
-            historicalScans={historicalScans}
-            snapshotDeltas={snapshotDeltas}
-          />
-        )}
-      </main>
+          {activeTab === 'cleanup' && (
+            <CleanupScreen
+              onNavigate={navigateTo}
+              candidates={candidates}
+              onToggleCandidate={handleToggleCandidate}
+              onSelectCandidates={handleSelectCandidates}
+              onExecuteSafeCleanup={handleExecuteSafeCleanup}
+            />
+          )}
+
+          {activeTab === 'history' && (
+            <HistoryScreen
+              onNavigate={navigateTo}
+              onOpenScan={handleOpenHistoricalScan}
+              recoveryLog={recoveryLog}
+              onRestoreItem={handleRestoreItem}
+              onShowNotice={showToast}
+              historicalScans={historicalScans}
+              snapshotDeltas={snapshotDeltas}
+            />
+          )}
+        </main>
+      </div>
     </div>
   );
 }

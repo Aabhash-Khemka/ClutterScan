@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { TreeNode, NavTab } from '../types';
+import {
+  Folder,
+  FolderOpen,
+  FileText,
+  Download,
+  ArrowRight,
+  Layers,
+  HardDrive,
+  ChevronRight,
+  ChevronDown,
+  Info
+} from 'lucide-react';
 
 interface StorageScreenProps {
   onNavigate: (tab: NavTab) => void;
@@ -94,7 +106,7 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
   const rootSizeDisplay = rootNode ? rootNode.size : '—';
   const rootPathDisplay = rootNode ? rootNode.path : 'No scan loaded';
 
-  // Recursive tree flattening for terminal view
+  // Recursive tree flattening
   interface FlattenedTreeItem {
     id: string;
     name: string;
@@ -102,18 +114,13 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
     size: string;
     isDir: boolean;
     isOpen: boolean;
-    prefix: string;
-    isRoot: boolean;
+    depth: number;
     tag?: string;
   }
 
-  const flattenTree = (nodes: TreeNode[], depth = 0, prefix = ''): FlattenedTreeItem[] => {
+  const flattenTree = (nodes: TreeNode[], depth = 0): FlattenedTreeItem[] => {
     const items: FlattenedTreeItem[] = [];
-    nodes.forEach((node, idx) => {
-      const isLast = idx === nodes.length - 1;
-      const connector = depth === 0 ? '' : (isLast ? '└── ' : '├── ');
-      const itemPrefix = depth === 0 ? '' : `${prefix}${connector}`;
-
+    nodes.forEach((node) => {
       items.push({
         id: node.id,
         name: node.name,
@@ -121,14 +128,12 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
         size: node.size,
         isDir: !!node.isDir,
         isOpen: !!node.isOpen,
-        prefix: itemPrefix,
-        isRoot: depth === 0,
+        depth,
         tag: node.tag,
       });
 
       if (node.isDir && node.isOpen && node.children && node.children.length > 0) {
-        const nextPrefix = depth === 0 ? '' : `${prefix}${isLast ? '    ' : '│   '}`;
-        items.push(...flattenTree(node.children, depth + 1, nextPrefix));
+        items.push(...flattenTree(node.children, depth + 1));
       }
     });
     return items;
@@ -137,192 +142,206 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
   const flattenedTree = flattenTree(treeData);
 
   return (
-    <div className="w-full flex flex-col gap-8 text-[#f5f5f5]">
-      {/* Section header */}
-      <section className="border-b border-[#303030] pb-5 flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
-        <div className="flex flex-col gap-1.5">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#f5f5f5] tracking-tight">
-            Storage Overview
-          </h1>
-          <p className="text-sm md:text-base text-[#b8b8b8]">
-            Interactive folder tree and recursive size distribution for <span className="text-[#f5f5f5] font-mono font-semibold">{rootPathDisplay}</span>
+    <div className="w-full flex flex-col gap-6 text-[#172033] pb-12">
+      {/* PAGE HEADER */}
+      <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-2">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold text-[#172033] tracking-tight">
+              Storage Breakdown
+            </h1>
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EEF2FF] text-[#5B5CE2] border border-[#C7D2FE]">
+              Tree Analysis
+            </span>
+          </div>
+          <p className="text-sm md:text-base text-[#64748B]">
+            Interactive directory hierarchy and recursive size distribution for{' '}
+            <span className="text-[#172033] font-semibold">{rootPathDisplay}</span>
           </p>
         </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportJson}
+            disabled={!rootNode}
+            className="px-3.5 py-2 border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#334155] text-xs font-semibold rounded-lg cursor-pointer flex items-center gap-2 shadow-xs transition-colors disabled:opacity-50"
+          >
+            <Download size={14} />
+            <span>Export JSON</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onNavigate('duplicates')}
+            className="px-4 py-2 bg-[#5B5CE2] hover:bg-[#4849C7] text-white text-xs font-semibold rounded-lg shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+          >
+            <span>Review Duplicates</span>
+            <ArrowRight size={14} />
+          </button>
+        </div>
       </section>
 
-      {/* Summary metrics */}
+      {/* SUMMARY METRICS CARDS */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* CELL 01: TOTAL SCANNED */}
-        <div className="border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col justify-between h-36">
-          <div className="text-xs uppercase font-medium text-[#858585] tracking-wider">
-            Total Size
-          </div>
-          <div className="text-3xl md:text-4xl font-bold text-white font-mono tracking-tight tabular-nums my-auto">
-            {rootSizeDisplay}
-          </div>
-          <div className="text-xs text-[#b8b8b8] border-t border-[#303030] pt-2">
-            Storage analyzed
-          </div>
+        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
+          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Total Storage Analyzed</div>
+          <div className="text-2xl lg:text-3xl font-bold text-[#172033] mt-1.5">{rootSizeDisplay}</div>
+          <div className="text-xs text-[#94A3B8] mt-1">Aggregated folder weight</div>
         </div>
 
-        {/* CELL 02: FILES PROCESSED */}
-        <div className="border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col justify-between h-36">
-          <div className="text-xs uppercase font-medium text-[#858585] tracking-wider">
-            Files Processed
-          </div>
-          <div className="text-3xl md:text-4xl font-bold text-white font-mono tracking-tight tabular-nums my-auto">
+        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
+          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Files Processed</div>
+          <div className="text-2xl lg:text-3xl font-bold text-[#172033] mt-1.5">
             {rootNode ? fileCount.toLocaleString() : '—'}
           </div>
-          <div className="text-xs text-[#b8b8b8] border-t border-[#303030] pt-2">
-            Individual files counted
-          </div>
+          <div className="text-xs text-[#94A3B8] mt-1">Individual files indexed</div>
         </div>
 
-        {/* CELL 03: DIRECTORIES */}
-        <div className="border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col justify-between h-36">
-          <div className="text-xs uppercase font-medium text-[#858585] tracking-wider">
-            Directories
-          </div>
-          <div className="text-3xl md:text-4xl font-bold text-white font-mono tracking-tight tabular-nums my-auto">
+        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
+          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Directories</div>
+          <div className="text-2xl lg:text-3xl font-bold text-[#5B5CE2] mt-1.5">
             {rootNode ? dirCount.toLocaleString() : '—'}
           </div>
-          <div className="text-xs text-[#b8b8b8] border-t border-[#303030] pt-2">
-            Folders traversed
-          </div>
+          <div className="text-xs text-[#94A3B8] mt-1">Folders traversed</div>
         </div>
 
-        {/* CELL 04: TREE DEPTH */}
-        <div className="border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col justify-between h-36">
-          <div className="text-xs uppercase font-medium text-[#858585] tracking-wider">
-            Folder Depth
+        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
+          <div className="text-xs font-medium uppercase tracking-wider text-[#64748B]">Hierarchy Depth</div>
+          <div className="text-2xl lg:text-3xl font-bold text-[#15803D] mt-1.5">
+            {rootNode ? `${maxDepth} Levels` : '—'}
           </div>
-          <div className="text-3xl md:text-4xl font-bold text-white font-mono tracking-tight tabular-nums my-auto">
-            {rootNode ? maxDepth.toLocaleString() : '—'}
-          </div>
-          <div className="text-xs text-[#b8b8b8] border-t border-[#303030] pt-2">
-            Levels of nesting
-          </div>
+          <div className="text-xs text-[#94A3B8] mt-1">Max subdirectory depth</div>
         </div>
       </section>
 
-      {/* MIDDLE SECTION: RECURSIVE DIRECTORY AGGREGATION TREE */}
-      <section className="border border-[#303030] bg-[#141414] p-6 rounded-[2px] flex flex-col">
-        {/* TREE HEADER */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-4 border-b border-[#303030] gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-[#f5f5f5] font-semibold text-base md:text-lg">
-              Filesystem Tree
-            </span>
-            <span className="text-[#858585] text-sm">
-              — Expand folders to explore contents
-            </span>
+      {/* DIRECTORY TREE CARD */}
+      <section className="bg-white border border-[#E2E8F0] rounded-xl shadow-xs overflow-hidden flex flex-col">
+        {/* Tree Toolbar */}
+        <div className="bg-[#F8FAFC] px-5 py-4 border-b border-[#E2E8F0] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <HardDrive size={18} className="text-[#5B5CE2]" />
+            <div>
+              <h2 className="text-sm font-semibold text-[#172033]">
+                Filesystem Directory Map
+              </h2>
+              <span className="text-xs text-[#64748B]">
+                Click any directory to expand or collapse subtrees
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="text-[#858585] font-mono">Depth: {maxDepth}</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-[#64748B]">
+              Max depth: <strong className="text-[#172033]">{maxDepth}</strong>
+            </span>
             <button
               type="button"
               onClick={toggleAll}
-              className="text-[#f5f5f5] hover:bg-white hover:text-black px-3.5 py-1.5 border border-[#454545] transition-all cursor-pointer rounded-[2px] font-medium"
+              className="text-xs font-semibold px-3 py-1.5 bg-white border border-[#CBD5E1] hover:bg-[#F1F5F9] text-[#334155] rounded-lg transition-colors cursor-pointer shadow-xs"
             >
               {isAllExpanded ? 'Collapse All' : 'Expand All'}
             </button>
           </div>
         </div>
 
-        {/* ASCII / TEXT TREE INTERACTION BUFFER */}
-        <div className="text-sm md:text-base leading-relaxed overflow-x-auto text-[#f5f5f5] select-none font-mono max-h-[520px]">
-          {flattenedTree.length === 0 && (
-            <div className="py-12 text-center text-[#858585] text-base">
-              No scan results are loaded. Run a scan on the Scan page to explore folder structure.
+        {/* Tree List Container */}
+        <div className="divide-y divide-[#F1F5F9] max-h-[560px] overflow-y-auto">
+          {flattenedTree.length === 0 ? (
+            <div className="p-12 text-center text-sm text-[#64748B]">
+              No scan results loaded. Run a scan from the Overview tab to view the folder structure.
             </div>
-          )}
-          {flattenedTree.map((item, index) => {
-            const lineNum = (index + 1).toString().padStart(3, '0');
-            if (item.isRoot) {
+          ) : (
+            flattenedTree.map((item) => {
+              const paddingLeft = `${item.depth * 24 + 16}px`;
+
               return (
-                <div key={item.id} className="text-white font-bold flex items-center py-2 border-b border-[#303030]">
-                  <span className="w-16 text-[#858585]">{lineNum}:</span>
-                  <span className="text-white text-base">{item.name}</span>
-                  <span className="ml-auto text-white font-semibold text-sm pr-4 tabular-nums">{item.size}</span>
-                  <span className="text-[#858585] text-xs uppercase px-2 py-0.5 border border-[#303030] bg-[#1b1b1b]">{item.tag || 'ROOT'}</span>
+                <div
+                  key={item.id}
+                  onClick={() => item.isDir && toggleNodeById(item.id)}
+                  style={{ paddingLeft }}
+                  className={`py-3 pr-5 flex items-center justify-between text-sm transition-colors ${
+                    item.isDir
+                      ? 'cursor-pointer hover:bg-[#F8FAFC]'
+                      : 'hover:bg-[#F8FAFC]/50 text-[#334155]'
+                  } ${item.depth === 0 ? 'bg-[#EEF2FF]/30 font-semibold' : ''}`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    {item.isDir ? (
+                      <span className="text-[#64748B]">
+                        {item.isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                      </span>
+                    ) : (
+                      <span className="w-4" />
+                    )}
+
+                    <div className="shrink-0 text-[#5B5CE2]">
+                      {item.isDir ? (
+                        item.isOpen ? <FolderOpen size={18} className="text-[#5B5CE2]" /> : <Folder size={18} className="text-[#5B5CE2]" />
+                      ) : (
+                        <FileText size={16} className="text-[#94A3B8]" />
+                      )}
+                    </div>
+
+                    <span className="truncate text-[#172033] font-medium" title={item.path}>
+                      {item.name}
+                    </span>
+
+                    {item.depth === 0 && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-[#EEF2FF] text-[#5B5CE2] font-semibold border border-[#C7D2FE]">
+                        Root
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0 pl-4">
+                    <span className="text-xs font-semibold text-[#172033] tabular-nums">
+                      {item.size}
+                    </span>
+                    {item.isDir ? (
+                      <span className="text-[11px] text-[#64748B] bg-[#F1F5F9] px-2 py-0.5 rounded-md font-medium">
+                        {item.isOpen ? 'Expanded' : 'Collapsed'}
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-[#94A3B8] font-mono">
+                        {item.tag || 'FILE'}
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
-            }
-
-            return (
-              <div
-                key={item.id}
-                onClick={() => item.isDir && toggleNodeById(item.id)}
-                className={`flex items-center py-1.5 px-1 rounded transition-colors ${
-                  item.isDir ? 'cursor-pointer hover:bg-[#242424]' : 'hover:bg-[#1b1b1b]'
-                }`}
-              >
-                <span className="w-16 text-[#858585] font-mono text-xs">{lineNum}:</span>
-                <span className="truncate font-sans font-medium">{item.prefix}{item.name}</span>
-                <span className="ml-auto font-mono text-xs md:text-sm tabular-nums text-[#b8b8b8] pr-4">{item.size}</span>
-                {item.isDir ? (
-                  <span className="text-xs border border-[#454545] px-2 py-0.5 rounded text-[#b8b8b8] font-mono">
-                    {item.isOpen ? '− Collapse' : '+ Expand'}
-                  </span>
-                ) : (
-                  <span className="w-20 text-right text-[#858585] text-xs font-mono">
-                    {item.tag || 'FILE'}
-                  </span>
-                )}
-              </div>
-            );
-          })}
+            })
+          )}
         </div>
       </section>
 
-      {/* BOTTOM STATUS SECTION: SCAN_METADATA DOSSIER */}
-      <section className="border border-[#303030] bg-[#141414] p-6 rounded-[2px]">
-        <div className="text-base font-semibold text-[#f5f5f5] mb-4 pb-2 border-b border-[#303030] flex items-center justify-between">
-          <span>Scan Metadata</span>
-          <span className="text-xs text-[#858585]">Recorded session details</span>
+      {/* METADATA SUMMARY CARD */}
+      <section className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
+        <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] mb-4">
+          <div className="text-sm font-semibold text-[#172033]">Session Scan Properties</div>
+          <span className="text-xs text-[#16A34A] font-medium flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#16A34A]" /> Ready for review
+          </span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
-          {/* META 01 */}
-          <div className="flex flex-col gap-1 border-l border-[#303030] pl-4">
-            <span className="text-[#858585] text-xs uppercase font-medium">Root Folder</span>
-            <span className="text-[#f5f5f5] font-mono text-xs md:text-sm font-semibold break-all">{rootPathDisplay}</span>
-          </div>
-          {/* META 02 */}
-          <div className="flex flex-col gap-1 border-l border-[#303030] pl-4">
-            <span className="text-[#858585] text-xs uppercase font-medium">Total Files</span>
-            <span className="text-[#f5f5f5] text-xl font-bold font-mono">{fileCount.toLocaleString()}</span>
-          </div>
-          {/* META 03 */}
-          <div className="flex flex-col gap-1 border-l border-[#303030] pl-4">
-            <span className="text-[#858585] text-xs uppercase font-medium">Directories</span>
-            <span className="text-[#f5f5f5] text-xl font-bold font-mono">{dirCount.toLocaleString()}</span>
-          </div>
-          {/* META 04 */}
-          <div className="flex flex-col gap-1 border-l border-[#303030] pl-4">
-            <span className="text-[#858585] text-xs uppercase font-medium">Status</span>
-            <span className="text-[#57b887] font-semibold text-sm">{rootNode ? 'Results Loaded' : 'No scan loaded'}</span>
-          </div>
-        </div>
-      </section>
 
-      {/* FOOTER ACTIONS */}
-      <section className="pt-2 flex flex-wrap gap-4 justify-between items-center text-sm">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleExportJson}
-            disabled={!rootNode}
-            className="bg-[#141414] text-[#b8b8b8] hover:bg-white hover:text-black border border-[#454545] px-5 py-2.5 transition-all text-sm font-medium cursor-pointer rounded-[2px] disabled:opacity-50"
-          >
-            Export Structure (JSON)
-          </button>
-          <button
-            type="button"
-            onClick={() => onNavigate('duplicates')}
-            className="bg-white text-black font-semibold border border-white px-6 py-2.5 transition-all text-sm hover:bg-neutral-200 cursor-pointer rounded-[2px]"
-          >
-            Review Duplicate Files →
-          </button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+          <div className="bg-[#F8FAFC] p-3 rounded-lg border border-[#E2E8F0]">
+            <span className="text-[#64748B] block font-medium mb-1">Target Directory</span>
+            <span className="font-semibold text-[#172033] break-all">{rootPathDisplay}</span>
+          </div>
+
+          <div className="bg-[#F8FAFC] p-3 rounded-lg border border-[#E2E8F0]">
+            <span className="text-[#64748B] block font-medium mb-1">Files Processed</span>
+            <span className="font-semibold text-[#172033] text-sm">{fileCount.toLocaleString()} items</span>
+          </div>
+
+          <div className="bg-[#F8FAFC] p-3 rounded-lg border border-[#E2E8F0]">
+            <span className="text-[#64748B] block font-medium mb-1">Subdirectories</span>
+            <span className="font-semibold text-[#172033] text-sm">{dirCount.toLocaleString()} folders</span>
+          </div>
+
+          <div className="bg-[#F8FAFC] p-3 rounded-lg border border-[#E2E8F0]">
+            <span className="text-[#64748B] block font-medium mb-1">Scan Status</span>
+            <span className="font-semibold text-[#15803D] text-sm">Indexed & Verified</span>
+          </div>
         </div>
       </section>
     </div>

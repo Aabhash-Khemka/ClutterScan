@@ -1,5 +1,19 @@
 import React, { useMemo, useState } from 'react';
 import { NavTab, RecoveryLogItem, HistoricalScanEntry, SnapshotDeltaItem } from '../types';
+import {
+  History,
+  HardDrive,
+  TrendingUp,
+  TrendingDown,
+  RotateCcw,
+  Search,
+  Download,
+  Calendar,
+  CheckCircle2,
+  FolderOpen,
+  ArrowUpRight,
+  ArrowDownRight
+} from 'lucide-react';
 
 interface HistoryScreenProps {
   onNavigate: (tab: NavTab) => void;
@@ -26,6 +40,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
   const baselineScan = scans.length > 1 ? scans[1] : undefined;
   const currentScan = scans[0];
   const [scanSearch, setScanSearch] = useState('');
+
   const visibleScans = useMemo(() => {
     const query = scanSearch.trim().toLowerCase();
     return scans.filter((scan) => (
@@ -51,91 +66,87 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
     a.click();
     URL.revokeObjectURL(url);
     if (onShowNotice) {
-      onShowNotice('HISTORICAL MANIFEST EXPORTED');
+      onShowNotice('Historical scan manifest exported successfully.');
     }
   };
 
   return (
-    <div className="w-full bg-[#080808] text-[#f5f5f5] font-sans flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-6 text-[#172033] pb-12">
       {/* HEADER SECTION */}
-      <div className="w-full border-b border-[#303030] pb-5 flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-        <div className="flex flex-col gap-1.5">
+      <section className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-2">
+        <div className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-bold text-[#172033] tracking-tight">
               Scan &amp; Recovery History
             </h1>
-            <span className="text-xs bg-white text-black font-semibold px-2 py-0.5 rounded-[2px] uppercase">
-              Local Audit Log
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EEF2FF] text-[#5B5CE2] border border-[#C7D2FE]">
+              Local Audit Journal
             </span>
           </div>
-          <p className="text-base text-[#b8b8b8] max-w-2xl">
-            Compare disk storage changes across scan snapshots, inspect directory growth deltas, and restore previously cleaned files from the vault.
+          <p className="text-sm md:text-base text-[#64748B]">
+            Compare storage snapshots over time, monitor folder growth trends, and restore previously cleaned files from the recovery vault.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 bg-[#141414] border border-[#303030] px-4 py-2.5 rounded-[2px] text-sm">
-          <span className="text-[#858585]">Comparison State:</span>
-          <span className="text-white font-semibold">
-            {scans.length > 1 ? 'Two Snapshots Compared' : 'Awaiting Second Scan'}
-          </span>
-        </div>
-      </div>
+        <button
+          type="button"
+          onClick={handleExportHistorical}
+          className="px-4 py-2 border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#334155] rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer shadow-xs self-start lg:self-auto"
+        >
+          <Download size={14} />
+          <span>Export Manifest (JSON)</span>
+        </button>
+      </section>
 
-      {/* METRICS & DELTA TELEMETRY CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Box 1: Baseline */}
-        <div className="border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col justify-between h-40">
-          <div className="flex items-center justify-between border-b border-[#303030] pb-2 text-xs">
-            <span className="text-[#858585] uppercase font-semibold">Baseline Snapshot</span>
-            <span className="text-[#b8b8b8] font-mono">{baselineScan ? baselineScan.date : 'None'}</span>
+      {/* SNAPSHOT METRIC CARDS */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Baseline */}
+        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-2 text-xs">
+            <span className="text-[#64748B] font-medium uppercase tracking-wider">Baseline Scan</span>
+            <span className="text-[#94A3B8] font-mono">{baselineScan ? baselineScan.date : 'None'}</span>
           </div>
-          <div className="flex flex-col gap-1 my-auto">
-            <div className="text-xs text-[#858585] uppercase tracking-wider font-semibold">
-              Recorded Storage:
-            </div>
-            <div className="text-2xl md:text-3xl font-bold text-white tracking-tight font-mono">
+          <div className="my-3">
+            <div className="text-xs text-[#64748B]">Recorded Storage:</div>
+            <div className="text-2xl lg:text-3xl font-bold text-[#172033] mt-0.5">
               {baselineScan ? baselineScan.total : 'No prior scan'}
             </div>
           </div>
-          <div className="flex items-center justify-between border-t border-[#303030] pt-2 text-xs">
-            <span className="text-[#858585]">Total Files Scanned:</span>
-            <span className="text-white font-mono font-semibold">{baselineScan ? baselineScan.inodes : '—'}</span>
+          <div className="flex items-center justify-between border-t border-[#F1F5F9] pt-2 text-xs text-[#64748B]">
+            <span>Total files indexed:</span>
+            <span className="font-semibold text-[#172033]">{baselineScan ? baselineScan.inodes : '—'}</span>
           </div>
         </div>
 
-        {/* Box 2: Latest */}
-        <div className="border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col justify-between h-40">
-          <div className="flex items-center justify-between border-b border-[#303030] pb-2 text-xs">
-            <span className="text-[#858585] uppercase font-semibold">Latest Snapshot</span>
-            <span className="text-white font-mono font-medium">{currentScan ? currentScan.date : 'None'}</span>
+        {/* Latest Scan */}
+        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-2 text-xs">
+            <span className="text-[#64748B] font-medium uppercase tracking-wider">Latest Scan</span>
+            <span className="text-[#5B5CE2] font-semibold">{currentScan ? currentScan.date : 'None'}</span>
           </div>
-          <div className="flex flex-col gap-1 my-auto">
-            <div className="text-xs text-[#858585] uppercase tracking-wider font-semibold">
-              Current Storage:
-            </div>
-            <div className="text-2xl md:text-3xl font-bold text-white tracking-tight font-mono">
+          <div className="my-3">
+            <div className="text-xs text-[#64748B]">Current Storage:</div>
+            <div className="text-2xl lg:text-3xl font-bold text-[#5B5CE2] mt-0.5">
               {currentScan ? currentScan.total : 'No scans yet'}
             </div>
           </div>
-          <div className="flex items-center justify-between border-t border-[#303030] pt-2 text-xs">
-            <span className="text-[#858585]">Total Files Scanned:</span>
-            <span className="text-white font-mono font-semibold">{currentScan ? currentScan.inodes : '—'}</span>
+          <div className="flex items-center justify-between border-t border-[#F1F5F9] pt-2 text-xs text-[#64748B]">
+            <span>Total files indexed:</span>
+            <span className="font-semibold text-[#172033]">{currentScan ? currentScan.inodes : '—'}</span>
           </div>
         </div>
 
-        {/* Box 3: Largest Directory Delta */}
-        <div className="border border-[#454545] bg-[#1b1b1b] p-5 rounded-[2px] flex flex-col justify-between h-40">
-          <div className="flex items-center justify-between border-b border-[#303030] pb-2 text-xs">
-            <span className="text-white uppercase font-semibold">Largest Directory Change</span>
-            <span className="text-xs bg-[#242424] text-white border border-[#454545] px-2 py-0.5 rounded-[2px] font-mono">
+        {/* Largest Delta */}
+        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-2 text-xs">
+            <span className="text-[#64748B] font-medium uppercase tracking-wider">Primary Directory Trend</span>
+            <span className="text-xs bg-[#EEF2FF] text-[#5B5CE2] px-2 py-0.5 rounded-full font-semibold">
               {deltas.length > 0 ? `${deltas.length} tracked` : '0 changes'}
             </span>
           </div>
-          <div className="flex flex-col gap-1 my-auto">
-            <div className="text-xs text-[#858585] uppercase tracking-wider font-semibold">
-              Net Change:
-            </div>
-            <div className="text-2xl md:text-3xl font-bold text-white tracking-tight font-mono">
+          <div className="my-3">
+            <div className="text-xs text-[#64748B]">Growth Delta:</div>
+            <div className="text-2xl lg:text-3xl font-bold text-[#172033] mt-0.5">
               {deltas.length > 0
                 ? deltas[0].delta
                 : scans.length > 1
@@ -143,62 +154,59 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
                   : 'Awaiting second scan'}
             </div>
           </div>
-          <div className="flex items-center justify-between border-t border-[#303030] pt-2 text-xs">
-            <span className="text-[#858585] truncate max-w-[180px]">
+          <div className="flex items-center justify-between border-t border-[#F1F5F9] pt-2 text-xs">
+            <span className="text-[#64748B] truncate max-w-[180px]">
               {deltas.length > 0 ? deltas[0].directory : 'Directory Comparison'}
             </span>
-            <span className="text-white font-semibold">
+            <span className={`font-semibold ${deltas[0]?.isPositive ? 'text-[#B45309]' : 'text-[#15803D]'}`}>
               {deltas.length > 0
-                ? (deltas[0].isPositive ? '↑ Expansion' : '↓ Contraction')
-                : 'Identical'}
+                ? (deltas[0].isPositive ? '↑ Growth' : '↓ Reduction')
+                : 'Unchanged'}
             </span>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* DIRECTORY CHANGES AND SCAN HISTORY */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* DIRECTORY DELTAS */}
-        <div className="lg:col-span-5 border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-[#303030] pb-3">
-            <span className="font-bold text-white text-base">
-              Directory Growth Analysis
-            </span>
-            <span className="text-[#858585] text-xs font-mono">Two-scan Delta</span>
+      {/* TABLES SECTION: DIRECTORY DELTAS & SCAN INDEX */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Directory Delta Table */}
+        <div className="lg:col-span-5 bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs flex flex-col gap-3">
+          <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+            <div>
+              <h3 className="font-bold text-sm text-[#172033]">
+                Directory Growth Delta
+              </h3>
+              <span className="text-xs text-[#64748B]">Two-scan comparative delta</span>
+            </div>
           </div>
 
           <div className="w-full overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
+            <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-[#303030] text-[#858585] text-xs uppercase font-semibold">
-                  <th className="py-2.5 pr-2">Directory</th>
-                  <th className="py-2.5 px-2 text-right">Delta</th>
-                  <th className="py-2.5 pl-2 text-right">Trend</th>
+                <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[#64748B] uppercase font-semibold">
+                  <th className="py-2.5 px-3">Directory</th>
+                  <th className="py-2.5 px-3 text-right">Delta</th>
+                  <th className="py-2.5 px-3 text-right">Trend</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#303030]">
+              <tbody className="divide-y divide-[#F1F5F9]">
                 {deltas.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="py-8 text-center text-[#858585] text-sm">
-                      Requires 2 or more saved scans to calculate directory growth deltas.
+                    <td colSpan={3} className="py-8 text-center text-[#64748B] text-xs">
+                      Requires 2 or more saved scans to calculate folder growth deltas.
                     </td>
                   </tr>
                 ) : (
                   deltas.map((item, idx) => (
-                    <tr
-                      key={idx}
-                      className="hover:bg-[#1b1b1b] transition-colors"
-                    >
-                      <td className="py-3 pr-2 font-mono font-medium text-white">{item.directory}</td>
-                      <td className="py-3 px-2 text-right font-mono font-bold text-white">
+                    <tr key={idx} className="hover:bg-[#F8FAFC] transition-colors">
+                      <td className="py-3 px-3 font-medium text-[#172033]">{item.directory}</td>
+                      <td className="py-3 px-3 text-right font-semibold text-[#172033]">
                         {item.delta}
                       </td>
-                      <td
-                        className={`py-3 pl-2 text-right font-semibold text-xs ${
-                          item.isPositive ? 'text-[#e5ad55]' : 'text-[#57B887]'
-                        }`}
-                      >
-                        {item.direction}
+                      <td className="py-3 px-3 text-right">
+                        <span className={`font-semibold text-xs ${item.isPositive ? 'text-[#B45309]' : 'text-[#15803D]'}`}>
+                          {item.direction}
+                        </span>
                       </td>
                     </tr>
                   ))
@@ -206,73 +214,63 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
               </tbody>
             </table>
           </div>
-
-          <div className="border-t border-[#303030] pt-2 text-xs text-[#858585] flex justify-between mt-auto">
-            <span>Deltas compare the two latest scans.</span>
-            <span>Stored in local database.</span>
-          </div>
         </div>
 
-        {/* SCAN HISTORY LOG */}
-        <div className="lg:col-span-7 border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-[#303030] pb-3">
-            <span className="font-bold text-white text-base">
-              Historical Scan Index
-            </span>
-            <span className="text-[#858585] text-xs font-mono">{scans.length} Recorded Sessions</span>
+        {/* Saved Scan Sessions */}
+        <div className="lg:col-span-7 bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs flex flex-col gap-3">
+          <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+            <div>
+              <h3 className="font-bold text-sm text-[#172033]">
+                Historical Scan Index
+              </h3>
+              <span className="text-xs text-[#64748B]">{scans.length} Recorded Sessions</span>
+            </div>
           </div>
 
-          <label className="sr-only" htmlFor="history-search">Search scan history</label>
-          <input
-            id="history-search"
-            type="search"
-            value={scanSearch}
-            onChange={(event) => setScanSearch(event.target.value)}
-            placeholder="Search by target folder or date..."
-            className="w-full sm:max-w-sm bg-[#080808] border border-[#303030] px-3.5 py-2 text-sm text-white placeholder:text-[#858585] rounded-[2px] focus:border-white focus:outline-none font-mono"
-          />
+          <div className="relative">
+            <Search size={15} className="absolute left-3 top-2.5 text-[#94A3B8]" />
+            <input
+              type="search"
+              value={scanSearch}
+              onChange={(e) => setScanSearch(e.target.value)}
+              placeholder="Filter scans by target folder or date..."
+              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] pl-9 pr-3.5 py-2 text-xs text-[#172033] placeholder:text-[#94A3B8] rounded-lg focus:border-[#5B5CE2] outline-none"
+            />
+          </div>
 
-          <div className="w-full overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
+          <div className="w-full overflow-x-auto max-h-[300px]">
+            <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-[#303030] text-[#858585] text-xs uppercase font-semibold">
-                  <th className="py-2.5 pr-2">Date</th>
-                  <th className="py-2.5 px-2">Folder Target</th>
-                  <th className="py-2.5 px-2 text-right">Files</th>
-                  <th className="py-2.5 px-2 text-right">Storage</th>
-                  <th className="py-2.5 pl-2 text-right">Status</th>
-                  <th className="py-2.5 pl-2 text-right">Action</th>
+                <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[#64748B] uppercase font-semibold">
+                  <th className="py-2.5 px-3">Date</th>
+                  <th className="py-2.5 px-3">Folder Path</th>
+                  <th className="py-2.5 px-3 text-right">Files</th>
+                  <th className="py-2.5 px-3 text-right">Total Size</th>
+                  <th className="py-2.5 px-3 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#303030]">
+              <tbody className="divide-y divide-[#F1F5F9]">
                 {scans.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-[#858585] text-sm">
-                      No historical scans recorded yet. Run a scan from the Home screen.
+                    <td colSpan={5} className="py-8 text-center text-[#64748B] text-xs">
+                      No saved scans recorded yet.
                     </td>
                   </tr>
                 ) : (
                   visibleScans.map((scan, idx) => (
-                    <tr key={scan.id ?? `${scan.date}-${scan.rootTarget}-${idx}`} className="hover:bg-[#1b1b1b] transition-colors">
-                      <td className="py-3 pr-2 text-white font-mono text-xs">{scan.date}</td>
-                      <td className="py-3 px-2 text-[#b8b8b8] font-mono text-xs truncate max-w-[160px]" title={scan.rootTarget}>
+                    <tr key={scan.id ?? `${scan.date}-${scan.rootTarget}-${idx}`} className="hover:bg-[#F8FAFC] transition-colors">
+                      <td className="py-3 px-3 text-[#64748B] whitespace-nowrap">{scan.date}</td>
+                      <td className="py-3 px-3 text-[#172033] font-medium truncate max-w-[180px]" title={scan.rootTarget}>
                         {scan.rootTarget}
                       </td>
-                      <td className="py-3 px-2 text-right font-mono text-white text-xs">{scan.inodes}</td>
-                      <td className="py-3 px-2 text-right text-white font-bold font-mono text-sm">
-                        {scan.total}
-                      </td>
-                      <td className="py-3 pl-2 text-right whitespace-nowrap">
-                        <span className="text-xs px-2 py-0.5 rounded-[2px] bg-[#242424] text-white border border-[#454545] font-semibold">
-                          {scan.status}
-                        </span>
-                      </td>
-                      <td className="py-3 pl-2 text-right">
+                      <td className="py-3 px-3 text-right text-[#64748B]">{scan.inodes}</td>
+                      <td className="py-3 px-3 text-right font-bold text-[#172033]">{scan.total}</td>
+                      <td className="py-3 px-3 text-right">
                         {scan.scanId && (
                           <button
                             type="button"
                             onClick={() => onOpenScan(scan.scanId!)}
-                            className="px-3 py-1.5 border border-white text-white hover:bg-white hover:text-black rounded-[2px] text-xs font-semibold cursor-pointer transition-colors"
+                            className="px-3 py-1 bg-[#EEF2FF] text-[#5B5CE2] hover:bg-[#5B5CE2] hover:text-white rounded-md text-xs font-semibold cursor-pointer transition-colors"
                           >
                             Open
                           </button>
@@ -283,88 +281,57 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
                 )}
               </tbody>
             </table>
-            {scans.length > 0 && visibleScans.length === 0 && (
-              <div className="py-6 text-center text-[#858585] text-sm" role="status">
-                No saved scans match this search.
-              </div>
-            )}
-          </div>
-
-          <div className="mt-auto border-t border-[#303030] pt-2 flex items-center justify-between text-xs text-[#858585]">
-            <span>Catalog stored in local SQLite database.</span>
-            <button
-              type="button"
-              onClick={handleExportHistorical}
-              className="text-white hover:underline cursor-pointer font-medium"
-            >
-              Export Historical Manifest (JSON)
-            </button>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* RECOVERY HISTORY */}
-      <div className="w-full border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col gap-4">
-        {/* HEADER */}
-        <div className="border-b border-[#303030] pb-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
+      {/* RECOVERY JOURNAL */}
+      <section className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E2E8F0] pb-3 gap-2">
           <div>
-            <div className="text-base font-bold text-white tracking-tight">
-              Cleanup Recovery Journal
-            </div>
-            <div className="text-xs text-[#858585] mt-0.5">
-              Restore vault items directly. Items sent to Windows Recycle Bin must be restored through the desktop Recycle Bin.
-            </div>
+            <h3 className="font-bold text-sm text-[#172033]">
+              Cleanup Recovery Journal &amp; Safe Restore
+            </h3>
+            <p className="text-xs text-[#64748B] mt-0.5">
+              1-click restoration for vault-staged files. Files sent to Windows Recycle Bin can be restored through the desktop Recycle Bin.
+            </p>
           </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-[#858585]">Recorded Actions:</span>
-            <span className="border border-[#454545] bg-[#1b1b1b] px-2 py-0.5 text-white font-mono font-semibold rounded-[2px]">
-              {recoveryLog.length}
-            </span>
-          </div>
+          <span className="text-xs px-2.5 py-1 rounded-full bg-[#F1F5F9] text-[#64748B] font-semibold self-start sm:self-auto">
+            {recoveryLog.length} Actions Logged
+          </span>
         </div>
 
-        {/* RECOVERY ENTRIES */}
         {recoveryLog.length === 0 ? (
-          <div className="border border-[#303030] bg-[#080808] p-8 text-center text-[#858585] text-sm rounded-[2px]">
-            No cleanup operations recorded yet. Cleaned files will appear here with restoration options.
+          <div className="p-8 text-center text-xs text-[#64748B]">
+            No cleaned files recorded yet. Files moved during cleanup will appear here with restoration controls.
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2.5">
             {recoveryLog.map((item) => (
               <div
                 key={item.id}
-                className={`border rounded-[2px] p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 transition-colors ${
+                className={`border rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 transition-colors ${
                   item.isRestored
-                    ? 'border-[#303030] bg-[#080808]/50'
-                    : 'border-[#303030] bg-[#080808] hover:border-[#454545]'
+                    ? 'border-[#BBF7D0] bg-[#F0FDF4]'
+                    : 'border-[#E2E8F0] bg-white hover:border-[#CBD5E1]'
                 }`}
               >
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className={`font-semibold font-mono text-base ${
-                        item.isRestored ? 'text-[#858585]' : 'text-white'
-                      }`}
-                    >
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className={`font-semibold text-sm ${item.isRestored ? 'text-[#166534]' : 'text-[#172033]'}`}>
                       {item.filename}
                     </span>
-                    <span className="text-[#454545]">&bull;</span>
-                    <span className="text-[#b8b8b8] text-sm font-mono font-bold">
-                      {item.sizeFormatted}
-                    </span>
+                    <span className="text-xs text-[#94A3B8]">•</span>
+                    <span className="text-xs font-semibold text-[#64748B]">{item.sizeFormatted}</span>
                   </div>
 
-                  <div className="text-xs text-[#858585] truncate max-w-xl font-mono">
-                    Original Path: <span className="text-[#b8b8b8]">{item.originPath}</span>
+                  <div className="text-xs text-[#64748B] truncate max-w-xl">
+                    Origin: <span className="text-[#172033] font-mono">{item.originPath}</span>
                   </div>
 
                   <div className="text-xs">
-                    <span className="text-[#858585]">Status: </span>
-                    <span
-                      className={`font-semibold ${
-                        item.isRestored ? 'text-[#57B887]' : 'text-white'
-                      }`}
-                    >
+                    <span className="text-[#64748B]">Status: </span>
+                    <span className={`font-semibold ${item.isRestored ? 'text-[#15803D]' : 'text-[#172033]'}`}>
                       {item.status}
                     </span>
                   </div>
@@ -372,24 +339,25 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
 
                 <div className="flex items-center gap-3">
                   {item.isRestored ? (
-                    <span className="text-xs px-4 py-2 border border-[#303030] text-[#57B887] font-semibold rounded-[2px] bg-[#141414]">
-                      ✓ Restored
+                    <span className="text-xs px-3 py-1 bg-[#DCFCE7] text-[#15803D] font-semibold rounded-full flex items-center gap-1.5">
+                      <CheckCircle2 size={14} /> Restored Successfully
                     </span>
                   ) : item.status.startsWith('FAILED') ? (
-                    <span className="text-xs px-4 py-2 border border-[#303030] text-[#858585] bg-[#141414] rounded-[2px]">
+                    <span className="text-xs px-3 py-1 bg-[#FEF2F2] text-[#DC2626] rounded-md font-medium">
                       Not Moved
                     </span>
                   ) : item.location === 'OS RECYCLE BIN' ? (
-                    <span className="text-xs px-3.5 py-2 border border-[#303030] text-[#b8b8b8] rounded-[2px] bg-[#141414]">
-                      Restore from Windows Recycle Bin
+                    <span className="text-xs px-3 py-1.5 bg-[#F1F5F9] text-[#64748B] rounded-lg font-medium">
+                      Restore via Windows Recycle Bin
                     </span>
                   ) : (
                     <button
                       type="button"
                       onClick={() => onRestoreItem(item.id)}
-                      className="text-xs font-semibold px-4 py-2 border border-white text-black bg-white hover:bg-neutral-200 rounded-[2px] cursor-pointer transition-colors"
+                      className="text-xs font-semibold px-4 py-2 bg-[#5B5CE2] hover:bg-[#4849C7] text-white rounded-lg shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
                     >
-                      Restore from Vault
+                      <RotateCcw size={13} />
+                      <span>Restore to Original Folder</span>
                     </button>
                   )}
                 </div>
@@ -397,12 +365,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
             ))}
           </div>
         )}
-
-        <div className="border-t border-[#303030] pt-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs text-[#858585]">
-          <div>Restoration procedures depend on the recorded destination.</div>
-          <div className="text-[#b8b8b8]">All operations are audited and persisted locally.</div>
-        </div>
-      </div>
+      </section>
     </div>
   );
 };
