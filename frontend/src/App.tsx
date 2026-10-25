@@ -31,8 +31,10 @@ export default function App() {
   const [snapshotDeltas, setSnapshotDeltas] = useState<SnapshotDeltaItem[]>([]);
   const [stagedImageCandidateIds, setStagedImageCandidateIds] = useState<string[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [currentScanId, setCurrentScanId] = useState<string | null>(null);
 
   const loadScanData = async (scanId: string) => {
+    setCurrentScanId(scanId);
     try {
       const [tree, dups, simImages, metadataFiles, recs, hist] = await Promise.all([
         api.getFilesystemTree(scanId).catch(() => []),
@@ -368,6 +370,11 @@ export default function App() {
             onNavigate={navigateTo}
             onStageDuplicates={handleStageDuplicates}
             hashGroups={hashGroups}
+            scanId={currentScanId}
+            onRefreshData={async () => {
+              if (currentScanId) await loadScanData(currentScanId);
+            }}
+            onShowNotice={showToast}
           />
         )}
 

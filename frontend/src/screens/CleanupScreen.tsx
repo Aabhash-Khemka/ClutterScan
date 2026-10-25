@@ -129,9 +129,9 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
   };
 
   return (
-    <div className="w-full bg-[#0e0e0e] text-white font-mono text-xs flex flex-col gap-6">
+    <div className="w-full bg-[#000000] text-white font-mono text-xs flex flex-col gap-6">
       {/* SUB-NAV / BREADCRUMB METADATA */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#1f1f1f] pb-3 gap-2 text-[11px] text-[#8e9192]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#303030] pb-3 gap-2 text-[11px] text-[#858585]">
         <div>DISPATCH // FORENSIC_TRIAGE_PIPELINE // STAGE_06</div>
         <div className="text-white font-bold">[SUBSYSTEM_VER: 4.19.0-CLR]</div>
       </div>
@@ -146,21 +146,21 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
             A SUGGESTION IS NOT A DELETION
           </div>
         </div>
-        <div className="text-[11px] text-[#c4c7c8] tracking-wider uppercase border border-[#444748] px-3 py-1">
+        <div className="text-[11px] text-[#b0b0b0] tracking-wider uppercase border border-[#484848] px-3 py-1">
           Scores rank review priority; inspect the evidence before confirming.
         </div>
       </div>
 
       {/* HEADER SECTION */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between border-b border-[#1f1f1f] pb-4 gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between border-b border-[#303030] pb-4 gap-4">
         <div className="flex flex-col gap-1">
-          <div className="text-[11px] text-[#8e9192] uppercase tracking-widest">
+          <div className="text-[11px] text-[#858585] uppercase tracking-widest">
             // ROUTING_DIRECTIVE_STAGING
           </div>
           <div className="text-lg md:text-2xl font-bold text-white tracking-widest uppercase">
             [EXECUTION_QUEUE]
           </div>
-          <div className="text-xs text-[#c4c7c8] uppercase tracking-wider">
+          <div className="text-xs text-[#b0b0b0] uppercase tracking-wider">
             USER AUDIT &amp; APPROVAL // SAFE RECOVERY ROUTING
           </div>
         </div>
@@ -168,38 +168,38 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
           <div className="text-white tracking-widest uppercase font-bold">
             Nothing moves until you confirm.
           </div>
-          <div className="text-[#8e9192] tracking-wider">
+          <div className="text-[#858585] tracking-wider">
             System Trash when available; otherwise ClutterScan's local recovery vault.
           </div>
         </div>
       </div>
 
       {/* SUMMARY BAR */}
-      <div className="border border-[#1f1f1f] p-4 bg-black grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-        <div className="flex flex-col gap-0.5 border-l border-[#1f1f1f] pl-3 sm:border-l-0 sm:pl-0">
-          <span className="text-[#8e9192] text-[10px] uppercase">
+      <div className="border border-[#303030] p-4 bg-[#0b0b0b] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+        <div className="flex flex-col gap-0.5 border-l border-[#303030] pl-3 sm:border-l-0 sm:pl-0">
+          <span className="text-[#858585] text-[10px] uppercase">
             CANDIDATE RECOMMENDATIONS
           </span>
           <span className="text-white font-bold text-base md:text-lg">{candidates.length} RECORDS</span>
         </div>
-        <div className="flex flex-col gap-0.5 border-l border-[#1f1f1f] pl-3">
-          <span className="text-[#8e9192] text-[10px] uppercase">
+        <div className="flex flex-col gap-0.5 border-l border-[#303030] pl-3">
+          <span className="text-[#858585] text-[10px] uppercase">
             CURRENTLY SELECTED
           </span>
           <span className="text-white font-bold text-base md:text-lg">
             {selectedCandidates.length} FILES
           </span>
         </div>
-        <div className="flex flex-col gap-0.5 border-l border-[#1f1f1f] pl-3">
-          <span className="text-[#8e9192] text-[10px] uppercase">
+        <div className="flex flex-col gap-0.5 border-l border-[#303030] pl-3">
+          <span className="text-[#858585] text-[10px] uppercase">
             ESTIMATED RECOVERY
           </span>
           <span className="text-white font-bold text-base md:text-lg">
             {formattedSelectedSize}
           </span>
         </div>
-        <div className="flex flex-col gap-0.5 border-l border-[#1f1f1f] pl-3">
-          <span className="text-[#8e9192] text-[10px] uppercase">DESTINATION</span>
+        <div className="flex flex-col gap-0.5 border-l border-[#303030] pl-3">
+          <span className="text-[#858585] text-[10px] uppercase">DESTINATION</span>
           <span className="text-white font-bold text-sm md:text-base">
             SYSTEM TRASH / LOCAL VAULT
           </span>
@@ -208,7 +208,7 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
 
       {/* FORENSIC CANDIDATE CARDS GRID */}
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-[#1f1f1f] pb-3">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-[#303030] pb-3">
           <div className="flex flex-col sm:flex-row gap-2">
             <label className="sr-only" htmlFor="candidate-search">Search cleanup suggestions</label>
             <input
@@ -217,14 +217,14 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search paths or evidence…"
-              className="min-w-0 sm:w-80 bg-black border border-[#444748] px-3 py-2 text-xs text-white placeholder:text-[#8e9192] focus:border-white focus:outline-none"
+              className="min-w-0 sm:w-80 bg-black border border-[#484848] px-3 py-2 text-xs text-white placeholder:text-[#858585] focus:border-white focus:outline-none"
             />
             <label className="sr-only" htmlFor="candidate-filter">Filter suggestions</label>
             <select
               id="candidate-filter"
               value={candidateFilter}
               onChange={(event) => setCandidateFilter(event.target.value as CandidateFilter)}
-              className="bg-black border border-[#444748] px-3 py-2 text-xs text-white focus:border-white focus:outline-none"
+              className="bg-black border border-[#484848] px-3 py-2 text-xs text-white focus:border-white focus:outline-none"
             >
               <option value="ALL">All evidence</option>
               <option value="DUPLICATES">Exact duplicates</option>
@@ -234,7 +234,7 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
             </select>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-[11px]">
-            <span className="text-[#8e9192]">{filteredCandidates.length} OF {candidates.length} SUGGESTIONS</span>
+            <span className="text-[#858585]">{filteredCandidates.length} OF {candidates.length} SUGGESTIONS</span>
             <button
               type="button"
               onClick={() => onSelectCandidates(filteredCandidates.map((candidate) => candidate.id), true)}
@@ -245,7 +245,7 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
             <button
               type="button"
               onClick={() => onSelectCandidates(filteredCandidates.map((candidate) => candidate.id), false)}
-              className="text-[#8e9192] hover:text-white cursor-pointer"
+              className="text-[#858585] hover:text-white cursor-pointer"
             >
               Clear all
             </button>
@@ -253,7 +253,7 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
               type="button"
               onClick={handleExportReport}
               disabled={candidates.length === 0}
-              className="border border-[#444748] px-3 py-2 text-white hover:border-white disabled:opacity-40 disabled:cursor-not-allowed"
+              className="border border-[#484848] px-3 py-2 text-white hover:border-white disabled:opacity-40 disabled:cursor-not-allowed"
               title="The report includes file paths and scan evidence."
             >
               Export report
@@ -261,16 +261,16 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
           </div>
         </div>
 
-        <p className="text-[11px] text-[#8e9192]">
+        <p className="text-[11px] text-[#858585]">
           Impact scores are a 0–100 review-priority ranking, not confidence or accuracy. Selection never moves a file; only confirmation does.
         </p>
 
         {candidates.length === 0 ? (
-          <div className="w-full min-h-[300px] border border-[#1f1f1f] bg-black p-8 flex flex-col items-center justify-center gap-3 text-center">
+          <div className="w-full min-h-[300px] border border-[#303030] bg-[#0b0b0b] p-8 flex flex-col items-center justify-center gap-3 text-center">
             <div className="text-base font-bold text-white tracking-widest uppercase">
               No cleanup suggestions yet
             </div>
-            <div className="text-xs text-[#8e9192] max-w-lg leading-relaxed uppercase">
+            <div className="text-xs text-[#858585] max-w-lg leading-relaxed uppercase">
               A completed scan with cleanup evidence will show suggestions here. Run a scan or review another results section.
             </div>
             <button
@@ -451,8 +451,8 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
       </div>
 
       {/* ACTION / AUTHORIZATION BLOCK */}
-      <div className="border border-[#444748] p-5 bg-black flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#1f1f1f] pb-3 gap-2">
+      <div className="border border-[#484848] p-5 bg-black flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#303030] pb-3 gap-2">
           <div className="text-sm font-bold text-white tracking-widest uppercase">
             [CLEANUP_AUTHORIZATION]
           </div>
@@ -463,29 +463,29 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
           <div className="flex flex-col gap-1 border-l-2 border-white pl-4">
-            <span className="text-[#8e9192] uppercase text-[10px]">
+            <span className="text-[#858585] uppercase text-[10px]">
               SELECTED FOR REVIEW:
             </span>
             <span className="text-white font-bold text-base md:text-lg">
               {selectedCandidates.length} FILES // {formattedSelectedSize}
             </span>
-            <span className="text-[#8e9192] text-[11px] uppercase">
+            <span className="text-[#858585] text-[11px] uppercase">
               Files remain on disk until you confirm the move.
             </span>
           </div>
 
-          <div className="flex flex-col gap-1 border-l-2 border-[#444748] pl-4">
-            <span className="text-[#8e9192] uppercase text-[10px]">OPERATION TARGET:</span>
+          <div className="flex flex-col gap-1 border-l-2 border-[#484848] pl-4">
+            <span className="text-[#858585] uppercase text-[10px]">OPERATION TARGET:</span>
             <span className="text-white font-bold text-base md:text-lg">
               System Trash, or local recovery vault if Trash is unavailable
             </span>
-            <span className="text-[#8e9192] text-[11px] uppercase">
+            <span className="text-[#858585] text-[11px] uppercase">
               Restore from system Trash or ClutterScan History, depending on destination.
             </span>
           </div>
         </div>
 
-        <div className="pt-3 flex flex-col items-stretch sm:items-start gap-2 border-t border-[#1f1f1f]">
+        <div className="pt-3 flex flex-col items-stretch sm:items-start gap-2 border-t border-[#303030]">
           <button
             type="button"
             disabled={selectedCandidates.length === 0 || isExecuting}
@@ -497,18 +497,18 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
           >
             Review and confirm move
           </button>
-          <span className="text-[10px] text-[#8e9192] uppercase tracking-wider">
+          <span className="text-[10px] text-[#858585] uppercase tracking-wider">
             Selected files may move to system Trash or the local recovery vault.
           </span>
         </div>
 
         {/* EXECUTION FEEDBACK BOX */}
         {executionFeedback && (
-          <div className="border border-white p-4 bg-[#131313] flex flex-col gap-2 text-xs text-white" role="status">
+          <div className="border border-white p-4 bg-[#0b0b0b] flex flex-col gap-2 text-xs text-white" role="status">
             <div className="flex items-center justify-between font-bold">
               <span className="tracking-widest uppercase">Cleanup request completed</span>
             </div>
-            <div className="text-[#c4c7c8] uppercase leading-relaxed text-[11px]">
+            <div className="text-[#b0b0b0] uppercase leading-relaxed text-[11px]">
               {executionSummary?.movedCount ?? 0} files moved. {executionSummary?.failedCount ?? 0} files could not be moved and remain in place. Review the recovery history for item outcomes.
             </div>
             <div className="pt-1">
@@ -523,18 +523,18 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
           </div>
         )}
         {executionError && (
-          <div className="border border-[#b91c1c] p-3 text-sm text-white" role="alert">
+          <div className="border border-[#c90000] p-3 text-sm text-white" role="alert">
             Cleanup was not completed: {executionError}
           </div>
         )}
       </div>
 
       {/* SAFETY PROTOCOL VERIFICATION BOX */}
-      <div className="border border-[#444748] p-5 bg-black flex flex-col gap-2 text-xs">
-        <div className="font-bold text-white tracking-widest uppercase border-b border-[#1f1f1f] pb-2 flex items-center justify-between">
+      <div className="border border-[#484848] p-5 bg-black flex flex-col gap-2 text-xs">
+        <div className="font-bold text-white tracking-widest uppercase border-b border-[#303030] pb-2 flex items-center justify-between">
           <span>Before you confirm</span>
         </div>
-        <div className="flex flex-col gap-1.5 text-[#c4c7c8] leading-relaxed pt-1 text-[11px]">
+        <div className="flex flex-col gap-1.5 text-[#b0b0b0] leading-relaxed pt-1 text-[11px]">
           <div>Review file paths and evidence. Your selection alone does not change files.</div>
           <div>Confirmed files go to system Trash when available, otherwise the local recovery vault.</div>
           <div>Files in system Trash must be restored through your operating system. Vault items can be restored from History.</div>

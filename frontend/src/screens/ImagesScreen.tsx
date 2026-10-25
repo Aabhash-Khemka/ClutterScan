@@ -53,9 +53,9 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
   };
 
   return (
-    <div className="w-full bg-[#0e0e0e] text-white font-mono text-xs flex flex-col gap-6">
+    <div className="w-full bg-[#000000] text-white font-mono text-xs flex flex-col gap-6">
       {/* HEADER SECTION */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#1f1f1f] pb-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#303030] pb-4">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <span className="text-base md:text-xl font-bold text-white tracking-widest uppercase">
@@ -65,7 +65,7 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
               Similar images
             </span>
           </div>
-          <p className="text-[11px] text-[#8e9192] uppercase tracking-wider">
+          <p className="text-[11px] text-[#858585] uppercase tracking-wider">
             VISUAL SIMILARITY // PERCEPTUAL HASH (pHASH) + HAMMING DISTANCE CORRELATION
           </p>
         </div>
@@ -73,41 +73,41 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
           <div className="text-white tracking-widest uppercase">
             ALGORITHM: DCT_PHASH_64BIT // HAMMING_THRESHOLD: &lt;= 08
           </div>
-          <div className="text-[#8e9192] uppercase">
+          <div className="text-[#858585] uppercase">
             Results are grouped when their 64-bit pHashes differ by no more than 8 bits.
           </div>
         </div>
       </div>
 
       {/* SUMMARY STRIP */}
-      <div className="w-full border border-[#1f1f1f] bg-black p-4 flex flex-wrap items-center justify-between gap-4 text-[11px] text-[#c4c7c8] uppercase">
+      <div className="w-full border border-[#303030] bg-[#0b0b0b] p-4 flex flex-wrap items-center justify-between gap-4 text-[11px] text-[#b0b0b0] uppercase">
         <div className="flex items-center gap-2">
-          <span className="text-[#8e9192]">IMAGE GROUPS:</span>
+          <span className="text-[#858585]">IMAGE GROUPS:</span>
           <span className="text-white font-bold">{totalImageGroups}</span>
         </div>
-        <div className="text-[#444748] hidden md:inline">|</div>
+        <div className="text-[#484848] hidden md:inline">|</div>
         <div className="flex items-center gap-2">
-          <span className="text-[#8e9192]">SIMILAR IMAGES:</span>
+          <span className="text-[#858585]">SIMILAR IMAGES:</span>
           <span className="text-white font-bold">{totalSimilarImages}</span>
         </div>
-        <div className="text-[#444748] hidden md:inline">|</div>
+        <div className="text-[#484848] hidden md:inline">|</div>
         <div className="flex items-center gap-2">
-          <span className="text-[#8e9192]">HAMMING THRESHOLD:</span>
+          <span className="text-[#858585]">HAMMING THRESHOLD:</span>
           <span className="text-white font-bold">&lt;= 08</span>
         </div>
-        <div className="text-[#444748] hidden md:inline">|</div>
+        <div className="text-[#484848] hidden md:inline">|</div>
         <div className="flex items-center gap-2">
-          <span className="text-[#8e9192]">SIMILARITY IS NOT A CONFIDENCE SCORE</span>
+          <span className="text-[#858585]">SIMILARITY IS NOT A CONFIDENCE SCORE</span>
         </div>
       </div>
 
       {/* GROUP SELECTOR TABS & CONTENT */}
       {clusters.length === 0 ? (
-        <div className="w-full min-h-[350px] border border-[#1f1f1f] bg-black p-8 flex flex-col items-center justify-center gap-4 text-center">
+        <div className="w-full min-h-[350px] border border-[#303030] bg-[#0b0b0b] p-8 flex flex-col items-center justify-center gap-4 text-center">
           <div className="text-base font-bold text-white tracking-widest uppercase">
             No similar-image groups to review
           </div>
-          <div className="text-xs text-[#8e9192] max-w-lg leading-relaxed uppercase">
+          <div className="text-xs text-[#858585] max-w-lg leading-relaxed uppercase">
             No group was returned for this scan. Similar-image detection may have been disabled, or no supported image pair met the 8-bit pHash threshold. This does not prove that all files are unique.
           </div>
           <button
@@ -121,7 +121,7 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
       ) : (
         <>
           <div className="flex flex-col gap-2">
-            <div className="text-[#8e9192] text-[11px] uppercase tracking-widest">
+            <div className="text-[#858585] text-[11px] uppercase tracking-widest">
               // CLUSTER_SELECTOR: SELECT EVALUATION TARGET
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -135,7 +135,7 @@ export const ImagesScreen: React.FC<ImagesScreenProps> = ({
                     className={`px-4 py-2 border uppercase cursor-pointer transition-none font-bold ${
                       isSelected
                         ? 'bg-white text-black border-white'
-                        : 'bg-[#0e0e0e] text-[#c4c7c8] border-[#1f1f1f] hover:border-white hover:text-white'
+                        : 'bg-[#000000] text-[#b0b0b0] border-[#303030] hover:border-white hover:text-white'
                     }`}
                   >
                     {cluster.label}

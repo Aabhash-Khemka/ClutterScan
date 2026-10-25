@@ -113,6 +113,27 @@ export const api = {
     return await res.json();
   },
 
+  async bulkDeleteDuplicates(
+    filePaths: string[],
+    scanId?: string | null,
+    preferTrash = true
+  ): Promise<{ success: boolean; deletedCount: number; failedCount: number; results: RecoveryLogItem[] }> {
+    const res = await fetch(`${API_BASE}/duplicates/bulk-delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        scanId: scanId || null,
+        filePaths,
+        preferTrash,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Bulk deletion failed' }));
+      throw new Error(err.detail || 'Bulk deletion failed');
+    }
+    return await res.json();
+  },
+
   async getSimilarImages(scanId: string): Promise<PerceptualCluster[]> {
     const res = await fetch(`${API_BASE}/similar-images/${scanId}`);
     if (!res.ok) throw new Error('Failed to fetch similar images');

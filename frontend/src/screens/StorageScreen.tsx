@@ -139,12 +139,12 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
   return (
     <div className="w-full flex flex-col gap-6 font-mono text-xs text-white">
       {/* Section header */}
-      <section className="border-b border-[#1f1f1f] pb-3 flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
+      <section className="border-b border-[#303030] pb-3 flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
         <div className="flex flex-col gap-1">
           <div className="text-base md:text-xl font-bold text-white tracking-widest uppercase">
             Storage overview
           </div>
-          <div className="text-[11px] text-[#8e9192] uppercase tracking-wider">
+          <div className="text-[11px] text-[#858585] uppercase tracking-wider">
             FILESYSTEM STRUCTURE // {rootPathDisplay}
           </div>
         </div>
@@ -153,81 +153,81 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
       {/* Summary metrics */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* CELL 01: TOTAL SCANNED */}
-        <div className="border border-[#1f1f1f] bg-[#0e0e0e] p-6 flex flex-col justify-between h-36">
-          <div className="flex justify-between items-center text-[#8e9192] text-[11px]">
+        <div className="border border-[#303030] bg-[#0b0b0b] p-6 flex flex-col justify-between h-36">
+          <div className="flex justify-between items-center text-[#858585] text-[11px]">
             <span>[ TOTAL SCANNED ]</span>
             <span>SEC_01</span>
           </div>
           <div className="text-2xl md:text-3xl font-bold text-white tracking-tight tabular-nums">
             {rootSizeDisplay}
           </div>
-          <div className="text-[11px] text-[#c4c7c8] border-t border-[#1f1f1f] pt-2">
+          <div className="text-[11px] text-[#b0b0b0] border-t border-[#303030] pt-2">
             STORAGE ANALYZED
           </div>
         </div>
 
         {/* CELL 02: FILES PROCESSED */}
-        <div className="border border-[#1f1f1f] bg-[#0e0e0e] p-6 flex flex-col justify-between h-36">
-          <div className="flex justify-between items-center text-[#8e9192] text-[11px]">
+        <div className="border border-[#303030] bg-[#0b0b0b] p-6 flex flex-col justify-between h-36">
+          <div className="flex justify-between items-center text-[#858585] text-[11px]">
             <span>[ FILES PROCESSED ]</span>
             <span>SEC_02</span>
           </div>
           <div className="text-2xl md:text-3xl font-bold text-white tracking-tight tabular-nums">
             {rootNode ? fileCount.toLocaleString() : '—'}
           </div>
-          <div className="text-[11px] text-[#c4c7c8] border-t border-[#1f1f1f] pt-2">
+          <div className="text-[11px] text-[#b0b0b0] border-t border-[#303030] pt-2">
             INODE OBJECTS CATALOGED
           </div>
         </div>
 
         {/* CELL 03: DIRECTORIES */}
-        <div className="border border-[#1f1f1f] bg-[#0e0e0e] p-6 flex flex-col justify-between h-36">
-          <div className="flex justify-between items-center text-[#8e9192] text-[11px]">
+        <div className="border border-[#303030] bg-[#0b0b0b] p-6 flex flex-col justify-between h-36">
+          <div className="flex justify-between items-center text-[#858585] text-[11px]">
             <span>[ DIRECTORIES ]</span>
             <span>SEC_03</span>
           </div>
           <div className="text-2xl md:text-3xl font-bold text-white tracking-tight tabular-nums">
             {rootNode ? dirCount.toLocaleString() : '—'}
           </div>
-          <div className="text-[11px] text-[#c4c7c8] border-t border-[#1f1f1f] pt-2">
+          <div className="text-[11px] text-[#b0b0b0] border-t border-[#303030] pt-2">
             DISK FOLDERS TRAVERSED
           </div>
         </div>
 
         {/* CELL 04: TREE DEPTH */}
-        <div className="border border-[#1f1f1f] bg-[#0e0e0e] p-6 flex flex-col justify-between h-36">
-          <div className="flex justify-between items-center text-[#8e9192] text-[11px]">
+        <div className="border border-[#303030] bg-[#0b0b0b] p-6 flex flex-col justify-between h-36">
+          <div className="flex justify-between items-center text-[#858585] text-[11px]">
             <span>[ TREE DEPTH ]</span>
             <span>LEVELS</span>
           </div>
           <div className="text-2xl md:text-3xl font-bold text-white tracking-tight tabular-nums">
             {rootNode ? maxDepth.toLocaleString() : '—'}
           </div>
-          <div className="text-[11px] text-[#c4c7c8] border-t border-[#1f1f1f] pt-2">
+          <div className="text-[11px] text-[#b0b0b0] border-t border-[#303030] pt-2">
             Maximum depth shown in the tree
           </div>
         </div>
       </section>
 
       {/* MIDDLE SECTION: RECURSIVE DIRECTORY AGGREGATION TREE */}
-      <section className="border border-[#1f1f1f] bg-[#0e0e0e] p-6 flex flex-col">
+      <section className="border border-[#303030] bg-[#0b0b0b] p-6 flex flex-col">
         {/* TREE HEADER */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-4 border-b border-[#1f1f1f] gap-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-4 border-b border-[#303030] gap-2">
           <div className="flex items-center gap-2">
             <span className="text-white font-bold text-sm md:text-base">
               [FILESYSTEM_TREE]
             </span>
-            <span className="text-[#8e9192] text-[11px]">
+            <span className="text-[#858585] text-[11px]">
               // RECURSIVE DIRECTORY AGGREGATION
             </span>
           </div>
           <div className="flex items-center gap-2 text-[11px]">
-            <span className="text-[#8e9192]">TREE_DEPTH: {maxDepth.toString().padStart(2, '0')}</span>
-            <span className="text-[#8e9192]">|</span>
+            <span className="text-[#858585]">TREE_DEPTH: {maxDepth.toString().padStart(2, '0')}</span>
+            <span className="text-[#858585]">|</span>
             <button
               type="button"
               onClick={toggleAll}
-              className="text-[#c4c7c8] hover:text-black hover:bg-white px-2 py-0.5 border border-[#444748] transition-none cursor-pointer uppercase"
+              className="text-[#b0b0b0] hover:text-black hover:bg-white px-2 py-0.5 border border-[#484848] transition-none cursor-pointer uppercase"
             >
               {isAllExpanded ? '[ COLLAPSE ALL ]' : '[ EXPAND/COLLAPSE ALL ]'}
             </button>
@@ -237,7 +237,7 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
         {/* ASCII / TEXT TREE INTERACTION BUFFER */}
         <div className="text-xs md:text-sm leading-relaxed overflow-x-auto text-[#e2e2e2] select-none font-mono max-h-[500px]">
           {flattenedTree.length === 0 && (
-            <div className="py-8 text-center text-[#8e9192]">
+            <div className="py-8 text-center text-[#858585]">
               No scan results are loaded. Run a scan to explore filesystem structure.
             </div>
           )}
@@ -245,11 +245,11 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
             const lineNum = index.toString().padStart(4, '0');
             if (item.isRoot) {
               return (
-                <div key={item.id} className="text-white font-bold flex items-center py-1 border-b border-[#1f1f1f]">
-                  <span className="w-14 text-[#8e9192]">{lineNum}:</span>
+                <div key={item.id} className="text-white font-bold flex items-center py-1 border-b border-[#303030]">
+                  <span className="w-14 text-[#858585]">{lineNum}:</span>
                   <span className="text-white">{item.name}</span>
-                  <span className="ml-auto text-[#8e9192] text-xs pr-4">{item.size}</span>
-                  <span className="text-[#8e9192] text-xs uppercase">{item.tag || 'ROOT TARGET'}</span>
+                  <span className="ml-auto text-[#858585] text-xs pr-4">{item.size}</span>
+                  <span className="text-[#858585] text-xs uppercase">{item.tag || 'ROOT TARGET'}</span>
                 </div>
               );
             }
@@ -262,15 +262,15 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
                   item.isDir ? 'cursor-pointer' : ''
                 }`}
               >
-                <span className="w-14 text-[#8e9192] group-hover:text-black">{lineNum}:</span>
+                <span className="w-14 text-[#858585] group-hover:text-black">{lineNum}:</span>
                 <span className="truncate">{item.prefix}{item.name}</span>
                 <span className="ml-auto tabular-nums pr-4">{item.size}</span>
                 {item.isDir ? (
-                  <span className="text-[11px] border border-[#444748] group-hover:border-black px-1.5 py-0.5">
+                  <span className="text-[11px] border border-[#484848] group-hover:border-black px-1.5 py-0.5">
                     {item.isOpen ? '[ - COLLAPSE ]' : '[ + EXPAND ]'}
                   </span>
                 ) : (
-                  <span className="w-24 text-right text-[#8e9192] group-hover:text-black text-xs">
+                  <span className="w-24 text-right text-[#858585] group-hover:text-black text-xs">
                     {item.tag || 'INODE'}
                   </span>
                 )}
@@ -281,30 +281,30 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
       </section>
 
       {/* BOTTOM STATUS SECTION: SCAN_METADATA DOSSIER */}
-      <section className="border border-[#1f1f1f] bg-[#0e0e0e] p-6">
-        <div className="text-sm font-bold text-white mb-4 pb-2 border-b border-[#1f1f1f] flex items-center justify-between">
+      <section className="border border-[#303030] bg-[#0b0b0b] p-6">
+        <div className="text-sm font-bold text-white mb-4 pb-2 border-b border-[#303030] flex items-center justify-between">
           <span>[SCAN_METADATA]</span>
-          <span className="text-[11px] text-[#8e9192]">Values from the loaded scan</span>
+          <span className="text-[11px] text-[#858585]">Values from the loaded scan</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-xs">
           {/* META 01 */}
-          <div className="flex flex-col gap-1 border-l border-[#1f1f1f] pl-4">
-            <span className="text-[#8e9192] text-[10px] uppercase">ROOT TARGET</span>
+          <div className="flex flex-col gap-1 border-l border-[#303030] pl-4">
+            <span className="text-[#858585] text-[10px] uppercase">ROOT TARGET</span>
             <span className="text-white font-bold break-all">{rootPathDisplay}</span>
           </div>
           {/* META 02 */}
-          <div className="flex flex-col gap-1 border-l border-[#1f1f1f] pl-4">
-            <span className="text-[#8e9192] text-[10px] uppercase">FILES</span>
+          <div className="flex flex-col gap-1 border-l border-[#303030] pl-4">
+            <span className="text-[#858585] text-[10px] uppercase">FILES</span>
             <span className="text-white font-bold">{fileCount.toLocaleString()}</span>
           </div>
           {/* META 03 */}
-          <div className="flex flex-col gap-1 border-l border-[#1f1f1f] pl-4">
-            <span className="text-[#8e9192] text-[10px] uppercase">DIRECTORIES</span>
+          <div className="flex flex-col gap-1 border-l border-[#303030] pl-4">
+            <span className="text-[#858585] text-[10px] uppercase">DIRECTORIES</span>
             <span className="text-white font-bold">{dirCount.toLocaleString()}</span>
           </div>
           {/* META 04 */}
-          <div className="flex flex-col gap-1 border-l border-[#1f1f1f] pl-4">
-            <span className="text-[#8e9192] text-[10px] uppercase">SCAN STATUS</span>
+          <div className="flex flex-col gap-1 border-l border-[#303030] pl-4">
+            <span className="text-[#858585] text-[10px] uppercase">SCAN STATUS</span>
             <span className="text-white font-bold">{rootNode ? 'Results loaded' : 'No scan loaded'}</span>
           </div>
         </div>
@@ -317,7 +317,7 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
             type="button"
             onClick={handleExportJson}
             disabled={!rootNode}
-            className="bg-[#0e0e0e] text-[#c4c7c8] hover:bg-white hover:text-black border border-[#444748] px-4 py-2 transition-none uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#0b0b0b] text-[#b0b0b0] hover:bg-white hover:text-black border border-[#484848] px-4 py-2 transition-none uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             [ EXPORT_STRUCTURE.JSON ]
           </button>

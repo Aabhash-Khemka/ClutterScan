@@ -108,3 +108,45 @@ def test_end_to_end_scan_api(tmp_path: Path):
     assert restore_res.status_code == 200
     assert restore_res.json()["success"] is True
     assert file_to_clean.exists()
+
+def test_bulk_duplicate_deletion_api(tmp_path: Path):
+    """Test bulk duplicate deletion endpoint with real files."""
+    f1 = tmp_path / "original.txt"
+    f2 = tmp_path / "dup1.txt"
+    f3 = tmp_path / "dup2.txt"
+    content = "IDENTICAL DUPLICATE BYTES FOR TESTING"
+    f1.write_text(content)
+    f2.write_text(content)
+    f3.write_text(content)
+
+    post_res = client.post(
+        "/api/scan",
+        json={"target_path": str(tmp_path), "options": {"exactDupes": True}},
+    )
+    assert post_res.status_code == 200
+    scan_id = post_res.json()["scanId"]
+
+    import time
+    for _ in range(20):
+        status_res = client.get(f"/api/scan/{scan_id}")
+        if status_res.json()["status"] == "COMPLETED":
+            break
+        time.sleep(0.1)
+
+    # Perform bulk delete on dup1 and dup2, keeping original.txt
+    del_res = client.post(
+        "/api/duplicates/bulk-delete",
+        json={
+            "scanId": scan_id,
+            "filePaths": [str(f2), str(f3)],
+            "preferTrash": False,
+        },
+    )
+    assert del_res.status_code == 200
+    data = del_res.json()
+    assert data["success"] is True
+    assert data["deletedCount"] == 2
+    assert f1.exists()  # Retained copy is intact!
+    assert not f2.exists()
+    assert not f3.exists()
+

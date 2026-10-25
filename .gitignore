@@ -43,3 +43,8 @@ env/
 checkpoints/
 data/raw/
 data/processed/
+
+# ClutterScan local runtime data
+/backend/data/*.db
+/backend/data/*.db-*
+/backend/data/recovery_vault/

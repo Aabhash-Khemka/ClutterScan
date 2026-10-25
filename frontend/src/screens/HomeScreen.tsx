@@ -127,30 +127,30 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   return (
     <div className="w-full flex flex-col gap-6 font-mono text-xs text-white">
       {/* SECTION HEADER */}
-      <section className="border-b border-[#1f1f1f] pb-3 flex flex-col md:flex-row justify-between items-start md:items-end gap-2">
+      <section className="border-b border-[#303030] pb-3 flex flex-col md:flex-row justify-between items-start md:items-end gap-2">
         <div className="flex flex-col gap-1">
           <div className="text-sm md:text-base font-bold text-white tracking-widest uppercase flex items-center gap-2">
             <span>Start a scan</span>
             <span className="text-white font-bold">■</span>
           </div>
-          <div className="text-[11px] text-[#8e9192] uppercase tracking-wider">
+          <div className="text-[11px] text-[#858585] uppercase tracking-wider">
             Choose a drive or folder to find large files, duplicates, and cleanup suggestions.
           </div>
         </div>
-        <div className="text-[11px] text-[#8e9192] uppercase tracking-widest font-mono">
+        <div className="text-[11px] text-[#858585] uppercase tracking-widest font-mono">
           YOUR FILES STAY ON THIS DEVICE
         </div>
       </section>
 
       {/* SAFETY PROTOCOL BANNER */}
-      <div className="border border-[#1f1f1f] p-3 bg-[#0e0e0e] flex flex-col md:flex-row md:items-center justify-between text-xs gap-3">
+      <div className="border border-[#303030] p-3 bg-[#0b0b0b] flex flex-col md:flex-row md:items-center justify-between text-xs gap-3">
         <div className="flex items-center gap-2">
           <span className="text-white font-bold tracking-wider">YOUR FILES ARE SAFE:</span>
-          <span className="text-[#c4c7c8] tracking-wider">
+          <span className="text-[#b0b0b0] tracking-wider">
             Scanning only finds files. Nothing is removed unless you review and confirm it.
           </span>
         </div>
-        <div className="text-[11px] text-[#8e9192] font-mono tracking-wider">
+        <div className="text-[11px] text-[#858585] font-mono tracking-wider">
           Confirmed cleanup goes to Trash or the recovery vault.
         </div>
       </div>
@@ -161,7 +161,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <div className="text-xs text-white uppercase tracking-widest font-bold">
             1. Choose a drive or folder
           </div>
-          <p className="text-[11px] text-[#8e9192] mt-1">
+          <p className="text-[11px] text-[#858585] mt-1">
             Pick a location to analyze. You can scan a whole drive or just one folder.
           </p>
         </div>
@@ -182,12 +182,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             className={`w-full text-left border p-6 cursor-pointer select-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
               selectedVolume === 'PRIMARY'
                 ? 'bg-white text-black border-white'
-                : 'bg-[#0e0e0e] text-white border-[#1f1f1f] hover:border-[#444748]'
+                : 'bg-[#0b0b0b] text-white border-[#303030] hover:border-[#484848]'
             }`}
           >
             <div
               className={`text-xs tracking-widest uppercase mb-3 ${
-                selectedVolume === 'PRIMARY' ? 'text-black font-bold' : 'text-[#8e9192]'
+                selectedVolume === 'PRIMARY' ? 'text-black font-bold' : 'text-[#858585]'
               }`}
             >
               System drive
@@ -198,7 +198,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <div className="text-3xl font-bold mb-4">{volumes[0]?.path || 'C:\\'}</div>
             <div
               className={`text-[11px] tracking-wider ${
-                selectedVolume === 'PRIMARY' ? 'text-black font-bold' : 'text-[#8e9192]'
+                selectedVolume === 'PRIMARY' ? 'text-black font-bold' : 'text-[#858585]'
               }`}
             >
               {volumes[0]
@@ -221,14 +221,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             className={`w-full text-left border p-6 select-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
               selectedVolume === 'EXTERNAL'
                 ? 'bg-white text-black border-white'
-                : 'bg-[#0e0e0e] text-white border-[#1f1f1f] hover:border-[#444748]'
+                : 'bg-[#0b0b0b] text-white border-[#303030] hover:border-[#484848]'
             } ${
               volumes.length < 2 ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
             }`}
           >
             <div
               className={`text-xs tracking-widest uppercase mb-3 ${
-                selectedVolume === 'EXTERNAL' ? 'text-black font-bold' : 'text-[#8e9192]'
+                selectedVolume === 'EXTERNAL' ? 'text-black font-bold' : 'text-[#858585]'
               }`}
             >
               Other drive
@@ -241,7 +241,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
             <div
               className={`text-[11px] tracking-wider ${
-                selectedVolume === 'EXTERNAL' ? 'text-black font-bold' : 'text-[#8e9192]'
+                selectedVolume === 'EXTERNAL' ? 'text-black font-bold' : 'text-[#858585]'
               }`}
             >
               {volumes.length > 1
@@ -263,12 +263,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             className={`w-full text-left border p-6 cursor-pointer select-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
               selectedVolume === 'CUSTOM'
                 ? 'bg-white text-black border-white'
-                : 'bg-[#0e0e0e] text-white border-[#1f1f1f] hover:border-[#444748]'
+                : 'bg-[#0b0b0b] text-white border-[#303030] hover:border-[#484848]'
             }`}
           >
             <div
               className={`text-xs tracking-widest uppercase mb-3 ${
-                selectedVolume === 'CUSTOM' ? 'text-black font-bold' : 'text-[#8e9192]'
+                selectedVolume === 'CUSTOM' ? 'text-black font-bold' : 'text-[#858585]'
               }`}
             >
               Suggested folder
@@ -281,7 +281,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
             <div
               className={`text-[11px] tracking-wider ${
-                selectedVolume === 'CUSTOM' ? 'text-black font-bold' : 'text-[#8e9192]'
+                selectedVolume === 'CUSTOM' ? 'text-black font-bold' : 'text-[#858585]'
               }`}
             >
               {folders.length > 0
@@ -293,12 +293,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </div>
 
       {/* TARGET PATH SPECIFICATION */}
-      <div className="border border-[#1f1f1f] p-5 bg-[#0e0e0e] space-y-4">
+      <div className="border border-[#303030] p-5 bg-[#0b0b0b] space-y-4">
         <div>
           <label htmlFor="scan-target-path" className="text-xs text-white uppercase tracking-widest font-bold">
             2. Confirm the folder to scan
           </label>
-          <p className="text-[11px] text-[#8e9192] mt-1">
+          <p className="text-[11px] text-[#858585] mt-1">
             You can edit this path or paste another folder location.
           </p>
         </div>
@@ -312,7 +312,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               setSelectedVolume('CUSTOM');
             }}
             aria-label="Folder or drive path to scan"
-            className="bg-black border border-[#1f1f1f] px-4 py-2.5 text-xs md:text-sm text-white flex-1 focus:border-white focus:outline-none"
+            className="bg-black border border-[#303030] px-4 py-2.5 text-xs md:text-sm text-white flex-1 focus:border-white focus:outline-none"
             placeholder="For example: C:\\Users\\You\\Documents"
           />
           <button
@@ -325,7 +325,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 setTargetPath(nextFolder.path);
               }
             }}
-            className="px-4 py-2.5 border border-[#1f1f1f] text-[#c4c7c8] hover:text-white hover:border-[#444748] transition-colors cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2.5 border border-[#303030] text-[#b0b0b0] hover:text-white hover:border-[#484848] transition-colors cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Use next suggested folder
           </button>
@@ -341,19 +341,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </button>
         </div>
         {statusMessage && (
-          <div className="text-[11px] text-[#c4c7c8] tracking-wider font-mono">
+          <div className="text-[11px] text-[#b0b0b0] tracking-wider font-mono">
             &gt; {statusMessage}
           </div>
         )}
       </div>
 
       {/* ANALYSIS ALGORITHMS PIPELINE */}
-      <div className="border border-[#1f1f1f] p-5 bg-[#0e0e0e]">
+      <div className="border border-[#303030] p-5 bg-[#0b0b0b]">
         <div className="mb-4">
           <h2 className="text-xs text-white uppercase tracking-widest font-bold">
             3. Choose what to look for
           </h2>
-          <p className="text-[11px] text-[#8e9192] mt-1">
+          <p className="text-[11px] text-[#858585] mt-1">
             All options are on by default. Select an option to turn it off.
           </p>
         </div>
@@ -371,7 +371,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <div className="text-xs text-white uppercase font-bold tracking-wider">
                 Exact copies
               </div>
-              <div className="text-[10px] text-[#8e9192]">
+              <div className="text-[10px] text-[#858585]">
                 Find files with identical contents.
               </div>
             </div>
@@ -390,7 +390,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <div className="text-xs text-white uppercase font-bold tracking-wider">
                 Similar images
               </div>
-              <div className="text-[10px] text-[#8e9192]">
+              <div className="text-[10px] text-[#858585]">
                 Find photos that look alike, even if edited.
               </div>
             </div>
@@ -409,7 +409,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <div className="text-xs text-white uppercase font-bold tracking-wider">
                 Older files
               </div>
-              <div className="text-[10px] text-[#8e9192]">
+              <div className="text-[10px] text-[#858585]">
                 Modified more than 180 days ago.
               </div>
             </div>
@@ -419,7 +419,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             type="button"
             aria-pressed={pipelineOptions.tempFiles}
             onClick={() => toggleOption('tempFiles')}
-            className="w-full flex items-start gap-3 text-left cursor-pointer select-none group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="w-full flex items-start gap-3 text-left cursor-pointer select-none group focus-visible:outline-extra focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             <span className="font-bold text-white group-hover:text-neutral-300">
               {pipelineOptions.tempFiles ? '[✓]' : '[ ]'}
@@ -428,7 +428,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <div className="text-xs text-white uppercase font-bold tracking-wider">
                 Temporary files
               </div>
-              <div className="text-[10px] text-[#8e9192]">
+              <div className="text-[10px] text-[#858585]">
                 Find common temporary and cache files.
               </div>
             </div>
@@ -447,7 +447,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <div className="text-xs text-white uppercase font-bold tracking-wider">
                 Storage overview
               </div>
-              <div className="text-[10px] text-[#8e9192]">
+              <div className="text-[10px] text-[#858585]">
                 See how much space folders use.
               </div>
             </div>
@@ -456,7 +456,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </div>
 
       {/* DIAGNOSTIC STATE TELEMETRY */}
-      <div className="border border-[#1f1f1f] p-6 bg-[#0e0e0e] space-y-4">
+      <div className="border border-[#303030] p-6 bg-[#0b0b0b] space-y-4">
         <div className="text-xs text-white uppercase tracking-widest font-bold">
           Scan progress
         </div>
@@ -464,7 +464,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {scanStatus === 'READY' && (
           <div className="space-y-2 text-xs md:text-sm">
             <div className="text-white font-bold tracking-wider">Ready when you are</div>
-            <div className="text-[#8e9192]">
+            <div className="text-[#858585]">
               Select a location above and start a scan to see results.
             </div>
           </div>
@@ -480,14 +480,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
 
             <div>
-              <div className="text-[11px] text-[#8e9192] uppercase mb-1">Scan progress</div>
+              <div className="text-[11px] text-[#858585] uppercase mb-1">Scan progress</div>
               <div className="text-white tracking-widest text-xs md:text-sm break-all font-mono">
                 {renderBlocks(workersPercent)} [{workersPercent}%]
               </div>
             </div>
 
             <div>
-              <div className="text-[11px] text-[#8e9192] uppercase mb-1">
+              <div className="text-[11px] text-[#858585] uppercase mb-1">
                 Files checked
               </div>
               <div className="text-white tracking-widest text-xs md:text-sm break-all font-mono">
@@ -495,8 +495,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </div>
             </div>
 
-            <div className="pt-2 border-t border-[#1f1f1f] text-xs flex justify-between">
-              <span className="text-[#8e9192]">Files found:</span>
+            <div className="pt-2 border-t border-[#303030] text-xs flex justify-between">
+              <span className="text-[#858585]">Files found:</span>
               <span className="text-white font-bold">
                 {discoveredFiles.toLocaleString()}
               </span>
@@ -513,9 +513,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[#1f1f1f] text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[#303030] text-xs">
               <div>
-                <span className="text-[#8e9192] text-[10px] block uppercase">
+                <span className="text-[#858585] text-[10px] block uppercase">
                   FILES FOUND
                 </span>
                 <span className="text-white text-xl font-bold font-mono">
@@ -523,7 +523,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </span>
               </div>
               <div>
-                <span className="text-[#8e9192] text-[10px] block uppercase">
+                <span className="text-[#858585] text-[10px] block uppercase">
                   SPACE ANALYZED
                 </span>
                 <span className="text-white text-xl font-bold font-mono">
@@ -543,7 +543,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigate('duplicates')}
-                className="px-4 py-2 border border-[#444748] bg-[#0e0e0e] text-[#c4c7c8] hover:text-white hover:border-white uppercase transition-none cursor-pointer"
+                className="px-4 py-2 border border-[#484848] bg-[#0b0b0b] text-[#b0b0b0] hover:text-white hover:border-white uppercase transition-none cursor-pointer"
               >
                 Review exact copies
               </button>

@@ -486,3 +486,21 @@ class ScanRepository:
         if root_node:
             TreeBuilder.calculate_size(root_node)
         return root_node
+
+    def delete_file_by_path(self, scan_id: str, file_path: str) -> None:
+        """Remove a deleted file from scan database tables."""
+        kwargs = {"db_path": self.db_path} if self.db_path else {}
+        with get_db(**kwargs) as conn:
+            conn.execute(
+                "DELETE FROM duplicate_files WHERE scan_id = ? AND path = ?",
+                (scan_id, file_path),
+            )
+            conn.execute(
+                "DELETE FROM files WHERE scan_id = ? AND path = ?",
+                (scan_id, file_path),
+            )
+            conn.execute(
+                "DELETE FROM recommendations WHERE scan_id = ? AND target_path = ?",
+                (scan_id, file_path),
+            )
+
