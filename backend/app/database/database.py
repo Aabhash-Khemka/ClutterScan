@@ -26,6 +26,10 @@ def init_db(db_path: Path = DATABASE_PATH) -> None:
             conn.execute(
                 "ALTER TABLE recommendations ADD COLUMN selection_threshold INTEGER NOT NULL DEFAULT 60"
             )
+        organize_schema_path = Path(__file__).parent / "organize_schema.sql"
+        if organize_schema_path.exists():
+            with open(organize_schema_path, "r", encoding="utf-8") as f:
+                conn.executescript(f.read())
         conn.commit()
 
 @contextmanager

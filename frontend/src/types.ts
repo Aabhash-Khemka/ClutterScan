@@ -1,4 +1,42 @@
-export type NavTab = 'home' | 'storage' | 'duplicates' | 'images' | 'files' | 'cleanup' | 'history';
+export type NavTab = 'home' | 'storage' | 'duplicates' | 'images' | 'files' | 'cleanup' | 'history' | 'organize';
+
+export interface PlannedMove {
+  id: string;
+  filename: string;
+  sourcePath: string;
+  destPath: string;
+  category: string;
+  ruleReason: string;
+  sizeBytes: number;
+  status: 'ready' | 'conflict' | 'skipped' | 'moved' | 'failed';
+  conflictNote?: string;
+  userOverride?: boolean;
+}
+
+export interface OrganizePlan {
+  id: string;
+  sourceFolder: string;
+  moves: PlannedMove[];
+  summary: {
+    totalFiles: number;
+    totalBytes: number;
+    categoryCounts: Record<string, number>;
+    conflictCount: number;
+  };
+}
+
+export interface OrganizeOperation {
+  id: string;
+  createdAt: string;
+  sourceFolder: string;
+  status: string;
+  totalPlanned: number;
+  totalMoved: number;
+  totalSkipped: number;
+  totalFailed: number;
+  undoStatus: string;
+  files?: PlannedMove[];
+}
 
 export interface TreeNode {
   id: string;

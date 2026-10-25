@@ -7,6 +7,7 @@ import {
   Home,
   Image,
   ShieldCheck,
+  FolderTree,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { NavTab } from '../types';
@@ -28,6 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
     { key: 'duplicates', label: 'Duplicates', description: 'Find exact copies', icon: Copy },
     { key: 'images', label: 'Similar images', description: 'Compare photos', icon: Image },
     { key: 'files', label: 'File review', description: 'Review suggestions', icon: FileText },
+    { key: 'organize', label: 'Smart organize', description: 'Categorize & tidy', icon: FolderTree },
     { key: 'cleanup', label: 'Cleanup', description: 'Confirm selections', icon: ShieldCheck, badgeCount: stagedFilesCount },
     { key: 'history', label: 'History', description: 'Past scans & restores', icon: Clock3 },
   ];

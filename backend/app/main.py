@@ -15,6 +15,7 @@ from app.api.routes import (
     cleanup_routes,
     history_routes,
     system_routes,
+    organize_routes,
 )
 
 # Ensure database is initialized
@@ -59,6 +60,7 @@ app.include_router(recommendation_routes.router, prefix=settings.API_PREFIX)
 app.include_router(cleanup_routes.router, prefix=settings.API_PREFIX)
 app.include_router(history_routes.router, prefix=settings.API_PREFIX)
 app.include_router(system_routes.router, prefix=settings.API_PREFIX)
+app.include_router(organize_routes.router, prefix=settings.API_PREFIX)
 
 @app.get("/api/health")
 def health_check():

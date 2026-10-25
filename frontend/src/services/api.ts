@@ -189,4 +189,58 @@ export const api = {
     }
     return await res.json();
   },
+
+  async scanOrganize(
+    sourcePath: string,
+    collegeKeywords?: string[],
+    projectKeywords?: string[]
+  ): Promise<any> {
+    const res = await fetch(`${API_BASE}/organize/scan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sourcePath,
+        collegeKeywords: collegeKeywords || [],
+        projectKeywords: projectKeywords || [],
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Organize scan failed' }));
+      throw new Error(err.detail || 'Organize scan failed');
+    }
+    return await res.json();
+  },
+
+  async executeOrganize(sourcePath: string, moves: any[]): Promise<any> {
+    const res = await fetch(`${API_BASE}/organize/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sourcePath, moves }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Execution failed' }));
+      throw new Error(err.detail || 'Execution failed');
+    }
+    return await res.json();
+  },
+
+  async undoOrganize(operationId: string): Promise<any> {
+    const res = await fetch(`${API_BASE}/organize/undo`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ operationId }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Undo failed' }));
+      throw new Error(err.detail || 'Undo failed');
+    }
+    return await res.json();
+  },
+
+  async getOrganizeHistory(): Promise<any[]> {
+    const res = await fetch(`${API_BASE}/organize/history`);
+    if (!res.ok) throw new Error('Failed to fetch organize history');
+    return await res.json();
+  },
 };
+

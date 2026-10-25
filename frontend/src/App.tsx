@@ -8,6 +8,7 @@ import { ImagesScreen } from './screens/ImagesScreen';
 import { FilesScreen } from './screens/FilesScreen';
 import { CleanupScreen } from './screens/CleanupScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
+import { OrganizeScreen } from './screens/OrganizeScreen';
 
 import {
   TreeNode,
@@ -300,27 +301,20 @@ export default function App() {
   // Restore item in History screen
   const handleRestoreItem = async (id: string) => {
     try {
-      await api.restoreFile(id);
+      const result = await api.restoreFile(id);
+      // Re-fetch authoritative state from backend so UI matches disk
+      const hist = await api.getHistory().catch(() => null);
+      if (hist) {
+        if (Array.isArray(hist.historicalScans)) setHistoricalScans(hist.historicalScans);
+        if (Array.isArray(hist.snapshotDeltas)) setSnapshotDeltas(hist.snapshotDeltas);
+        if (Array.isArray(hist.recoveryEntries)) setRecoveryLog(hist.recoveryEntries);
+      }
+      showToast(`RESTORE COMPLETE — File returned to original folder.`);
+      console.info('[Restore]', result.message);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'The file could not be restored.';
       showToast(`RESTORE ERROR: ${message}`);
-      return;
     }
-
-    setRecoveryLog((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          return {
-            ...item,
-            isRestored: true,
-            status: `RESTORED (MOVED TO ${item.originPath})`,
-            location: 'ORIGINAL DIRECTORY',
-          };
-        }
-        return item;
-      })
-    );
-    showToast(`RESTORE COMPLETED FOR FILE [${id}]`);
   };
 
   const totalStagedCount = candidates.filter((c) => c.isSelected).length;
@@ -394,6 +388,12 @@ export default function App() {
             files={files}
             onToggleStageFile={handleToggleStageFile}
             onBulkStageFiles={handleBulkStageFiles}
+          />
+        )}
+
+        {activeTab === 'organize' && (
+          <OrganizeScreen
+            onShowNotice={showToast}
           />
         )}
 
