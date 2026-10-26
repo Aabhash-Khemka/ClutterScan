@@ -64,11 +64,17 @@ export function detectCategory(filename: string): VisualFileNode['category'] {
 }
 
 /**
- * Extracts a flattened list of all files from TreeNode hierarchy and merges duplicate status
+ * Extracts a flattened list of all files from TreeNode hierarchy and/or metadata files list,
+ * merging duplicate status.
  */
-export function extractVisualFiles(treeNodes: TreeNode[], hashGroups: HashGroup[] = []): VisualFileNode[] {
+export function extractVisualFiles(
+  treeNodes: TreeNode[] = [],
+  hashGroups: HashGroup[] = [],
+  metadataFiles: MetadataFileItem[] = []
+): VisualFileNode[] {
   const result: VisualFileNode[] = [];
   const duplicatePathMap = new Map<string, { groupId: string; count: number }>();
+  const seenPaths = new Set<string>();
 
   hashGroups.forEach((g) => {
     (g.files || []).forEach((f) => {
@@ -84,6 +90,9 @@ export function extractVisualFiles(treeNodes: TreeNode[], hashGroups: HashGroup[
       }
     } else {
       const fullPath = node.path || `${currentDir}/${node.name}`;
+      if (seenPaths.has(fullPath)) return;
+      seenPaths.add(fullPath);
+
       const category = detectCategory(node.name);
       const dupInfo = duplicatePathMap.get(fullPath);
 
@@ -105,7 +114,62 @@ export function extractVisualFiles(treeNodes: TreeNode[], hashGroups: HashGroup[
     }
   }
 
-  treeNodes.forEach((root) => traverse(root, 0, root.name));
+  if (Array.isArray(treeNodes) && treeNodes.length > 0) {
+    treeNodes.forEach((root) => traverse(root, 0, root.name));
+  }
+
+  // If tree nodes didn't yield items or were not present, fallback/supplement with metadataFiles
+  if (Array.isArray(metadataFiles)) {
+    metadataFiles.forEach((mf) => {
+      if (seenPaths.has(mf.path)) return;
+      seenPaths.add(mf.path);
+
+      const category = detectCategory(mf.name);
+      const dupInfo = duplicatePathMap.get(mf.path);
+
+      result.push({
+        id: mf.id || mf.path,
+        name: mf.name,
+        path: mf.path,
+        bytes: mf.bytes || 0,
+        formattedSize: mf.size || formatBytes(mf.bytes || 0),
+        extension: (mf.name.split('.').pop() || '').toLowerCase(),
+        category,
+        isDuplicate: !!dupInfo,
+        duplicateGroupId: dupInfo?.groupId,
+        duplicateCount: dupInfo?.count,
+        directory: mf.path.substring(0, mf.path.lastIndexOf(/[/\\]/.test(mf.path) ? (mf.path.includes('/') ? '/' : '\\') : '')),
+        depth: 1,
+        color: CATEGORY_COLORS[category],
+      });
+    });
+  }
+
+  // Also include duplicate files from hashGroups if still not in result
+  hashGroups.forEach((g) => {
+    (g.files || []).forEach((f) => {
+      if (seenPaths.has(f.path)) return;
+      seenPaths.add(f.path);
+
+      const category = detectCategory(f.name);
+      result.push({
+        id: `${g.id}-${f.path}`,
+        name: f.name,
+        path: f.path,
+        bytes: g.sizeBytes || 0,
+        formattedSize: g.fileSize || formatBytes(g.sizeBytes || 0),
+        extension: (f.name.split('.').pop() || '').toLowerCase(),
+        category,
+        isDuplicate: true,
+        duplicateGroupId: g.id,
+        duplicateCount: g.files?.length || 2,
+        directory: f.path.substring(0, f.path.lastIndexOf(/[/\\]/.test(f.path) ? (f.path.includes('/') ? '/' : '\\') : '')),
+        depth: 1,
+        color: CATEGORY_COLORS[category],
+      });
+    });
+  });
+
   return result;
 }
 

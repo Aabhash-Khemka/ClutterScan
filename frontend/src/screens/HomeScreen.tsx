@@ -31,10 +31,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [activeVisualizer, setActiveVisualizer] = useState<'orb' | 'treemap' | 'universe' | 'duplicates' | 'lab'>('orb');
   const [selectedFileForInspection, setSelectedFileForInspection] = useState<VisualFileNode | null>(null);
 
-  // Derive visual file nodes deterministically from scan tree
+  // Derive visual file nodes deterministically from scan tree, metadata files, and duplicate groups
   const visualFiles = useMemo(() => {
-    return extractVisualFiles(treeData, hashGroups);
-  }, [treeData, hashGroups]);
+    return extractVisualFiles(treeData, hashGroups, initialFiles);
+  }, [treeData, hashGroups, initialFiles]);
 
   const totalScannedBytes = useMemo(() => {
     return visualFiles.reduce((acc, f) => acc + f.bytes, 0);

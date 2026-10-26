@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { VisualFileNode, CATEGORY_COLORS, formatBytes } from '../../utils/visualDataUtils';
 
 interface FileUniverseMapProps {
@@ -14,7 +14,14 @@ export const FileUniverseMap: React.FC<FileUniverseMapProps> = ({
 }) => {
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'DUPLICATES_ONLY' | 'LARGE_ONLY'>('ALL');
   const [hoveredNode, setHoveredNode] = useState<VisualFileNode | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Sizing dimensions for the SVG universe viewport
+  const svgWidth = 900;
+  const svgHeight = 440;
+  const centerX = svgWidth / 2;
+  const centerY = svgHeight / 2;
+  const maxRadius = Math.min(centerX, centerY) - 40;
 
   // Filter candidate nodes
   const displayNodes = useMemo(() => {
@@ -30,18 +37,18 @@ export const FileUniverseMap: React.FC<FileUniverseMapProps> = ({
       result = result.filter((f) => f.bytes >= 5 * 1024 * 1024); // >= 5MB
     }
 
-    // Cap to 350 nodes for crisp, uncluttered rendering
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((f) => f.name.toLowerCase().includes(q) || f.path.toLowerCase().includes(q));
+    }
+
+    // Limit to 350 nodes for clean rendering
     return result.slice(0, 350);
-  }, [files, selectedCategory, activeFilter]);
+  }, [files, selectedCategory, activeFilter, searchQuery]);
 
-  // Deterministic 2D coordinate projection based on file attributes
+  // Deterministic 2D coordinate projection
   const mappedParticles = useMemo(() => {
-    const canvasWidth = 900;
-    const canvasHeight = 440;
-    const centerX = canvasWidth / 2;
-    const centerY = canvasHeight / 2;
-    const maxRadius = Math.min(centerX, centerY) - 36;
-
+    if (displayNodes.length === 0) return [];
     const maxBytes = Math.max(1, ...files.map((f) => f.bytes));
 
     return displayNodes.map((f, i) => {
@@ -55,13 +62,14 @@ export const FileUniverseMap: React.FC<FileUniverseMapProps> = ({
       }
       const normHash = Math.abs(hash % 1000) / 1000;
 
+      // Golden ratio spiral distribution
       const spiralAngle = i * 2.39996 + normHash * 0.4;
-      const distFromCenter = 30 + Math.sqrt((i + 1) / Math.max(1, displayNodes.length)) * maxRadius;
+      const distFromCenter = 35 + Math.sqrt((i + 1) / Math.max(1, displayNodes.length)) * maxRadius;
 
-      const x = centerX + distFromCenter * Math.cos(spiralAngle);
-      const y = centerY + (distFromCenter * 0.65) * Math.sin(spiralAngle);
+      const x = Math.round(centerX + distFromCenter * Math.cos(spiralAngle));
+      const y = Math.round(centerY + (distFromCenter * 0.65) * Math.sin(spiralAngle));
 
-      const radius = Math.max(2.5, Math.min(8, 2.5 + normSize * 6));
+      const radius = Math.max(3, Math.min(9, Math.round(3 + normSize * 6)));
 
       return {
         ...f,
@@ -70,101 +78,43 @@ export const FileUniverseMap: React.FC<FileUniverseMapProps> = ({
         radius,
       };
     });
-  }, [displayNodes, files]);
+  }, [displayNodes, files, centerX, centerY, maxRadius]);
 
-  // Canvas drawing loop
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Subtle background concentric coordinate rings
-    ctx.strokeStyle = '#222222';
-    ctx.lineWidth = 1;
-    [70, 130, 185].forEach((r) => {
-      ctx.beginPath();
-      ctx.ellipse(canvas.width / 2, canvas.height / 2, r, r * 0.65, 0, 0, 2 * Math.PI);
-      ctx.stroke();
-    });
-
-    // Draw connecting lines between duplicates
-    const dupClusters = new Map<string, typeof mappedParticles>();
+  // Group duplicate clusters to draw connecting lines
+  const duplicateLines = useMemo(() => {
+    const dupMap = new Map<string, typeof mappedParticles>();
     mappedParticles.forEach((p) => {
       if (p.isDuplicate && p.duplicateGroupId) {
-        const group = dupClusters.get(p.duplicateGroupId) || [];
+        const group = dupMap.get(p.duplicateGroupId) || [];
         group.push(p);
-        dupClusters.set(p.duplicateGroupId, group);
+        dupMap.set(p.duplicateGroupId, group);
       }
     });
 
-    ctx.strokeStyle = '#f06464';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([2, 3]);
-
-    dupClusters.forEach((cluster) => {
+    const lines: { x1: number; y1: number; x2: number; y2: number; groupId: string }[] = [];
+    dupMap.forEach((cluster, groupId) => {
       if (cluster.length >= 2) {
-        ctx.beginPath();
-        ctx.moveTo(cluster[0].x!, cluster[0].y!);
-        for (let i = 1; i < cluster.length; i++) {
-          ctx.lineTo(cluster[i].x!, cluster[i].y!);
+        for (let i = 0; i < cluster.length - 1; i++) {
+          lines.push({
+            x1: cluster[i].x!,
+            y1: cluster[i].y!,
+            x2: cluster[i + 1].x!,
+            y2: cluster[i + 1].y!,
+            groupId,
+          });
         }
-        ctx.stroke();
       }
     });
-    ctx.setLineDash([]); // Reset dash
+    return lines;
+  }, [mappedParticles]);
 
-    // Draw Particles
-    mappedParticles.forEach((p) => {
-      const isHovered = hoveredNode?.id === p.id;
-      const color = CATEGORY_COLORS[p.category] || '#f5f5f5';
-
-      if (isHovered) {
-        ctx.beginPath();
-        ctx.arc(p.x!, p.y!, p.radius! + 4, 0, 2 * Math.PI);
-        ctx.fillStyle = '#ffffff';
-        ctx.fill();
-      }
-
-      ctx.beginPath();
-      ctx.arc(p.x!, p.y!, p.radius!, 0, 2 * Math.PI);
-      ctx.fillStyle = isHovered ? '#000000' : p.isDuplicate ? '#f06464' : color;
-      ctx.fill();
-      ctx.strokeStyle = isHovered ? '#ffffff' : '#141414';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    });
-  }, [mappedParticles, hoveredNode]);
-
-  // Handle canvas mouse move
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = ((e.clientX - rect.left) / rect.width) * canvas.width;
-    const mouseY = ((e.clientY - rect.top) / rect.height) * canvas.height;
-
-    let closest: VisualFileNode | null = null;
-    let minDistance = 14;
-
-    for (const p of mappedParticles) {
-      const dist = Math.hypot(p.x! - mouseX, p.y! - mouseY);
-      if (dist < minDistance) {
-        minDistance = dist;
-        closest = p;
-      }
-    }
-
-    setHoveredNode(closest);
-  };
-
-  const handleCanvasClick = () => {
-    if (hoveredNode && onSelectFile) {
-      onSelectFile(hoveredNode);
-    }
-  };
+  if (files.length === 0) {
+    return (
+      <div className="w-full bg-[#141414] border border-[#303030] p-10 text-center text-[#858585] font-mono text-sm">
+        No files loaded. Run a scan to populate the particle galaxy.
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-[#141414] border border-[#303030] p-6 flex flex-col gap-4 text-[#f5f5f5] relative">
@@ -175,15 +125,23 @@ export const FileUniverseMap: React.FC<FileUniverseMapProps> = ({
             Particle Galaxy Distribution
           </div>
           <h3 className="text-xl font-bold tracking-tight text-white">
-            File Universe Map
+            File Universe Map ({files.length.toLocaleString()} files)
           </h3>
           <p className="text-xs text-[#b8b8b8] mt-0.5">
-            Files projected by size and directory clustering. Red dashed links identify clone constellations.
+            Files projected by size and directory clustering. Red dashed lines link identical duplicates.
           </p>
         </div>
 
-        {/* Filter Controls */}
-        <div className="flex items-center gap-1.5 font-mono text-xs">
+        {/* Filter Controls & Search */}
+        <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+          <input
+            type="text"
+            placeholder="Filter by name…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="px-2.5 py-1.5 border border-[#303030] bg-[#101010] text-white text-xs outline-none focus:border-white w-36"
+          />
+
           {[
             { id: 'ALL', label: 'All Files' },
             { id: 'DUPLICATES_ONLY', label: 'Duplicates' },
@@ -205,21 +163,92 @@ export const FileUniverseMap: React.FC<FileUniverseMapProps> = ({
         </div>
       </div>
 
-      {/* Canvas Viewport */}
-      <div className="relative w-full aspect-[16/8] max-h-[420px] bg-[#0c0c0c] border border-[#303030] cursor-crosshair flex items-center justify-center">
-        <canvas
-          ref={canvasRef}
-          width={900}
-          height={440}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={() => setHoveredNode(null)}
-          onClick={handleCanvasClick}
-          className="w-full h-full object-contain"
-        />
+      {/* SVG Viewport — 100% Guaranteed Crisp Vector Rendering */}
+      <div className="relative w-full aspect-[16/8] max-h-[440px] bg-[#0c0c0c] border border-[#303030] overflow-hidden flex items-center justify-center">
+        <svg
+          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+          className="w-full h-full select-none"
+        >
+          {/* Concentric Guide Rings */}
+          {[80, 140, 200].map((r) => (
+            <ellipse
+              key={r}
+              cx={centerX}
+              cy={centerY}
+              rx={r}
+              ry={r * 0.65}
+              fill="none"
+              stroke="#202020"
+              strokeWidth="1"
+            />
+          ))}
 
-        {/* Precision Node Detail Tooltip */}
+          {/* Duplicate Connecting Lines */}
+          {duplicateLines.map((line, idx) => (
+            <line
+              key={idx}
+              x1={line.x1}
+              y1={line.y1}
+              x2={line.x2}
+              y2={line.y2}
+              stroke="#f06464"
+              strokeWidth="1.2"
+              strokeDasharray="3 3"
+              strokeOpacity="0.8"
+            />
+          ))}
+
+          {/* Interactive File Particles */}
+          {mappedParticles.map((p) => {
+            const isHovered = hoveredNode?.id === p.id;
+            const color = p.isDuplicate ? '#f06464' : (CATEGORY_COLORS[p.category] || '#ffffff');
+
+            return (
+              <g
+                key={p.id}
+                className="cursor-pointer"
+                onMouseEnter={() => setHoveredNode(p)}
+                onMouseLeave={() => setHoveredNode(null)}
+                onClick={() => onSelectFile && onSelectFile(p)}
+              >
+                {/* Hit area */}
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={Math.max(12, p.radius + 6)}
+                  fill="transparent"
+                />
+
+                {/* Hover ring */}
+                {isHovered && (
+                  <circle
+                    cx={p.x}
+                    cy={p.y}
+                    r={p.radius + 4}
+                    fill="none"
+                    stroke="#ffffff"
+                    strokeWidth="1.5"
+                  />
+                )}
+
+                {/* Main Particle */}
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={isHovered ? p.radius + 1 : p.radius}
+                  fill={isHovered ? '#ffffff' : color}
+                  stroke="#141414"
+                  strokeWidth="1"
+                  className="transition-all duration-100"
+                />
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Hovered Particle Metadata HUD */}
         {hoveredNode && (
-          <div className="absolute top-3 right-3 border border-[#454545] bg-[#141414] p-3 max-w-sm pointer-events-none text-xs font-mono shadow-md">
+          <div className="absolute top-3 right-3 border border-[#454545] bg-[#141414] p-3 max-w-sm pointer-events-none text-xs font-mono shadow-xl z-20">
             <div className="text-white font-bold truncate mb-1">{hoveredNode.name}</div>
             <div className="flex items-center gap-2 text-[11px] text-[#858585] mb-1">
               <span>{hoveredNode.category}</span>
@@ -238,9 +267,10 @@ export const FileUniverseMap: React.FC<FileUniverseMapProps> = ({
         )}
       </div>
 
+      {/* Footer Status Bar */}
       <div className="flex items-center justify-between text-xs font-mono text-[#858585]">
-        <span>Rendered: {displayNodes.length} particle nodes</span>
-        <span>Click node to inspect details</span>
+        <span>Rendering {mappedParticles.length} nodes (of {files.length} indexed files)</span>
+        <span>Click node to inspect metadata</span>
       </div>
     </div>
   );
