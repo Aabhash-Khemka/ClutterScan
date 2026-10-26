@@ -61,6 +61,7 @@ class CleanupManager:
                     error=validation_msg,
                 )
                 results.append(res)
+                self._persist_cleanup_result(res, db_path=db_path)
                 continue
 
             file_size = file_path.stat().st_size

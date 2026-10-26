@@ -56,8 +56,8 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Navigation Tabs Bar */}
-        <nav aria-label="Main navigation" className="min-h-16 px-2 sm:px-4 md:px-8 flex items-center overflow-x-auto select-none bg-[#101010]">
-          <div className="flex items-center gap-1">
+        <nav aria-label="Main navigation" className="min-h-14 px-2 sm:px-4 md:px-6 flex items-center overflow-x-auto no-scrollbar select-none bg-[#101010]">
+          <div className="flex items-center gap-1 w-full justify-start xl:justify-between">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.key;
               const Icon = tab.icon;
@@ -67,18 +67,18 @@ export const Header: React.FC<HeaderProps> = ({
                   type="button"
                   onClick={() => onSelectTab(tab.key)}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`min-h-[52px] px-3.5 sm:px-4 py-2 transition-all whitespace-nowrap cursor-pointer rounded-[2px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white flex flex-col items-start justify-center gap-0.5 ${
+                  className={`min-h-[46px] px-2.5 sm:px-3 py-1.5 transition-all whitespace-nowrap cursor-pointer rounded-[2px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white flex flex-col items-start justify-center gap-0.5 shrink-0 ${
                     isActive
                       ? 'bg-white text-black font-semibold shadow-sm'
                       : 'text-[#b8b8b8] hover:text-[#f5f5f5] hover:bg-[#1b1b1b]'
                   }`}
                 >
-                  <span className="flex items-center gap-2 text-[15px] leading-tight font-medium">
-                    <Icon size={16} aria-hidden="true" className={isActive ? 'text-black' : 'text-[#b8b8b8]'} />
+                  <span className="flex items-center gap-1.5 text-[13px] sm:text-[14px] leading-tight font-medium">
+                    <Icon size={14} aria-hidden="true" className={isActive ? 'text-black' : 'text-[#b8b8b8]'} />
                     <span>{tab.label}</span>
                     {tab.badgeCount !== undefined && tab.badgeCount > 0 && (
                       <span
-                        className={`text-xs px-1.5 py-0.2 rounded font-bold ${
+                        className={`text-[11px] px-1.5 py-0.2 rounded font-bold ${
                           isActive
                             ? 'bg-black text-white'
                             : 'bg-[#c90000] text-white'
@@ -88,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({
                       </span>
                     )}
                   </span>
-                  <span className={`text-[12px] pl-6 font-normal ${
+                  <span className={`text-[11px] pl-5 font-normal hidden lg:block ${
                     isActive ? 'text-[#333333]' : 'text-[#858585]'
                   }`}>
                     {tab.description}

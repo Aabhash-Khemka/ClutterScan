@@ -69,6 +69,15 @@
   }
 }
 
+/* Utility to hide scrollbars cleanly while allowing scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* CRT and scanline aesthetics for forensic realism */
 .scanline-grid {
   background-size: 100% 4px;

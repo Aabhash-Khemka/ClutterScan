@@ -456,14 +456,37 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
 
         {/* EXECUTION FEEDBACK BOX */}
         {executionFeedback && (
-          <div className="border border-[#57B887] p-5 bg-[#141414] rounded-[2px] flex flex-col gap-2 text-sm text-white" role="status">
-            <div className="flex items-center justify-between font-bold text-base text-[#57B887]">
-              <span>✓ Cleanup Completed Successfully</span>
+          <div
+            className={`border p-5 bg-[#141414] rounded-[2px] flex flex-col gap-2 text-sm text-white ${
+              (executionSummary?.movedCount ?? 0) > 0 ? 'border-[#57B887]' : 'border-[#e5ad55]'
+            }`}
+            role="status"
+          >
+            <div
+              className={`flex items-center justify-between font-bold text-base ${
+                (executionSummary?.movedCount ?? 0) > 0 ? 'text-[#57B887]' : 'text-[#e5ad55]'
+              }`}
+            >
+              <span>
+                {(executionSummary?.movedCount ?? 0) > 0
+                  ? '✓ Cleanup Completed'
+                  : '⚠ Files Could Not Be Moved'}
+              </span>
             </div>
             <div className="text-[#b8b8b8] leading-relaxed text-sm">
-              {executionSummary?.movedCount ?? 0} files moved safely to recovery storage. {executionSummary?.failedCount ?? 0} files could not be accessed. Review the recovery audit journal for details.
+              {(executionSummary?.movedCount ?? 0) > 0 ? (
+                <>
+                  {executionSummary?.movedCount} files moved safely to recovery storage (Windows Recycle Bin / Local Vault).
+                  {(executionSummary?.failedCount ?? 0) > 0 &&
+                    ` ${executionSummary?.failedCount} files could not be accessed or were already moved.`}
+                </>
+              ) : (
+                <>
+                  {executionSummary?.failedCount ?? 0} files could not be moved because they no longer exist at their original paths on disk (e.g. if already organized, moved, or deleted). Please run a fresh scan on the Scan tab to refresh the file paths.
+                </>
+              )}
             </div>
-            <div className="pt-2">
+            <div className="pt-2 flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => onNavigate('history')}
@@ -471,6 +494,15 @@ export const CleanupScreen: React.FC<CleanupScreenProps> = ({
               >
                 View History &amp; Recovery Journal &rarr;
               </button>
+              {(executionSummary?.movedCount ?? 0) === 0 && (
+                <button
+                  type="button"
+                  onClick={() => onNavigate('home')}
+                  className="px-5 py-2 border border-[#454545] text-white hover:border-white text-sm font-semibold rounded-[2px] cursor-pointer"
+                >
+                  Run Fresh Scan &rarr;
+                </button>
+              )}
             </div>
           </div>
         )}

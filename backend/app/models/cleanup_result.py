@@ -28,4 +28,5 @@ class CleanupResultItem:
             "location": self.location,
             "timestamp": self.timestamp,
             "isRestored": self.is_restored,
+            "error": self.error,
         }
