@@ -348,6 +348,11 @@ export default function App() {
           <HomeScreen
             onNavigate={navigateTo}
             onScanCompleted={handleScanCompleted}
+            treeData={treeData}
+            hashGroups={hashGroups}
+            files={files}
+            scanId={currentScanId}
+            onStageCandidate={handleStageDuplicates}
           />
         )}
 

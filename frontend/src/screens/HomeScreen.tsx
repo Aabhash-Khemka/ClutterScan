@@ -1,16 +1,63 @@
-import React, { useState, useEffect } from 'react';
-import { NavTab } from '../types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { NavTab, TreeNode, HashGroup, MetadataFileItem } from '../types';
 import { api, SystemVolumeData, SystemFolderData } from '../services/api';
+import { extractVisualFiles, VisualFileNode, formatBytes, computeCategoryMetrics } from '../utils/visualDataUtils';
+import { StorageOrbHero } from '../components/visualizations/StorageOrbHero';
+import { StorageTreemap } from '../components/visualizations/StorageTreemap';
+import { FileUniverseMap } from '../components/visualizations/FileUniverseMap';
+import { DuplicateClusterGraph } from '../components/visualizations/DuplicateClusterGraph';
+import { StorageAnalyticsLab } from '../components/visualizations/StorageAnalyticsLab';
+import { FileInspectionPanel } from '../components/visualizations/FileInspectionPanel';
 
 interface HomeScreenProps {
   onNavigate: (tab: NavTab) => void;
   onScanCompleted: (scanId?: string, totalFiles?: number) => void;
+  treeData?: TreeNode[];
+  hashGroups?: HashGroup[];
+  files?: MetadataFileItem[];
+  scanId?: string | null;
+  onStageCandidate?: (groupIds: string[]) => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   onNavigate,
   onScanCompleted,
+  treeData = [],
+  hashGroups = [],
+  files: initialFiles = [],
+  scanId,
+  onStageCandidate,
 }) => {
+  const [activeVisualizer, setActiveVisualizer] = useState<'orb' | 'treemap' | 'universe' | 'duplicates' | 'lab'>('orb');
+  const [selectedFileForInspection, setSelectedFileForInspection] = useState<VisualFileNode | null>(null);
+
+  // Derive visual file nodes deterministically from scan tree
+  const visualFiles = useMemo(() => {
+    return extractVisualFiles(treeData, hashGroups);
+  }, [treeData, hashGroups]);
+
+  const totalScannedBytes = useMemo(() => {
+    return visualFiles.reduce((acc, f) => acc + f.bytes, 0);
+  }, [visualFiles]);
+
+  const duplicateWasteBytes = useMemo(() => {
+    return hashGroups.reduce((acc, g) => {
+      const copies = g.files ? g.files.length : 0;
+      if (copies > 1) {
+        return acc + (g.sizeBytes || 0) * (copies - 1);
+      }
+      return acc;
+    }, 0);
+  }, [hashGroups]);
+
+  const duplicateFileCount = useMemo(() => {
+    return hashGroups.reduce((acc, g) => {
+      const copies = g.files ? g.files.length : 0;
+      return acc + (copies > 1 ? copies - 1 : 0);
+    }, 0);
+  }, [hashGroups]);
+
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedVolume, setSelectedVolume] = useState<'PRIMARY' | 'EXTERNAL' | 'CUSTOM'>('PRIMARY');
   const [volumes, setVolumes] = useState<SystemVolumeData[]>([]);
   const [folders, setFolders] = useState<SystemFolderData[]>([]);
@@ -129,18 +176,127 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       {/* SECTION HEADER */}
       <section className="border-b border-[#303030] pb-5 flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
         <div className="flex flex-col gap-1.5">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#f5f5f5] tracking-tight flex items-center gap-3">
-            <span>Disk Scanner</span>
-            <span className="w-2.5 h-2.5 rounded-full bg-white inline-block"></span>
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold text-[#f5f5f5] tracking-tight flex items-center gap-2.5">
+              <span>ClutterScan Visual Intelligence</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-[#625BEE] inline-block shadow-[0_0_10px_#625BEE]"></span>
+            </h1>
+            <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[#625BEE] to-[#925CFF] text-white">
+              V2.0 PRO
+            </span>
+          </div>
           <p className="text-sm md:text-base text-[#b8b8b8]">
-            Analyze local disks or folders to locate duplicates, redundant files, and reclaim storage safely.
+            Interactive forensic file analytics, live storage constellation, and redundant space discovery.
           </p>
         </div>
-        <div className="text-xs text-[#858585] uppercase tracking-wider font-mono border border-[#303030] px-3 py-1 bg-[#141414]">
-          100% OFFLINE // NO CLOUD ACCESS
+        <div className="flex items-center gap-2">
+          <div className="text-xs text-[#20C5E8] uppercase tracking-wider font-mono border border-[#20C5E8]/30 px-3 py-1.5 bg-[#20C5E8]/10 rounded-md">
+            ● {visualFiles.length.toLocaleString()} Indexed Files ({formatBytes(totalScannedBytes)})
+          </div>
         </div>
       </section>
+
+      {/* VISUAL INTELLIGENCE COMMAND CENTRE SWITCHER */}
+      <div className="w-full flex flex-col gap-4">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#8E9AA8]">
+              Visual Intelligence Mode:
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-[#0d0f17] p-1.5 rounded-xl border border-white/10 shadow-lg overflow-x-auto">
+            {[
+              { id: 'orb', label: 'Orbital Core', icon: '✦' },
+              { id: 'treemap', label: 'Storage Treemap', icon: '▤' },
+              { id: 'universe', label: 'File Universe Map', icon: '🌌' },
+              { id: 'duplicates', label: 'Duplicate Constellation', icon: '⚡' },
+              { id: 'lab', label: 'Analytics Lab', icon: '📊' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveVisualizer(tab.id as any)}
+                className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+                  activeVisualizer === tab.id
+                    ? 'bg-gradient-to-r from-[#625BEE] to-[#925CFF] text-white shadow-[0_4px_14px_rgba(98,91,238,0.4)]'
+                    : 'text-[#8E9AA8] hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ACTIVE VISUALIZATION CANVAS */}
+        <div className="w-full">
+          {activeVisualizer === 'orb' && (
+            <StorageOrbHero
+              totalBytes={totalScannedBytes}
+              totalFiles={visualFiles.length}
+              duplicateBytes={duplicateWasteBytes}
+              duplicateCount={duplicateFileCount}
+              categories={computeCategoryMetrics(visualFiles)}
+              selectedCategory={selectedCategory}
+              onSelectCategory={(cat) => {
+                setSelectedCategory(cat);
+                if (cat) setActiveVisualizer('universe');
+              }}
+              onStartScan={handleExecuteScan}
+              targetPath={targetPath}
+            />
+          )}
+
+          {activeVisualizer === 'treemap' && (
+            <StorageTreemap
+              treeData={treeData}
+              onSelectFile={(path) => {
+                const found = visualFiles.find((f) => f.path === path);
+                if (found) setSelectedFileForInspection(found);
+              }}
+            />
+          )}
+
+          {activeVisualizer === 'universe' && (
+            <FileUniverseMap
+              files={visualFiles}
+              selectedCategory={selectedCategory}
+              onSelectFile={(f) => setSelectedFileForInspection(f)}
+            />
+          )}
+
+          {activeVisualizer === 'duplicates' && (
+            <DuplicateClusterGraph
+              hashGroups={hashGroups}
+              onSelectFile={(f) => setSelectedFileForInspection(f)}
+              onNavigateToDuplicates={() => onNavigate('duplicates')}
+            />
+          )}
+
+          {activeVisualizer === 'lab' && (
+            <StorageAnalyticsLab
+              files={visualFiles}
+              hashGroups={hashGroups}
+              totalScannedBytes={totalScannedBytes}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* FLOATING FILE INSPECTION PANEL */}
+      <FileInspectionPanel
+        file={selectedFileForInspection}
+        onClose={() => setSelectedFileForInspection(null)}
+        onSelectDuplicateGroup={(groupId) => {
+          onNavigate('duplicates');
+        }}
+        onStageForCleanup={(path) => {
+          if (onStageCandidate) {
+            onStageCandidate([path]);
+          }
+        }}
+      />
 
       {/* SAFETY PROTOCOL BANNER */}
       <div className="border border-[#303030] p-4 bg-[#141414] rounded-[2px] flex flex-col md:flex-row md:items-center justify-between text-sm gap-3">
