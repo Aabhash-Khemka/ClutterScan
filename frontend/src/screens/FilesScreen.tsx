@@ -15,13 +15,16 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
   onBulkStageFiles,
 }) => {
   const [filterType, setFilterType] = useState<'ALL' | 'OLD' | 'TEMPORARY'>('ALL');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 50;
 
   const filteredFiles = useMemo(() => {
+    let result = files;
     if (filterType === 'OLD') {
-      return files.filter((file) => file.reason.includes('TIMESTAMP'));
-    }
-    if (filterType === 'TEMPORARY') {
-      return files.filter((file) =>
+      result = result.filter((file) => file.reason.includes('TIMESTAMP'));
+    } else if (filterType === 'TEMPORARY') {
+      result = result.filter((file) =>
         file.type === 'TMP'
         || file.type === 'CACHE'
         || file.type === 'EPHEMERAL'
@@ -29,8 +32,23 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
         || file.reason.includes('EXTENSION_MATCH')
       );
     }
-    return files;
-  }, [files, filterType]);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((f) => f.path.toLowerCase().includes(q) || f.name.toLowerCase().includes(q) || f.reason.toLowerCase().includes(q));
+    }
+    return result;
+  }, [files, filterType, searchQuery]);
+
+  // Reset page when filter changes
+  React.useEffect(() => {
+    setPage(1);
+  }, [filterType, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredFiles.length / pageSize));
+  const paginatedFiles = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredFiles.slice(start, start + pageSize);
+  }, [filteredFiles, page]);
 
   const stagedFiles = useMemo(() => files.filter((f) => f.isStaged), [files]);
 
@@ -170,6 +188,14 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
           >
             Temporary Files ({tempCount})
           </button>
+
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search path, name, or reason..."
+            className="bg-[#0b0b0b] border border-[#303030] text-white text-xs px-3 py-2 rounded-[2px] w-48 sm:w-64 placeholder:text-[#858585] focus:border-white focus:outline-none font-mono"
+          />
         </div>
 
         <div>
@@ -210,7 +236,7 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
                 </td>
               </tr>
             ) : (
-              filteredFiles.map((file) => (
+              paginatedFiles.map((file) => (
               <tr
                 key={file.id}
                 className="transition-colors hover:bg-[#1b1b1b] group"
@@ -257,6 +283,34 @@ export const FilesScreen: React.FC<FilesScreenProps> = ({
           </tbody>
         </table>
       </div>
+
+      {/* PAGINATION CONTROLS */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between py-2 border-t border-[#303030] text-xs font-mono">
+          <div className="text-[#858585]">
+            Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, filteredFiles.length)} of {filteredFiles.length} files
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="px-3 py-1 border border-[#303030] bg-[#141414] text-white disabled:opacity-30 disabled:cursor-not-allowed hover:border-white transition-colors"
+            >
+              Prev
+            </button>
+            <span className="text-white px-2">Page {page} of {totalPages}</span>
+            <button
+              type="button"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              className="px-3 py-1 border border-[#303030] bg-[#141414] text-white disabled:opacity-30 disabled:cursor-not-allowed hover:border-white transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* BOTTOM TELEMETRY / STAGING STATUS */}
       <div className="border border-[#303030] bg-[#141414] p-5 rounded-[2px] flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

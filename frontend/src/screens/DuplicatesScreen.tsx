@@ -59,6 +59,8 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
   // Search and filter
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterMode, setFilterMode] = useState<'ALL' | 'IMAGE' | 'DOC' | 'ARCHIVE'>('ALL');
+  const [folderPage, setFolderPage] = useState<number>(1);
+  const folderPageSize = 30;
 
   // Selected group in group dossier view
   const [selectedGroupId, setSelectedGroupId] = useState<string>(groups[0]?.id || '001');
@@ -196,6 +198,16 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
       })
       .filter((fg) => fg.files.length > 0);
   }, [folderGroups, searchQuery, filterMode, retainedPathSet]);
+
+  React.useEffect(() => {
+    setFolderPage(1);
+  }, [searchQuery, filterMode]);
+
+  const totalFolderPages = Math.max(1, Math.ceil(filteredFolderGroups.length / folderPageSize));
+  const paginatedFolderGroups = useMemo(() => {
+    const start = (folderPage - 1) * folderPageSize;
+    return filteredFolderGroups.slice(start, start + folderPageSize);
+  }, [filteredFolderGroups, folderPage]);
 
   // Global calculations
   const totalDuplicateFiles = groups.reduce(
@@ -582,7 +594,7 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
               No duplicate files match your search and filter criteria.
             </div>
           ) : (
-            filteredFolderGroups.map((fg) => {
+            paginatedFolderGroups.map((fg) => {
               const eligiblePaths = fg.eligibleFiles.map((f) => f.path);
               const selectedInFolder = eligiblePaths.filter((p) => selectedEligiblePaths.has(p));
               const isAllSelected = eligiblePaths.length > 0 && selectedInFolder.length === eligiblePaths.length;
@@ -768,6 +780,32 @@ export const DuplicatesScreen: React.FC<DuplicatesScreenProps> = ({
                 </section>
               );
             })
+          )}
+          {totalFolderPages > 1 && (
+            <div className="flex items-center justify-between p-4 bg-[#0b0b0b] text-xs font-mono border-t border-[#303030]">
+              <span className="text-[#858585]">
+                Showing folder batch {(folderPage - 1) * folderPageSize + 1}–{Math.min(folderPage * folderPageSize, filteredFolderGroups.length)} of {filteredFolderGroups.length}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={folderPage <= 1}
+                  onClick={() => setFolderPage((p) => Math.max(1, p - 1))}
+                  className="px-3 py-1 border border-[#303030] bg-[#141414] text-white disabled:opacity-30 disabled:cursor-not-allowed hover:border-white transition-colors"
+                >
+                  Prev
+                </button>
+                <span className="text-white px-2">Page {folderPage} of {totalFolderPages}</span>
+                <button
+                  type="button"
+                  disabled={folderPage >= totalFolderPages}
+                  onClick={() => setFolderPage((p) => Math.min(totalFolderPages, p + 1))}
+                  className="px-3 py-1 border border-[#303030] bg-[#141414] text-white disabled:opacity-30 disabled:cursor-not-allowed hover:border-white transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           )}
         </div>
       ) : (

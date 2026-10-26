@@ -134,7 +134,9 @@ export const StorageScreen: React.FC<StorageScreenProps> = ({
     return items;
   };
 
-  const flattenedTree = flattenTree(treeData);
+  const flattenedTree = React.useMemo(() => {
+    return flattenTree(treeData);
+  }, [treeData]);
 
   return (
     <div className="w-full flex flex-col gap-8 text-[#f5f5f5]">
