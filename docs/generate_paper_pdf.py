@@ -549,7 +549,7 @@ def build_two_column_ieee_pdf():
 
     story.append(Paragraph("VI. VISUAL INTELLIGENCE USER INTERFACE", h1_style))
     story.append(Paragraph(
-        "To transcend traditional alphanumeric file lists, ClutterScan provides a visual intelligence dashboard comprising space treemaps, dynamic ring charts, and interactive canvas constellation maps (Fig. 5).",
+        "To transcend traditional alphanumeric text streams and opaque tabular file lists, ClutterScan implements a human-centered visual intelligence system designed to present multi-dimensional file system topology, cluster geometry, and reclamation safety metrics intuitively (Fig. 5 and Fig. 6).",
         body_noindent
     ))
 
@@ -557,7 +557,30 @@ def build_two_column_ieee_pdf():
     fig5_path = os.path.join(FIGURES_DIR, "fig5_ui_composite.png")
     if os.path.exists(fig5_path):
         story.append(RLImage(fig5_path, width=256, height=160))
-        story.append(Paragraph("<b>Fig. 5.</b> ClutterScan Visual Intelligence Interface: (a) Executive Storage Intelligence Dashboard, (b) Multi-Sieve Duplicate Detector, (c) Hierarchical Space Treemap, and (d) Perceptual Visual Similarity Sieve.", caption_style))
+        story.append(Paragraph("<b>Fig. 5.</b> ClutterScan Production Visual Intelligence Architecture: (a) Central Storage Telemetry & Orb Intelligence Center; (b) Cryptographic Duplicate Equivalence Classes & Keeper Badges; (c) Recursive Inode Spatial Density & Hierarchy Explorer; and (d) Perceptual Visual Similarity Sieve.", caption_style))
+
+    story.append(Paragraph(
+        "<b>1) Central Storage Telemetry (Fig. 5a):</b> A dynamic SVG/Canvas engine presenting live storage consumption, active scan state, file inode counts (23,865 indexed), and category breakdowns (Archives, Binaries, Documents, Media, Caches).",
+        body_style
+    ))
+    story.append(Paragraph(
+        "<b>2) Duplicate Equivalence Partition View (Fig. 5b):</b> Renders exact duplicate clusters grouped by cryptographic digests with path breadcrumbs, waste counters, and the <i>At-Least-One-Keeper</i> invariant badge.",
+        body_style
+    ))
+    story.append(Paragraph(
+        "<b>3) Spatial Hierarchy Explorer (Fig. 5c):</b> Combines space-filling treemaps and tabular inode hierarchies, enabling users to isolate build hotspots and deep cache directories.",
+        body_style
+    ))
+    story.append(Paragraph(
+        "<b>4) Perceptual Visual Similarity Sieve (Fig. 5d):</b> Evaluates image clusters against the 64-bit dHash gradient descriptor, rendering comparative overlays and Hamming distances (D_H &le; 10).",
+        body_style
+    ))
+
+    # Figure 6 Vault & History
+    fig6_path = os.path.join(FIGURES_DIR, "fig6_vault_history.png")
+    if os.path.exists(fig6_path):
+        story.append(RLImage(fig6_path, width=256, height=84))
+        story.append(Paragraph("<b>Fig. 6.</b> Transactional Safety Interfaces: (a) Operator verification barrier prior to staging; (b) Bit-exact manifest restoration audit log.", caption_style))
 
     story.append(Paragraph("VII. CONCLUSION AND FUTURE WORK", h1_style))
     story.append(Paragraph(

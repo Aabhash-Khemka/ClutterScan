@@ -325,15 +325,32 @@ Server-Sent Events (SSE) Progress Stream   & No & No & No & No & \textbf{Yes (Re
 \end{tabularx}
 \end{table*}
 
-\section{Visual Intelligence Interface}
+\section{Visual Intelligence User Interface}
 \label{sec:ui}
-Fig.~\ref{fig:ui} displays the four primary screens of ClutterScan's visual intelligence interface:
-\begin{itemize}
-    \item \textbf{Fig.~\ref{fig:ui}a (Executive Dashboard):} Presents high-level volume telemetry, space reclaimed metrics, dynamic category donut rings, and quick scan profiles.
-    \item \textbf{Fig.~\ref{fig:ui}b (Duplicate Detector):} Displays clustered duplicate equivalence classes with automated keeper recommendation badges, savings indicators, and multi-file staging toggles.
-    \item \textbf{Fig.~\ref{fig:ui}c (Hierarchical Space Treemap):} Visualizes file system spatial volume distribution via nested rectangular subdivisions with drill-down capability.
-    \item \textbf{Fig.~\ref{fig:ui}d (Perceptual Visual Similarity Sieve):} Displays side-by-side comparative views of near-duplicate image assets, detailing computed Hamming distance $D_H$, resolution metadata, and keeper selections.
-\end{itemize}
+To transcend traditional alphanumeric text streams and opaque tabular file lists, ClutterScan implements a human-centered visual intelligence system designed to present multi-dimensional file system topology, cluster geometry, and reclamation safety metrics intuitively (Fig.~\ref{fig:ui} and Fig.~\ref{fig:ui_vault}).
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/fig5_ui_composite.png}
+\caption{ClutterScan Production Frontend Visual Intelligence Architecture: (a) Central Storage Telemetry \& Orb Intelligence Center displaying live volume allocation and category breakdowns; (b) Cryptographic Duplicate Equivalence Classes exhibiting SHA-256 cluster grouping, byte savings meters, and automated keeper invariant badges; (c) Recursive Inode Spatial Density \& File System Hierarchy Explorer detailing 23,865 active file inodes across 2,100 directories; and (d) Perceptual Visual Similarity Sieve performing discrete gradient difference hashing with bitwise Hamming distance correlation.}
+\label{fig:ui}
+\end{figure*}
+
+\begin{figure}[!b]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig6_vault_history.png}
+\caption{ClutterScan Transactional Safety Interfaces: (a) Safe Staging Cleanup Intercept with operator verification barrier; (b) Historical Audit Trail and Bit-Exact Manifest Restoration interface.}
+\label{fig:ui_vault}
+\end{figure}
+
+The interactive interface incorporates:
+\begin{enumerate}
+    \item \textbf{Central Storage Orb and Volumetric Telemetry (Fig.~\ref{fig:ui}a):} A hardware-accelerated dynamic SVG and Canvas visualization engine presenting aggregate volume consumption, active scan state, file inode counts, and real-time category allocations (Archives, Binaries, Documents, Media, Caches).
+    \item \textbf{Duplicate Equivalence Partition View (Fig.~\ref{fig:ui}b):} Renders exact duplicate clusters grouped by cryptographic digests. The view displays individual file sizes, path breadcrumbs, duplicate waste metrics, and active selection checkboxes, enforcing the \textit{At-Least-One-Keeper} invariant to eliminate accidental complete deletion.
+    \item \textbf{Hierarchical Spatial Explorer (Fig.~\ref{fig:ui}c):} Combines interactive space-filling treemaps and tabular inode hierarchies, enabling users to isolate storage hotspots and deep cache directories (e.g., \texttt{node\_modules}, virtual environments).
+    \item \textbf{Perceptual Visual Similarity Sieve (Fig.~\ref{fig:ui}d):} Evaluates photographic media clusters against the 64-bit dHash gradient descriptor, rendering side-by-side comparative overlays, computed Hamming distances ($D_H$), and dimensional metadata.
+    \item \textbf{Transactional Vault and Reversible Audit Log (Fig.~\ref{fig:ui_vault}):} Provides an explicit operator verification barrier prior to execution, coupled with a cryptographically signed transaction history enabling bit-exact one-click restoration of any staged file.
+\end{enumerate}
 
 \section{Conclusion and Future Work}
 \label{sec:conclusion}
