@@ -29,18 +29,17 @@ export const StorageAnalyticsLab: React.FC<StorageAnalyticsLabProps> = ({
     }, 0);
   }, [hashGroups]);
 
-  // Efficiency percentage (100% - duplicate waste %)
   const duplicatePercentage = totalScannedBytes > 0 ? (totalDuplicateWaste / totalScannedBytes) * 100 : 0;
   const storageHealthScore = Math.max(0, Math.min(100, Math.round(100 - duplicatePercentage)));
 
   // Size distribution buckets (<1MB, 1-10MB, 10-50MB, 50-250MB, 250MB+)
   const sizeBuckets = useMemo(() => {
     const buckets = [
-      { label: '< 1 MB', min: 0, max: 1024 * 1024, count: 0, bytes: 0, color: '#20C5E8' },
-      { label: '1 - 10 MB', min: 1024 * 1024, max: 10 * 1024 * 1024, count: 0, bytes: 0, color: '#625BEE' },
-      { label: '10 - 50 MB', min: 10 * 1024 * 1024, max: 50 * 1024 * 1024, count: 0, bytes: 0, color: '#925CFF' },
-      { label: '50 - 250 MB', min: 50 * 1024 * 1024, max: 250 * 1024 * 1024, count: 0, bytes: 0, color: '#F5B942' },
-      { label: '> 250 MB', min: 250 * 1024 * 1024, max: Infinity, count: 0, bytes: 0, color: '#FF6B6B' },
+      { label: '< 1 MB', min: 0, max: 1024 * 1024, count: 0, bytes: 0 },
+      { label: '1 - 10 MB', min: 1024 * 1024, max: 10 * 1024 * 1024, count: 0, bytes: 0 },
+      { label: '10 - 50 MB', min: 10 * 1024 * 1024, max: 50 * 1024 * 1024, count: 0, bytes: 0 },
+      { label: '50 - 250 MB', min: 50 * 1024 * 1024, max: 250 * 1024 * 1024, count: 0, bytes: 0 },
+      { label: '> 250 MB', min: 250 * 1024 * 1024, max: Infinity, count: 0, bytes: 0 },
     ];
 
     files.forEach((f) => {
@@ -60,11 +59,10 @@ export const StorageAnalyticsLab: React.FC<StorageAnalyticsLabProps> = ({
       ...b,
       countPercent: (b.count / maxCount) * 100,
       bytesPercent: (b.bytes / maxBytes) * 100,
-      shareOfTotal: totalScannedBytes > 0 ? (b.bytes / totalScannedBytes) * 100 : 0,
     }));
-  }, [files, totalScannedBytes]);
+  }, [files]);
 
-  // Pareto distribution: Sort top 20 largest files and calculate cumulative %
+  // Pareto distribution: Top 15 largest files and cumulative %
   const paretoData = useMemo(() => {
     const sorted = [...files].sort((a, b) => b.bytes - a.bytes).slice(0, 15);
     let cumulative = 0;
@@ -82,88 +80,37 @@ export const StorageAnalyticsLab: React.FC<StorageAnalyticsLabProps> = ({
   }, [files, totalScannedBytes]);
 
   return (
-    <div
-      style={{
-        background: '#0d0f17',
-        borderRadius: 20,
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.5)',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
+    <div className="w-full bg-[#141414] border border-[#303030] flex flex-col text-[#f5f5f5]">
       {/* Top Header & Tabs */}
-      <div
-        style={{
-          padding: '16px 24px',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 16,
-          background: 'rgba(255, 255, 255, 0.02)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: 'linear-gradient(135deg, #19B99A 0%, #20C5E8 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 14px rgba(25, 185, 154, 0.35)',
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2">
-              <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
-              <path d="M22 12A10 10 0 0 0 12 2v10z" />
-            </svg>
+      <div className="p-5 border-b border-[#303030] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <div className="text-[11px] uppercase font-mono font-bold tracking-wider text-[#858585] mb-1">
+            Forensic Telemetry
           </div>
-          <div>
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#f5f7fc' }}>
-              Storage Analytics & Optimization Lab
-            </h3>
-            <p style={{ margin: 0, fontSize: 12, color: '#8E9AA8' }}>
-              Deep statistical telemetry on file footprint, size buckets, and cumulative Pareto curve
-            </p>
-          </div>
+          <h3 className="text-xl font-bold tracking-tight text-white">
+            Storage Analytics Lab
+          </h3>
+          <p className="text-xs text-[#b8b8b8] mt-0.5">
+            Statistical distribution, Pareto 80/20 ratio, and recoverable waste breakdown.
+          </p>
         </div>
 
         {/* Tab Buttons */}
-        <div
-          style={{
-            display: 'flex',
-            background: 'rgba(255, 255, 255, 0.05)',
-            borderRadius: 10,
-            padding: 3,
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-          }}
-        >
+        <div className="flex items-center gap-1 bg-[#101010] p-1 border border-[#303030]">
           {[
-            { id: 'distribution', label: 'Size Buckets' },
+            { id: 'distribution', label: 'Size Tiers' },
             { id: 'pareto', label: 'Pareto 80/20' },
-            { id: 'waterfall', label: 'Savings Waterfall' },
-            { id: 'categories', label: 'Category Matrix' },
+            { id: 'waterfall', label: 'Waterfall' },
+            { id: 'categories', label: 'Media Breakdown' },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              style={{
-                background: activeTab === tab.id ? 'linear-gradient(135deg, #625BEE 0%, #925CFF 100%)' : 'transparent',
-                color: activeTab === tab.id ? '#fff' : '#8E9AA8',
-                border: 'none',
-                borderRadius: 8,
-                padding: '6px 12px',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
+              className={`px-3 py-1.5 text-xs font-mono uppercase transition-colors cursor-pointer ${
+                activeTab === tab.id
+                  ? 'bg-white text-black font-bold'
+                  : 'text-[#858585] hover:text-white'
+              }`}
             >
               {tab.label}
             </button>
@@ -171,96 +118,55 @@ export const StorageAnalyticsLab: React.FC<StorageAnalyticsLabProps> = ({
         </div>
       </div>
 
-      {/* Main Analytics Content */}
-      <div style={{ padding: 24 }}>
+      {/* Main Content Area */}
+      <div className="p-6">
         {/* Tab A: Size Distribution Histogram */}
         {activeTab === 'distribution' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20, alignItems: 'center' }}>
+            <div className="flex justify-between items-center mb-6">
               <div>
-                <h4 style={{ margin: '0 0 4px 0', fontSize: 14, color: '#f5f7fc' }}>File Size Spectrum</h4>
-                <p style={{ margin: 0, fontSize: 12, color: '#8E9AA8' }}>
-                  Distribution of file counts and allocated storage across byte volume tiers
+                <h4 className="text-base font-bold text-white">File Volume Spectrum</h4>
+                <p className="text-xs text-[#858585] font-mono mt-0.5">
+                  Comparison between file counts and actual byte consumption per volume tier
                 </p>
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 16,
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  padding: '6px 14px',
-                  borderRadius: 8,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: 2, background: '#625BEE' }} />
-                  <span style={{ fontSize: 11, color: '#8E9AA8' }}>File Count</span>
+              <div className="flex items-center gap-4 text-xs font-mono text-[#858585]">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 bg-white" />
+                  <span>File Inodes</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: 2, background: '#20C5E8' }} />
-                  <span style={{ fontSize: 11, color: '#8E9AA8' }}>Storage Volume</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 bg-[#57b887]" />
+                  <span>Disk Storage</span>
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, height: 260 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 h-64">
               {sizeBuckets.map((bucket, i) => (
                 <div
                   key={i}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-end',
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    borderRadius: 12,
-                    padding: 12,
-                    border: '1px solid rgba(255, 255, 255, 0.04)',
-                    position: 'relative',
-                  }}
+                  className="border border-[#262626] bg-[#101010] p-3 flex flex-col justify-end"
                 >
-                  {/* Bars Container */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-end',
-                      gap: 8,
-                      height: 160,
-                      justifyContent: 'center',
-                      marginBottom: 12,
-                    }}
-                  >
+                  <div className="flex items-end justify-center gap-2 h-36 mb-3">
                     {/* Count Bar */}
                     <div
-                      style={{
-                        width: 28,
-                        height: `${Math.max(4, bucket.countPercent)}%`,
-                        background: 'linear-gradient(180deg, #925CFF 0%, #625BEE 100%)',
-                        borderRadius: '6px 6px 0 0',
-                        position: 'relative',
-                        transition: 'height 0.4s ease',
-                      }}
+                      className="w-5 bg-white transition-all duration-300"
+                      style={{ height: `${Math.max(4, bucket.countPercent)}%` }}
                       title={`${bucket.count} files`}
                     />
                     {/* Size Bar */}
                     <div
-                      style={{
-                        width: 28,
-                        height: `${Math.max(4, bucket.bytesPercent)}%`,
-                        background: 'linear-gradient(180deg, #20C5E8 0%, #19B99A 100%)',
-                        borderRadius: '6px 6px 0 0',
-                        position: 'relative',
-                        transition: 'height 0.4s ease',
-                      }}
+                      className="w-5 bg-[#57b887] transition-all duration-300"
+                      style={{ height: `${Math.max(4, bucket.bytesPercent)}%` }}
                       title={formatBytes(bucket.bytes)}
                     />
                   </div>
 
-                  {/* Bucket Footer Labels */}
-                  <div style={{ textAlign: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: 8 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#f5f7fc' }}>{bucket.label}</div>
-                    <div style={{ fontSize: 11, color: '#8E9AA8', marginTop: 2 }}>{bucket.count} files</div>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: '#20C5E8', marginTop: 1 }}>
+                  <div className="border-t border-[#262626] pt-2 text-center font-mono">
+                    <div className="text-xs font-bold text-white">{bucket.label}</div>
+                    <div className="text-[11px] text-[#858585] mt-0.5">{bucket.count} items</div>
+                    <div className="text-[11px] text-[#57b887] font-semibold mt-0.5">
                       {formatBytes(bucket.bytes)}
                     </div>
                   </div>
@@ -270,74 +176,42 @@ export const StorageAnalyticsLab: React.FC<StorageAnalyticsLabProps> = ({
           </div>
         )}
 
-        {/* Tab B: Pareto Cumulative Storage Chart */}
+        {/* Tab B: Pareto 80/20 Distribution */}
         {activeTab === 'pareto' && (
           <div>
-            <div style={{ marginBottom: 16 }}>
-              <h4 style={{ margin: '0 0 4px 0', fontSize: 14, color: '#f5f7fc' }}>
-                Pareto Principle (80/20 Rule)
-              </h4>
-              <p style={{ margin: 0, fontSize: 12, color: '#8E9AA8' }}>
-                Discovers if a concentrated minority of large files occupy the vast majority of disk capacity
+            <div className="mb-4">
+              <h4 className="text-base font-bold text-white">Pareto Principle (Largest File Footprint)</h4>
+              <p className="text-xs text-[#858585] font-mono mt-0.5">
+                Top individual files accounting for cumulative storage footprint
               </p>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
+            <div className="flex flex-col gap-1.5 max-h-72 overflow-y-auto">
               {paretoData.map((item, idx) => (
                 <div
                   key={idx}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    padding: '8px 12px',
-                    borderRadius: 8,
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    border: '1px solid rgba(255, 255, 255, 0.04)',
-                  }}
+                  className="flex items-center gap-3 p-2 border border-[#262626] bg-[#101010] text-xs font-mono"
                 >
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#8E9AA8', width: 22 }}>#{idx + 1}</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: '#f5f7fc',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {item.name}
-                    </div>
-                    <div style={{ fontSize: 11, color: '#8E9AA8' }}>{item.category}</div>
+                  <span className="text-[#858585] w-6 text-right">#{idx + 1}</span>
+                  <div className="flex-1 truncate">
+                    <span className="text-white font-medium truncate block">{item.name}</span>
+                    <span className="text-[#858585] text-[10px]">{item.category}</span>
                   </div>
 
-                  <div style={{ textAlign: 'right', width: 80 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#20C5E8' }}>{item.formattedSize}</div>
-                  </div>
+                  <span className="text-[#57b887] font-bold w-24 text-right">
+                    {item.formattedSize}
+                  </span>
 
-                  {/* Cumulative Progress Bar */}
-                  <div style={{ width: 140 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#8E9AA8', marginBottom: 3 }}>
-                      <span>Cumulative</span>
-                      <span style={{ color: item.cumulativePercent > 80 ? '#FF6B6B' : '#925CFF', fontWeight: 700 }}>
-                        {item.cumulativePercent}%
-                      </span>
-                    </div>
-                    <div style={{ height: 6, background: 'rgba(255, 255, 255, 0.08)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div className="w-32 flex items-center gap-2">
+                    <div className="flex-1 h-2 bg-[#222222] overflow-hidden">
                       <div
-                        style={{
-                          height: '100%',
-                          width: `${item.cumulativePercent}%`,
-                          background:
-                            item.cumulativePercent > 80
-                              ? 'linear-gradient(90deg, #925CFF, #FF6B6B)'
-                              : 'linear-gradient(90deg, #625BEE, #925CFF)',
-                          borderRadius: 3,
-                        }}
+                        className="h-full bg-white"
+                        style={{ width: `${item.cumulativePercent}%` }}
                       />
                     </div>
+                    <span className="text-[#858585] text-[10px] w-8 text-right">
+                      {item.cumulativePercent}%
+                    </span>
                   </div>
                 </div>
               ))}
@@ -345,105 +219,72 @@ export const StorageAnalyticsLab: React.FC<StorageAnalyticsLabProps> = ({
           </div>
         )}
 
-        {/* Tab C: Waterfall Savings Chart */}
+        {/* Tab C: Waterfall Savings Breakdown */}
         {activeTab === 'waterfall' && (
           <div>
-            <div style={{ marginBottom: 20 }}>
-              <h4 style={{ margin: '0 0 4px 0', fontSize: 14, color: '#f5f7fc' }}>
-                Duplicate Storage Recovery Waterfall
-              </h4>
-              <p style={{ margin: 0, fontSize: 12, color: '#8E9AA8' }}>
-                Step-by-step breakdown of scanned storage vs retained originals vs recoverable redundant copies
+            <div className="mb-5">
+              <h4 className="text-base font-bold text-white">Storage Deduplication Waterfall</h4>
+              <p className="text-xs text-[#858585] font-mono mt-0.5">
+                Deterministic calculation of scanned space, retained originals, and recoverable duplicates
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, alignItems: 'stretch' }}>
-              {/* Step 1: Total Scanned Storage */}
-              <div
-                style={{
-                  background: 'rgba(98, 91, 238, 0.08)',
-                  border: '1px solid rgba(98, 91, 238, 0.3)',
-                  borderRadius: 14,
-                  padding: 20,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
-              >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="border border-[#303030] bg-[#1b1b1b] p-5 flex flex-col justify-between">
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#625BEE', textTransform: 'uppercase' }}>
+                  <span className="text-[10px] uppercase font-mono font-bold tracking-wider text-[#858585]">
                     1. Scanned Footprint
-                  </div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: '#f5f7fc', margin: '8px 0' }}>
+                  </span>
+                  <div className="text-3xl font-bold font-mono text-white mt-2">
                     {formatBytes(totalScannedBytes)}
                   </div>
-                  <p style={{ fontSize: 12, color: '#8E9AA8', margin: 0 }}>
-                    Total volume of files analyzed across the selected root directory.
+                  <p className="text-xs text-[#858585] mt-2">
+                    Total volume of files indexed across target volume.
                   </p>
                 </div>
-                <div style={{ marginTop: 24, padding: '8px 12px', background: 'rgba(255, 255, 255, 0.04)', borderRadius: 8 }}>
-                  <span style={{ fontSize: 11, color: '#8E9AA8' }}>Files Evaluated: </span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{files.length}</span>
+                <div className="border-t border-[#303030] pt-2 text-xs font-mono text-[#858585] mt-4">
+                  Files Evaluated: <span className="text-white font-bold">{files.length}</span>
                 </div>
               </div>
 
-              {/* Step 2: Retained Originals */}
-              <div
-                style={{
-                  background: 'rgba(32, 197, 232, 0.08)',
-                  border: '1px solid rgba(32, 197, 232, 0.3)',
-                  borderRadius: 14,
-                  padding: 20,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
-              >
+              <div className="border border-[#303030] bg-[#1b1b1b] p-5 flex flex-col justify-between">
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#20C5E8', textTransform: 'uppercase' }}>
+                  <span className="text-[10px] uppercase font-mono font-bold tracking-wider text-[#57b887]">
                     2. Retained Unique Data
-                  </div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: '#f5f7fc', margin: '8px 0' }}>
+                  </span>
+                  <div className="text-3xl font-bold font-mono text-white mt-2">
                     {formatBytes(Math.max(0, totalScannedBytes - totalDuplicateWaste))}
                   </div>
-                  <p style={{ fontSize: 12, color: '#8E9AA8', margin: 0 }}>
-                    Preserved unique originals and non-duplicate files kept untouched.
+                  <p className="text-xs text-[#858585] mt-2">
+                    Preserved master originals and unique documents.
                   </p>
                 </div>
-                <div style={{ marginTop: 24, padding: '8px 12px', background: 'rgba(255, 255, 255, 0.04)', borderRadius: 8 }}>
-                  <span style={{ fontSize: 11, color: '#8E9AA8' }}>Safeguard Ratio: </span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#19B99A' }}>
-                    {totalScannedBytes > 0 ? (((totalScannedBytes - totalDuplicateWaste) / totalScannedBytes) * 100).toFixed(1) : 100}%
+                <div className="border-t border-[#303030] pt-2 text-xs font-mono text-[#858585] mt-4">
+                  Safeguard Ratio:{' '}
+                  <span className="text-[#57b887] font-bold">
+                    {totalScannedBytes > 0
+                      ? (((totalScannedBytes - totalDuplicateWaste) / totalScannedBytes) * 100).toFixed(1)
+                      : 100}
+                    %
                   </span>
                 </div>
               </div>
 
-              {/* Step 3: Recoverable Redundant Waste */}
-              <div
-                style={{
-                  background: 'rgba(255, 107, 107, 0.08)',
-                  border: '1px solid rgba(255, 107, 107, 0.3)',
-                  borderRadius: 14,
-                  padding: 20,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
-              >
+              <div className="border border-[#303030] bg-[#1b1b1b] p-5 flex flex-col justify-between">
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#FF6B6B', textTransform: 'uppercase' }}>
-                    3. Estimated Recoverable Waste
-                  </div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: '#FF6B6B', margin: '8px 0' }}>
+                  <span className="text-[10px] uppercase font-mono font-bold tracking-wider text-[#f06464]">
+                    3. Recoverable Redundant Waste
+                  </span>
+                  <div className="text-3xl font-bold font-mono text-[#f06464] mt-2">
                     -{formatBytes(totalDuplicateWaste)}
                   </div>
-                  <p style={{ fontSize: 12, color: '#8E9AA8', margin: 0 }}>
-                    Redundant copies identified by identical content checksum matching.
+                  <p className="text-xs text-[#858585] mt-2">
+                    Identical checksum clones eligible for safe reclaim.
                   </p>
                 </div>
-                <div style={{ marginTop: 24, padding: '8px 12px', background: 'rgba(255, 255, 255, 0.04)', borderRadius: 8 }}>
-                  <span style={{ fontSize: 11, color: '#8E9AA8' }}>Potential Gain: </span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#FF6B6B' }}>
+                <div className="border-t border-[#303030] pt-2 text-xs font-mono text-[#858585] mt-4">
+                  Reclaim Potential:{' '}
+                  <span className="text-[#f06464] font-bold">
                     {totalScannedBytes > 0 ? ((totalDuplicateWaste / totalScannedBytes) * 100).toFixed(1) : 0}% of disk
                   </span>
                 </div>
@@ -452,38 +293,33 @@ export const StorageAnalyticsLab: React.FC<StorageAnalyticsLabProps> = ({
           </div>
         )}
 
-        {/* Tab D: Category Matrix */}
+        {/* Tab D: Media Category Breakdown */}
         {activeTab === 'categories' && (
           <div>
-            <div style={{ marginBottom: 16 }}>
-              <h4 style={{ margin: '0 0 4px 0', fontSize: 14, color: '#f5f7fc' }}>File Type Composition Matrix</h4>
-              <p style={{ margin: 0, fontSize: 12, color: '#8E9AA8' }}>
-                Interactive breakdown of storage weight and item volumes by digital media classification
+            <div className="mb-4">
+              <h4 className="text-base font-bold text-white">Media Type Classification</h4>
+              <p className="text-xs text-[#858585] font-mono mt-0.5">
+                Storage distribution grouped by recognized file extension patterns
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {categoryMetrics.map((cat) => (
                 <div
                   key={cat.category}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    border: `1px solid rgba(255, 255, 255, 0.06)`,
-                    borderLeft: `4px solid ${cat.color}`,
-                    borderRadius: 10,
-                    padding: 14,
-                  }}
+                  className="border border-[#262626] bg-[#101010] p-4 flex flex-col justify-between"
+                  style={{ borderLeft: `3px solid ${cat.color}` }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#f5f7fc' }}>{cat.name}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: cat.color }}>
-                      {cat.percentage.toFixed(1)}%
-                    </span>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs font-bold text-white">{cat.name}</span>
+                    <span className="text-xs font-mono text-[#858585]">{cat.percentage.toFixed(1)}%</span>
                   </div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 4 }}>
+                  <div className="text-2xl font-bold font-mono text-white mt-1">
                     {cat.formattedSize}
                   </div>
-                  <div style={{ fontSize: 11, color: '#8E9AA8' }}>{cat.fileCount} files</div>
+                  <div className="text-xs font-mono text-[#858585] mt-2">
+                    {cat.fileCount.toLocaleString()} files
+                  </div>
                 </div>
               ))}
             </div>
@@ -491,35 +327,19 @@ export const StorageAnalyticsLab: React.FC<StorageAnalyticsLabProps> = ({
         )}
       </div>
 
-      {/* Bottom Telemetry Health Bar */}
-      <div
-        style={{
-          padding: '12px 24px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-          background: 'rgba(0, 0, 0, 0.3)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div
+      {/* Bottom Health Bar */}
+      <div className="p-3 border-t border-[#303030] bg-[#101010] flex items-center justify-between text-xs font-mono text-[#858585]">
+        <div className="flex items-center gap-2">
+          <span
+            className="w-2 h-2 inline-block rounded-full"
             style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: storageHealthScore > 80 ? '#19B99A' : storageHealthScore > 60 ? '#F5B942' : '#FF6B6B',
-              boxShadow: `0 0 8px ${storageHealthScore > 80 ? '#19B99A' : '#FF6B6B'}`,
+              backgroundColor:
+                storageHealthScore > 85 ? '#57b887' : storageHealthScore > 65 ? '#e5ad55' : '#f06464',
             }}
           />
-          <span style={{ fontSize: 12, color: '#8E9AA8' }}>
-            Storage Efficiency Rating:{' '}
-            <strong style={{ color: '#f5f7fc' }}>{storageHealthScore}/100</strong>
-          </span>
+          <span>Storage Efficiency Score: <strong className="text-white">{storageHealthScore}/100</strong></span>
         </div>
-        <span style={{ fontSize: 11, color: '#8E9AA8' }}>
-          Real-time deterministic calculations based on latest scan index
-        </span>
+        <span className="hidden sm:inline">Calculated from SHA-256 Checksums</span>
       </div>
     </div>
   );

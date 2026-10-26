@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { HashGroup } from '../../types';
-import { VisualFileNode, formatBytes, CATEGORY_COLORS } from '../../utils/visualDataUtils';
+import { VisualFileNode, formatBytes } from '../../utils/visualDataUtils';
 
 interface DuplicateClusterGraphProps {
   hashGroups: HashGroup[];
@@ -13,10 +13,8 @@ export const DuplicateClusterGraph: React.FC<DuplicateClusterGraphProps> = ({
   hashGroups,
   onSelectFile,
   onNavigateToDuplicates,
-  selectedFileId,
 }) => {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
-  const [minSavingsFilter, setMinSavingsFilter] = useState<number>(0);
   const [hoveredNode, setHoveredNode] = useState<{
     file: VisualFileNode;
     isOriginal: boolean;
@@ -25,17 +23,15 @@ export const DuplicateClusterGraph: React.FC<DuplicateClusterGraphProps> = ({
     y: number;
   } | null>(null);
 
-  // Parse and prioritize duplicate groups
+  // Parse duplicate groups
   const processedGroups = useMemo(() => {
     return hashGroups
       .map((g, idx) => {
         const fileList = g.files || [];
         const fileCount = fileList.length;
         const totalSize = (g.sizeBytes || 0) * fileCount;
-        // Wasted space = (count - 1) * single file size
         const potentialSavings = (g.sizeBytes || 0) * Math.max(0, fileCount - 1);
 
-        // Check if group spans multiple directories
         const directories = new Set(
           fileList.map((f) => {
             const parts = (f.path || '').replace(/\\/g, '/').split('/');
@@ -43,7 +39,6 @@ export const DuplicateClusterGraph: React.FC<DuplicateClusterGraphProps> = ({
             return parts.join('/');
           })
         );
-        const spansMultiDir = directories.size > 1;
 
         return {
           id: g.id || `group-${idx}`,
@@ -55,7 +50,7 @@ export const DuplicateClusterGraph: React.FC<DuplicateClusterGraphProps> = ({
           formattedTotalSize: formatBytes(totalSize),
           potentialSavings,
           formattedSavings: formatBytes(potentialSavings),
-          spansMultiDir,
+          spansMultiDir: directories.size > 1,
           directoryCount: directories.size,
           files: fileList.map((f, fIdx) => {
             const ext = (f.name.split('.').pop() || '').toLowerCase();
@@ -66,7 +61,7 @@ export const DuplicateClusterGraph: React.FC<DuplicateClusterGraphProps> = ({
               bytes: g.sizeBytes || 0,
               formattedSize: g.fileSize || formatBytes(g.sizeBytes || 0),
               extension: ext,
-              category: 'Other' as const, // will be rendered cleanly
+              category: 'Other' as const,
               isDuplicate: true,
               duplicateGroupId: g.id,
               duplicateCount: fileCount,
@@ -77,9 +72,9 @@ export const DuplicateClusterGraph: React.FC<DuplicateClusterGraphProps> = ({
           }),
         };
       })
-      .filter((g) => g.fileCount > 1 && g.potentialSavings >= minSavingsFilter)
+      .filter((g) => g.fileCount > 1)
       .sort((a, b) => b.potentialSavings - a.potentialSavings);
-  }, [hashGroups, minSavingsFilter]);
+  }, [hashGroups]);
 
   const activeGroup = useMemo(() => {
     if (!selectedGroupId && processedGroups.length > 0) {
@@ -88,197 +83,61 @@ export const DuplicateClusterGraph: React.FC<DuplicateClusterGraphProps> = ({
     return processedGroups.find((g) => g.id === selectedGroupId) || processedGroups[0] || null;
   }, [selectedGroupId, processedGroups]);
 
-  // Aggregate metrics
   const totalRedundantWaste = useMemo(() => {
     return processedGroups.reduce((acc, g) => acc + g.potentialSavings, 0);
   }, [processedGroups]);
 
   if (hashGroups.length === 0 || processedGroups.length === 0) {
     return (
-      <div
-        style={{
-          background: '#0d0f17',
-          borderRadius: 16,
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          padding: '48px 32px',
-          textAlign: 'center',
-          color: '#8E9AA8',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: 380,
-        }}
-      >
-        <div
-          style={{
-            width: 72,
-            height: 72,
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(98, 91, 238, 0.25) 0%, rgba(13, 15, 23, 0) 70%)',
-            border: '1px solid rgba(98, 91, 238, 0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 16,
-          }}
-        >
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#625BEE" strokeWidth="2">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-        </div>
-        <h3 style={{ fontSize: 18, fontWeight: 700, color: '#f5f7fc', margin: '0 0 8px 0' }}>
-          No Duplicate Clusters Detected
-        </h3>
-        <p style={{ maxWidth: 440, fontSize: 13, lineHeight: 1.6, margin: 0 }}>
-          Your scan found no identical duplicates matching the current threshold. When duplicate files exist,
-          this interactive cluster graph visualises redundant file constellations and multi-directory sprawl.
-        </p>
+      <div className="w-full bg-[#141414] border border-[#303030] p-10 text-center text-[#858585] font-mono text-sm">
+        No duplicate file clusters identified in this scan.
       </div>
     );
   }
 
-  // Visual layout constants for active group orbital rendering
-  const svgWidth = 560;
-  const svgHeight = 400;
+  const svgWidth = 500;
+  const svgHeight = 360;
   const centerX = svgWidth / 2;
   const centerY = svgHeight / 2;
-  const orbitRadius = 135;
+  const orbitRadius = 120;
 
   return (
-    <div
-      style={{
-        background: '#0d0f17',
-        borderRadius: 20,
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.5)',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      {/* Header Bar */}
-      <div
-        style={{
-          padding: '16px 24px',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 12,
-          background: 'rgba(255, 255, 255, 0.02)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: 'linear-gradient(135deg, #FF6B6B 0%, #925CFF 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 14px rgba(255, 107, 107, 0.35)',
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2">
-              <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v1" />
-              <rect x="8" y="4" width="14" height="14" rx="2" />
-            </svg>
+    <div className="w-full bg-[#141414] border border-[#303030] flex flex-col text-[#f5f5f5]">
+      {/* Top Header */}
+      <div className="p-5 border-b border-[#303030] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <div className="text-[11px] uppercase font-mono font-bold tracking-wider text-[#858585] mb-1">
+            Redundant Clone Sets
           </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#f5f7fc', letterSpacing: '-0.02em' }}>
-                Duplicate Cluster Constellation
-              </h3>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: '#FF6B6B',
-                  background: 'rgba(255, 107, 107, 0.15)',
-                  padding: '2px 8px',
-                  borderRadius: 12,
-                }}
-              >
-                {processedGroups.length} Clusters
-              </span>
-            </div>
-            <p style={{ margin: 0, fontSize: 12, color: '#8E9AA8' }}>
-              Identified {formatBytes(totalRedundantWaste)} redundant storage across clone sets
-            </p>
-          </div>
+          <h3 className="text-xl font-bold tracking-tight text-white">
+            Duplicate Constellations ({processedGroups.length})
+          </h3>
+          <p className="text-xs text-[#b8b8b8] mt-0.5">
+            Total recoverable redundancy: <span className="text-[#f06464] font-mono font-bold">{formatBytes(totalRedundantWaste)}</span>
+          </p>
         </div>
 
-        {/* Action Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {onNavigateToDuplicates && (
-            <button
-              onClick={onNavigateToDuplicates}
-              style={{
-                background: 'linear-gradient(135deg, #625BEE 0%, #925CFF 100%)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                padding: '7px 14px',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                boxShadow: '0 4px 12px rgba(98, 91, 238, 0.3)',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <span>Manage in Duplicates</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-          )}
-        </div>
+        {onNavigateToDuplicates && (
+          <button
+            type="button"
+            onClick={onNavigateToDuplicates}
+            className="px-3.5 py-1.5 border border-[#454545] bg-[#1b1b1b] text-xs text-white hover:border-white font-mono uppercase transition-all cursor-pointer"
+          >
+            Manage in Duplicates →
+          </button>
+        )}
       </div>
 
-      {/* Main Graph Content Area: Split View */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(280px, 340px) 1fr',
-          minHeight: 460,
-        }}
-      >
-        {/* Left Side: Duplicate Clusters Explorer List */}
-        <div
-          style={{
-            borderRight: '1px solid rgba(255, 255, 255, 0.08)',
-            background: 'rgba(0, 0, 0, 0.25)',
-            display: 'flex',
-            flexDirection: 'column',
-            maxHeight: 520,
-          }}
-        >
-          <div
-            style={{
-              padding: '12px 16px',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#8E9AA8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Clone Clusters Ranked by Waste
-            </span>
-            <span style={{ fontSize: 11, color: '#20C5E8', fontWeight: 600 }}>
-              Top {processedGroups.length}
-            </span>
+      {/* Main Split Grid: Explorer List Left / Constellation Graph Right */}
+      <div className="grid grid-cols-1 md:grid-cols-12 min-h-[400px]">
+        {/* Left: Clusters Ranked by Waste */}
+        <div className="md:col-span-5 border-b md:border-b-0 md:border-r border-[#303030] bg-[#101010] flex flex-col max-h-[460px]">
+          <div className="p-3 border-b border-[#303030] text-[11px] font-mono font-bold text-[#858585] uppercase tracking-wider flex justify-between">
+            <span>Ranked by Waste</span>
+            <span>{processedGroups.length} Groups</span>
           </div>
 
-          <div style={{ overflowY: 'auto', flex: 1, padding: 8 }}>
+          <div className="overflow-y-auto flex-1 p-2 space-y-1">
             {processedGroups.map((group) => {
               const isSelected = activeGroup?.id === group.id;
               const primaryFile = group.files[0];
@@ -287,68 +146,32 @@ export const DuplicateClusterGraph: React.FC<DuplicateClusterGraphProps> = ({
                 <div
                   key={group.id}
                   onClick={() => setSelectedGroupId(group.id)}
-                  style={{
-                    padding: '10px 12px',
-                    borderRadius: 10,
-                    marginBottom: 6,
-                    cursor: 'pointer',
-                    background: isSelected
-                      ? 'linear-gradient(135deg, rgba(98, 91, 238, 0.25) 0%, rgba(146, 92, 255, 0.15) 100%)'
-                      : 'rgba(255, 255, 255, 0.03)',
-                    border: isSelected
-                      ? '1px solid rgba(146, 92, 255, 0.5)'
-                      : '1px solid rgba(255, 255, 255, 0.04)',
-                    transition: 'all 0.18s ease',
-                  }}
+                  className={`p-2.5 border cursor-pointer select-none transition-colors ${
+                    isSelected
+                      ? 'bg-white text-black border-white'
+                      : 'bg-[#141414] text-[#f5f5f5] border-[#262626] hover:border-[#454545]'
+                  }`}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: isSelected ? '#fff' : '#E5E9F2',
-                        maxWidth: 180,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                      title={primaryFile?.name}
-                    >
-                      {primaryFile?.name || 'Duplicate Item'}
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-xs font-semibold truncate font-mono" title={primaryFile?.name}>
+                      {primaryFile?.name || 'Duplicate'}
                     </span>
                     <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: '#FF6B6B',
-                        background: 'rgba(255, 107, 107, 0.12)',
-                        padding: '1px 6px',
-                        borderRadius: 6,
-                      }}
+                      className={`text-[11px] font-mono font-bold shrink-0 ${
+                        isSelected ? 'text-black' : 'text-[#f06464]'
+                      }`}
                     >
                       -{group.formattedSavings}
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: '#8E9AA8' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span>{group.fileCount} copies</span>
-                      <span>•</span>
-                      <span>{group.formattedSize} each</span>
-                    </span>
-                    {group.spansMultiDir && (
-                      <span
-                        style={{
-                          fontSize: 10,
-                          color: '#20C5E8',
-                          background: 'rgba(32, 197, 232, 0.12)',
-                          padding: '1px 5px',
-                          borderRadius: 4,
-                        }}
-                      >
-                        {group.directoryCount} folders
-                      </span>
-                    )}
+                  <div
+                    className={`flex items-center justify-between text-[11px] font-mono ${
+                      isSelected ? 'text-neutral-700' : 'text-[#858585]'
+                    }`}
+                  >
+                    <span>{group.fileCount} copies</span>
+                    <span>{group.formattedSize} ea</span>
                   </div>
                 </div>
               );
@@ -356,96 +179,54 @@ export const DuplicateClusterGraph: React.FC<DuplicateClusterGraphProps> = ({
           </div>
         </div>
 
-        {/* Right Side: Orbital Constellation Graphic for Selected Group */}
-        <div
-          style={{
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 24,
-            overflow: 'hidden',
-          }}
-        >
+        {/* Right: Clean SVG Cluster Diagram */}
+        <div className="md:col-span-7 p-6 flex flex-col items-center justify-center relative bg-[#0c0c0c]">
           {activeGroup ? (
             <>
-              {/* Constellation SVG Diagram */}
-              <svg width={svgWidth} height={svgHeight} style={{ overflow: 'visible' }}>
-                <defs>
-                  {/* Gradients */}
-                  <radialGradient id="centerOrbGlow" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#925CFF" stopOpacity="0.8" />
-                    <stop offset="60%" stopColor="#625BEE" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#625BEE" stopOpacity="0" />
-                  </radialGradient>
-                  <linearGradient id="linkLineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#625BEE" stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="#FF6B6B" stopOpacity="0.8" />
-                  </linearGradient>
-                </defs>
-
-                {/* Ambient Orbital Rings */}
+              <svg width={svgWidth} height={svgHeight} className="overflow-visible select-none">
+                {/* Orbital Guide Circle */}
                 <circle
                   cx={centerX}
                   cy={centerY}
                   r={orbitRadius}
                   fill="none"
-                  stroke="rgba(255, 255, 255, 0.08)"
-                  strokeWidth="1.5"
-                  strokeDasharray="4 6"
-                />
-                <circle
-                  cx={centerX}
-                  cy={centerY}
-                  r={orbitRadius * 0.55}
-                  fill="none"
-                  stroke="rgba(146, 92, 255, 0.12)"
+                  stroke="#262626"
                   strokeWidth="1"
+                  strokeDasharray="2 4"
                 />
 
-                {/* Center Core: Group Master Summary */}
-                <circle cx={centerX} cy={centerY} r={58} fill="url(#centerOrbGlow)" />
+                {/* Central Hub */}
                 <circle
                   cx={centerX}
                   cy={centerY}
-                  r={46}
-                  fill="#131724"
-                  stroke="#925CFF"
-                  strokeWidth="2"
-                  filter="drop-shadow(0 0 12px rgba(146, 92, 255, 0.5))"
+                  r={44}
+                  fill="#1a1a1a"
+                  stroke="#454545"
+                  strokeWidth="1"
                 />
                 <text
                   x={centerX}
-                  y={centerY - 10}
+                  y={centerY - 6}
                   textAnchor="middle"
-                  fill="#FF6B6B"
-                  fontSize="13"
-                  fontWeight="800"
+                  fill="#f06464"
+                  fontSize="12"
+                  fontFamily="var(--dp-font-mono), monospace"
+                  fontWeight="bold"
                 >
                   -{activeGroup.formattedSavings}
                 </text>
                 <text
                   x={centerX}
-                  y={centerY + 8}
+                  y={centerY + 12}
                   textAnchor="middle"
-                  fill="#f5f7fc"
-                  fontSize="11"
-                  fontWeight="600"
+                  fill="#858585"
+                  fontSize="10"
+                  fontFamily="var(--dp-font-mono), monospace"
                 >
                   {activeGroup.fileCount} Copies
                 </text>
-                <text
-                  x={centerX}
-                  y={centerY + 22}
-                  textAnchor="middle"
-                  fill="#8E9AA8"
-                  fontSize="9.5"
-                >
-                  {activeGroup.formattedSize} ea
-                </text>
 
-                {/* Constellation Satellites (Copies) */}
+                {/* Satellite Copies */}
                 {activeGroup.files.map((file, idx) => {
                   const angle = (idx / activeGroup.files.length) * 2 * Math.PI - Math.PI / 2;
                   const nodeX = centerX + orbitRadius * Math.cos(angle);
@@ -454,36 +235,27 @@ export const DuplicateClusterGraph: React.FC<DuplicateClusterGraphProps> = ({
 
                   return (
                     <g key={file.id}>
-                      {/* Connecting beam to central cluster core */}
+                      {/* Connecting Line */}
                       <line
                         x1={centerX}
                         y1={centerY}
                         x2={nodeX}
                         y2={nodeY}
-                        stroke={isOriginal ? 'rgba(32, 197, 232, 0.6)' : 'rgba(255, 107, 107, 0.45)'}
-                        strokeWidth={isOriginal ? 2 : 1.5}
-                        strokeDasharray={isOriginal ? 'none' : '3 3'}
-                      />
-
-                      {/* Node Halo */}
-                      <circle
-                        cx={nodeX}
-                        cy={nodeY}
-                        r={22}
-                        fill={isOriginal ? 'rgba(32, 197, 232, 0.15)' : 'rgba(255, 107, 107, 0.15)'}
+                        stroke={isOriginal ? '#57b887' : '#454545'}
+                        strokeWidth="1"
+                        strokeDasharray={isOriginal ? 'none' : '2 3'}
                       />
 
                       {/* Interactive Satellite Node */}
                       <circle
                         cx={nodeX}
                         cy={nodeY}
-                        r={15}
-                        fill={isOriginal ? '#19B99A' : '#FF6B6B'}
-                        stroke="#fff"
-                        strokeWidth="2"
-                        style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
-                        onMouseEnter={(e) => {
-                          const rect = e.currentTarget.getBoundingClientRect();
+                        r={12}
+                        fill={isOriginal ? '#57b887' : '#1e1e1e'}
+                        stroke={isOriginal ? '#57b887' : '#f06464'}
+                        strokeWidth="1.5"
+                        className="cursor-pointer"
+                        onMouseEnter={() => {
                           setHoveredNode({
                             file: {
                               ...file,
@@ -508,112 +280,59 @@ export const DuplicateClusterGraph: React.FC<DuplicateClusterGraphProps> = ({
                         }}
                       />
 
-                      {/* Inner Icon or Rank Badge */}
                       <text
                         x={nodeX}
-                        y={nodeY + 4}
+                        y={nodeY + 3.5}
                         textAnchor="middle"
-                        fill="#fff"
-                        fontSize="10"
-                        fontWeight="700"
+                        fill={isOriginal ? '#000000' : '#ffffff'}
+                        fontSize="9"
+                        fontWeight="bold"
+                        fontFamily="var(--dp-font-mono), monospace"
                         pointerEvents="none"
                       >
-                        {isOriginal ? '★' : `#${idx + 1}`}
+                        {isOriginal ? '★' : `${idx}`}
                       </text>
 
                       {/* Node Label */}
                       <text
                         x={nodeX}
-                        y={nodeY + (nodeY > centerY ? 28 : -22)}
+                        y={nodeY + (nodeY > centerY ? 24 : -18)}
                         textAnchor="middle"
-                        fill={isOriginal ? '#20C5E8' : '#E5E9F2'}
-                        fontSize="10.5"
-                        fontWeight={isOriginal ? '700' : '500'}
+                        fill={isOriginal ? '#57b887' : '#858585'}
+                        fontSize="10"
+                        fontFamily="var(--dp-font-mono), monospace"
+                        fontWeight={isOriginal ? 'bold' : 'normal'}
                       >
-                        {isOriginal ? 'Original to Keep' : `Redundant Copy ${idx}`}
+                        {isOriginal ? 'Keep (Original)' : `Copy #${idx}`}
                       </text>
                     </g>
                   );
                 })}
               </svg>
 
-              {/* Cluster Detail Overlay at Bottom */}
-              <div
-                style={{
-                  marginTop: 12,
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  borderRadius: 12,
-                  padding: '10px 16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 16,
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
-                  width: '90%',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <div>
-                  <span style={{ fontSize: 11, color: '#8E9AA8' }}>Cluster Hash: </span>
-                  <code style={{ fontSize: 11, color: '#925CFF', fontFamily: 'monospace' }}>
-                    {activeGroup.hash ? activeGroup.hash.substring(0, 16) + '...' : 'Identical Content'}
-                  </code>
-                </div>
-                <div style={{ display: 'flex', gap: 12, fontSize: 11 }}>
-                  <span style={{ color: '#19B99A', fontWeight: 600 }}>★ 1 Retained Copy</span>
-                  <span style={{ color: '#FF6B6B', fontWeight: 600 }}>
-                    ✕ {activeGroup.fileCount - 1} Redundant Copies
-                  </span>
-                </div>
-              </div>
-
-              {/* Tooltip Popup on Node Hover */}
+              {/* Tooltip HUD */}
               {hoveredNode && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: Math.max(10, hoveredNode.y - 80),
-                    left: Math.min(svgWidth - 220, Math.max(20, hoveredNode.x - 100)),
-                    background: '#172033',
-                    border: hoveredNode.isOriginal
-                      ? '1px solid #19B99A'
-                      : '1px solid #FF6B6B',
-                    borderRadius: 8,
-                    padding: '8px 12px',
-                    pointerEvents: 'none',
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)',
-                    zIndex: 20,
-                    maxWidth: 240,
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: hoveredNode.isOriginal ? '#19B99A' : '#FF6B6B',
-                      marginBottom: 3,
-                    }}
-                  >
-                    {hoveredNode.isOriginal ? '★ Primary Original (Safe)' : '✕ Duplicate Copy (Waste)'}
+                <div className="absolute bottom-3 left-3 right-3 border border-[#454545] bg-[#141414] p-3 text-xs font-mono shadow-md">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span
+                      className={`text-[10px] uppercase font-bold px-1.5 py-0.5 ${
+                        hoveredNode.isOriginal
+                          ? 'bg-[#57b887]/20 text-[#57b887]'
+                          : 'bg-[#f06464]/20 text-[#f06464]'
+                      }`}
+                    >
+                      {hoveredNode.isOriginal ? 'Master Original' : 'Redundant Copy'}
+                    </span>
+                    <span className="text-white font-bold truncate">{hoveredNode.file.name}</span>
                   </div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: '#fff',
-                      wordBreak: 'break-all',
-                      marginBottom: 4,
-                    }}
-                  >
-                    {hoveredNode.file.name}
-                  </div>
-                  <div style={{ fontSize: 10, color: '#8E9AA8', wordBreak: 'break-all' }}>
+                  <div className="text-[#858585] text-[10px] truncate" title={hoveredNode.file.path}>
                     {hoveredNode.file.path}
                   </div>
                 </div>
               )}
             </>
           ) : (
-            <div style={{ color: '#8E9AA8', fontSize: 13 }}>Select a cluster to view its constellation</div>
+            <div className="text-xs text-[#858585] font-mono">Select a cluster on the left to inspect</div>
           )}
         </div>
       </div>

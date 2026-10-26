@@ -33,14 +33,14 @@ export interface StorageCategoryMetric {
 }
 
 export const CATEGORY_COLORS: Record<VisualFileNode['category'], string> = {
-  Image: '#20C5E8',     // Cyan
-  Video: '#925CFF',     // Electric Violet
-  Document: '#625BEE',  // Primary Indigo
-  Audio: '#F5B942',     // Amber
-  Archive: '#FF6B6B',   // Coral
-  Code: '#19B99A',      // Teal
-  System: '#8E9AA8',    // Slate
-  Other: '#68758B',     // Muted Blue-Grey
+  Image: '#57b887',     // Clean Emerald
+  Video: '#e5ad55',     // Warm Ochre
+  Document: '#f5f5f5',  // Pure Ink White
+  Audio: '#858585',     // Muted Gray
+  Archive: '#f06464',   // Coral Red
+  Code: '#9ca3af',      // Crisp Slate
+  System: '#454545',    // Deep Charcoal
+  Other: '#606060',     // Subtle Neutral
 };
 
 export function formatBytes(bytes: number): string {

@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import * as d3 from 'd3';
 import { TreeNode } from '../../types';
 import { formatBytes, CATEGORY_COLORS, detectCategory } from '../../utils/visualDataUtils';
-import { ZoomIn, ZoomOut, RotateCcw, Folder, Layers, Maximize2, Filter } from 'lucide-react';
 
 interface StorageTreemapProps {
   treeData: TreeNode[];
@@ -21,8 +20,6 @@ interface TreemapItem {
 
 export const StorageTreemap: React.FC<StorageTreemapProps> = ({ treeData, onSelectFile }) => {
   const [currentNodePath, setCurrentNodePath] = useState<string>('');
-  const [colorMode, setColorMode] = useState<'CATEGORY' | 'DEPTH'>('CATEGORY');
-  const [minSizeMB, setMinSizeMB] = useState<number>(0);
   const [selectedLeaf, setSelectedLeaf] = useState<any>(null);
 
   // Convert TreeNode hierarchy into d3 Treemap format
@@ -65,8 +62,8 @@ export const StorageTreemap: React.FC<StorageTreemapProps> = ({ treeData, onSele
   const treemapLayout = useMemo(() => {
     if (!hierarchyData) return null;
 
-    const width = 1100;
-    const height = 520;
+    const width = 1000;
+    const height = 480;
 
     const root = d3
       .hierarchy<TreemapItem>(hierarchyData)
@@ -85,9 +82,9 @@ export const StorageTreemap: React.FC<StorageTreemapProps> = ({ treeData, onSele
     const treemap = d3
       .treemap<TreemapItem>()
       .size([width, height])
-      .paddingTop(22)
-      .paddingInner(3)
-      .paddingOuter(4)
+      .paddingTop(24)
+      .paddingInner(2)
+      .paddingOuter(2)
       .round(true);
 
     treemap(targetRoot);
@@ -96,7 +93,7 @@ export const StorageTreemap: React.FC<StorageTreemapProps> = ({ treeData, onSele
 
   // Generate breadcrumbs for current directory zoom
   const breadcrumbs = useMemo(() => {
-    if (!currentNodePath) return [{ name: 'Root Storage', path: '' }];
+    if (!currentNodePath) return [{ name: 'Root', path: '' }];
     const parts = currentNodePath.split(/[\/\\]/).filter(Boolean);
     const crumbs = [{ name: 'Root', path: '' }];
     let acc = '';
@@ -109,84 +106,52 @@ export const StorageTreemap: React.FC<StorageTreemapProps> = ({ treeData, onSele
 
   if (!treemapLayout || !hierarchyData) {
     return (
-      <div className="w-full bg-[#0d0f17] border border-[#1e2438] rounded-2xl p-10 text-center text-[#8899b5]">
-        No storage tree data available. Run a scan to generate the visual treemap.
+      <div className="w-full bg-[#141414] border border-[#303030] p-10 text-center text-[#858585] font-mono text-sm">
+        No directory tree data loaded. Run a scan to inspect the storage treemap.
       </div>
     );
   }
 
-  const leaves = treemapLayout.targetRoot.leaves().filter((d: any) => {
-    if (minSizeMB === 0) return true;
-    return (d.value || 0) >= minSizeMB * 1024 * 1024;
-  });
+  const leaves = treemapLayout.targetRoot.leaves();
 
   return (
-    <div className="w-full bg-[#0d0f17] border border-[#1e2438] rounded-2xl p-6 sm:p-7 shadow-2xl flex flex-col gap-4 text-white font-sans">
-      {/* Header & Controls */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-[#1e2438] pb-4">
+    <div className="w-full bg-[#141414] border border-[#303030] p-6 flex flex-col gap-4 text-[#f5f5f5]">
+      {/* Top Bar Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-[#303030]">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-[#20C5E8]/20 border border-[#20C5E8]/50 text-[#20C5E8] flex items-center gap-1.5">
-              <Layers size={13} /> Zoomable Storage Treemap
-            </span>
-            <span className="text-xs text-[#68758B]">• Proportional Area Sizing</span>
+          <div className="text-[11px] uppercase font-mono font-bold tracking-wider text-[#858585] mb-1">
+            Hierarchical Treemap
           </div>
-          <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white mt-1">
-            Hierarchical Storage Map
+          <h3 className="text-xl font-bold tracking-tight text-white">
+            Volume Treemap Allocation
           </h3>
-          <p className="text-xs sm:text-sm text-[#8899b5]">
-            Rectangles represent files or directories scaled by size. Click any directory block to zoom in.
+          <p className="text-xs text-[#b8b8b8] mt-0.5">
+            Rectangle area is proportional to file size. Click any directory border to drill down.
           </p>
         </div>
 
-        {/* Toolbar */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          {/* Color Switcher */}
-          <div className="bg-[#181d2c] border border-[#20273c] p-1 rounded-lg flex items-center text-xs">
-            <button
-              type="button"
-              onClick={() => setColorMode('CATEGORY')}
-              className={`px-3 py-1 rounded-md font-medium cursor-pointer transition-colors ${
-                colorMode === 'CATEGORY' ? 'bg-[#625BEE] text-white' : 'text-[#8899b5] hover:text-white'
-              }`}
-            >
-              By File Category
-            </button>
-            <button
-              type="button"
-              onClick={() => setColorMode('DEPTH')}
-              className={`px-3 py-1 rounded-md font-medium cursor-pointer transition-colors ${
-                colorMode === 'DEPTH' ? 'bg-[#625BEE] text-white' : 'text-[#8899b5] hover:text-white'
-              }`}
-            >
-              By Depth Level
-            </button>
-          </div>
-
-          {/* Reset Zoom */}
-          {currentNodePath && (
-            <button
-              type="button"
-              onClick={() => setCurrentNodePath('')}
-              className="px-3 py-1.5 bg-[#1e2438] hover:bg-[#28324e] text-xs font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer text-[#20C5E8] transition-colors"
-            >
-              <RotateCcw size={13} /> Reset View
-            </button>
-          )}
-        </div>
+        {currentNodePath && (
+          <button
+            type="button"
+            onClick={() => setCurrentNodePath('')}
+            className="px-3 py-1.5 border border-[#454545] bg-[#1b1b1b] text-xs text-[#f5f5f5] hover:border-white font-mono uppercase transition-all cursor-pointer"
+          >
+            ← Reset Root View
+          </button>
+        )}
       </div>
 
       {/* Breadcrumb Trail */}
-      <div className="flex items-center gap-2 text-xs overflow-x-auto no-scrollbar py-1">
-        <span className="text-[#68758B] uppercase font-semibold tracking-wider">Location:</span>
+      <div className="flex items-center gap-1.5 text-xs font-mono overflow-x-auto py-1 text-[#858585]">
+        <span className="uppercase text-[#858585]">Path:</span>
         {breadcrumbs.map((crumb, idx) => (
           <React.Fragment key={crumb.path}>
-            {idx > 0 && <span className="text-[#434f6e]">/</span>}
+            {idx > 0 && <span className="text-[#454545]">/</span>}
             <button
               type="button"
               onClick={() => setCurrentNodePath(crumb.path)}
-              className={`hover:underline cursor-pointer font-medium ${
-                idx === breadcrumbs.length - 1 ? 'text-[#20C5E8] font-bold' : 'text-[#8899b5]'
+              className={`hover:text-white cursor-pointer ${
+                idx === breadcrumbs.length - 1 ? 'text-white font-bold underline' : 'text-[#b8b8b8]'
               }`}
             >
               {crumb.name}
@@ -195,13 +160,13 @@ export const StorageTreemap: React.FC<StorageTreemapProps> = ({ treeData, onSele
         ))}
       </div>
 
-      {/* Interactive Treemap Canvas Viewport */}
-      <div className="relative w-full overflow-hidden rounded-xl border border-[#1e2438] bg-[#080a10]">
+      {/* Clean Monochrome/Muted Treemap Canvas */}
+      <div className="relative w-full overflow-hidden border border-[#303030] bg-[#0c0c0c]">
         <svg
           viewBox={`0 0 ${treemapLayout.width} ${treemapLayout.height}`}
           className="w-full h-auto select-none"
         >
-          {/* Render Directory Groups Header Rectangles */}
+          {/* Render Directory Headers */}
           {treemapLayout.targetRoot.children?.map((child: any) => (
             <g key={child.data.path || child.data.name}>
               <rect
@@ -209,42 +174,38 @@ export const StorageTreemap: React.FC<StorageTreemapProps> = ({ treeData, onSele
                 y={child.y0}
                 width={Math.max(0, child.x1 - child.x0)}
                 height={Math.max(0, child.y1 - child.y0)}
-                fill="none"
-                stroke="#1e2438"
-                strokeWidth={1.5}
+                fill="#161616"
+                stroke="#303030"
+                strokeWidth={1}
               />
               <text
                 x={child.x0 + 6}
-                y={child.y0 + 15}
-                fill="#8899b5"
+                y={child.y0 + 16}
+                fill="#858585"
                 fontSize="11"
-                fontWeight="600"
-                className="cursor-pointer hover:fill-white font-sans truncate"
+                fontFamily="var(--dp-font-mono), monospace"
+                className="cursor-pointer hover:fill-white font-medium truncate"
                 onClick={() => child.data.isDir && setCurrentNodePath(child.data.path)}
               >
-                📁 {child.data.name} ({formatBytes(child.value || 0)})
+                [{child.data.name}] — {formatBytes(child.value || 0)}
               </text>
             </g>
           ))}
 
-          {/* Render File Leaves */}
+          {/* Render File Rectangles */}
           {leaves.map((leaf: any) => {
             const w = Math.max(0, leaf.x1 - leaf.x0);
             const h = Math.max(0, leaf.y1 - leaf.y0);
-            if (w < 4 || h < 4) return null;
+            if (w < 3 || h < 3) return null;
 
             const category = leaf.data.category || 'Other';
-            const baseColor =
-              colorMode === 'CATEGORY'
-                ? (CATEGORY_COLORS as any)[category] || '#625BEE'
-                : d3.interpolateCool(leaf.depth / 6);
-
+            const catColor = (CATEGORY_COLORS as any)[category] || '#606060';
             const isSelected = selectedLeaf?.data?.path === leaf.data.path;
 
             return (
               <g
                 key={leaf.data.path}
-                className="cursor-pointer transition-transform group"
+                className="cursor-pointer"
                 onClick={() => {
                   setSelectedLeaf(leaf);
                   if (onSelectFile) onSelectFile(leaf.data.path);
@@ -255,69 +216,77 @@ export const StorageTreemap: React.FC<StorageTreemapProps> = ({ treeData, onSele
                   y={leaf.y0}
                   width={w}
                   height={h}
-                  fill={baseColor}
-                  fillOpacity={isSelected ? 0.95 : 0.75}
-                  stroke={isSelected ? '#FFFFFF' : '#0d0f17'}
-                  strokeWidth={isSelected ? 2.5 : 1}
-                  rx={2}
-                  className="hover:fill-opacity-100 transition-all duration-150"
+                  fill={isSelected ? '#ffffff' : '#1e1e1e'}
+                  stroke={isSelected ? '#ffffff' : '#303030'}
+                  strokeWidth={1}
+                  className="transition-colors hover:fill-[#2e2e2e]"
                 />
 
-                {w > 48 && h > 24 && (
-                  <>
-                    <text
-                      x={leaf.x0 + 5}
-                      y={leaf.y0 + 14}
-                      fill="#FFFFFF"
-                      fontSize={w > 90 ? '11' : '10'}
-                      fontWeight="bold"
-                      className="pointer-events-none truncate font-sans"
-                    >
-                      {leaf.data.name.length > w / 7 ? `${leaf.data.name.slice(0, Math.floor(w / 8))}…` : leaf.data.name}
-                    </text>
-                    {h > 36 && (
-                      <text
-                        x={leaf.x0 + 5}
-                        y={leaf.y0 + 28}
-                        fill="#E2E8F0"
-                        fontSize="9"
-                        fontFamily="monospace"
-                        className="pointer-events-none opacity-80"
-                      >
-                        {formatBytes(leaf.value)}
-                      </text>
-                    )}
-                  </>
+                {/* Subtle category color indicator bar on left edge */}
+                {w > 12 && h > 12 && (
+                  <rect
+                    x={leaf.x0}
+                    y={leaf.y0}
+                    width={Math.min(3, w)}
+                    height={h}
+                    fill={catColor}
+                  />
+                )}
+
+                {w > 40 && h > 20 && (
+                  <text
+                    x={leaf.x0 + 7}
+                    y={leaf.y0 + 14}
+                    fill={isSelected ? '#000000' : '#f5f5f5'}
+                    fontSize="10"
+                    fontFamily="var(--dp-font-mono), monospace"
+                    className="pointer-events-none truncate font-medium"
+                  >
+                    {leaf.data.name.length > w / 7 ? `${leaf.data.name.slice(0, Math.floor(w / 8))}…` : leaf.data.name}
+                  </text>
+                )}
+
+                {w > 60 && h > 34 && (
+                  <text
+                    x={leaf.x0 + 7}
+                    y={leaf.y0 + 27}
+                    fill={isSelected ? '#333333' : '#858585'}
+                    fontSize="9"
+                    fontFamily="var(--dp-font-mono), monospace"
+                    className="pointer-events-none"
+                  >
+                    {formatBytes(leaf.value)}
+                  </text>
                 )}
               </g>
             );
           })}
         </svg>
 
-        {/* Selected Leaf Detail Floating HUD */}
+        {/* Selected Leaf Detail Footer HUD */}
         {selectedLeaf && (
-          <div className="absolute bottom-3 left-3 right-3 sm:right-auto sm:max-w-md bg-[#0f1320]/95 backdrop-blur-md border border-[#2b3552] rounded-xl p-3.5 shadow-2xl flex items-center justify-between gap-3 text-xs">
+          <div className="absolute bottom-2 left-2 right-2 border border-[#454545] bg-[#141414] p-3 flex items-center justify-between gap-3 text-xs font-mono">
             <div className="flex flex-col min-w-0">
-              <span className="font-bold text-white text-sm truncate">{selectedLeaf.data.name}</span>
-              <span className="text-[#20C5E8] font-mono">{formatBytes(selectedLeaf.value)}</span>
-              <span className="text-[#8899b5] truncate text-[11px] mt-0.5" title={selectedLeaf.data.path}>
+              <span className="font-bold text-white truncate">{selectedLeaf.data.name}</span>
+              <span className="text-[#57b887]">{formatBytes(selectedLeaf.value)}</span>
+              <span className="text-[#858585] truncate text-[11px]" title={selectedLeaf.data.path}>
                 {selectedLeaf.data.path}
               </span>
             </div>
             <button
               type="button"
               onClick={() => setSelectedLeaf(null)}
-              className="text-[#68758B] hover:text-white px-2 py-1 cursor-pointer font-bold shrink-0"
+              className="text-[#858585] hover:text-white px-2 py-1 cursor-pointer font-bold shrink-0"
             >
-              ✕
+              [X]
             </button>
           </div>
         )}
       </div>
 
-      <div className="flex items-center justify-between text-xs text-[#68758B]">
-        <span>Showing {leaves.length} proportional leaf nodes</span>
-        <span>Click any rectangle to inspect file attributes</span>
+      <div className="flex items-center justify-between text-xs font-mono text-[#858585]">
+        <span>Showing {leaves.length} proportional leaf files</span>
+        <span>Click node to inspect metadata</span>
       </div>
     </div>
   );
