@@ -95,3 +95,51 @@
 .font-sans {
   font-family: var(--dp-font-sans), sans-serif !important;
 }
+
+/* Visual enhancements: subtle ambient glows, radar sweep, and micro-interactions */
+@keyframes radar-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(0.98); }
+}
+
+@keyframes progress-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-radar {
+  animation: radar-sweep 4s linear infinite;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 3s ease-in-out infinite;
+}
+
+.shimmer-bar {
+  background: linear-gradient(90deg, #1b1b1b 25%, #2a2a2a 50%, #1b1b1b 75%);
+  background-size: 200% 100%;
+  animation: progress-shimmer 2.2s infinite;
+}
+
+.glow-card {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glow-card:hover {
+  border-color: #555555;
+  box-shadow: 0 0 20px -5px rgba(255, 255, 255, 0.07);
+  transform: translateY(-1px);
+}
+
+.glow-accent:hover {
+  box-shadow: 0 0 15px -3px rgba(87, 184, 135, 0.25);
+}
+
+.glow-danger:hover {
+  box-shadow: 0 0 15px -3px rgba(201, 0, 0, 0.3);
+}

@@ -181,18 +181,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 setTargetPath(folders[0].path);
               }
             }}
-            className={`w-full text-left border p-6 cursor-pointer select-none transition-all rounded-[2px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white ${
+            className={`w-full text-left border p-6 cursor-pointer select-none transition-all rounded-[2px] glow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-white ${
               selectedVolume === 'PRIMARY'
-                ? 'bg-white text-black border-white shadow-sm'
+                ? 'bg-white text-black border-white shadow-md'
                 : 'bg-[#141414] text-[#f5f5f5] border-[#303030] hover:border-[#454545] hover:bg-[#1b1b1b]'
             }`}
           >
-            <div
-              className={`text-xs uppercase font-semibold tracking-wider mb-2 ${
-                selectedVolume === 'PRIMARY' ? 'text-black' : 'text-[#858585]'
-              }`}
-            >
-              System Drive
+            <div className="flex items-center justify-between mb-2">
+              <span
+                className={`text-xs uppercase font-semibold tracking-wider ${
+                  selectedVolume === 'PRIMARY' ? 'text-black' : 'text-[#858585]'
+                }`}
+              >
+                System Drive
+              </span>
+              <span
+                className={`text-[10px] px-1.5 py-0.5 rounded-[1px] uppercase font-mono font-bold ${
+                  selectedVolume === 'PRIMARY' ? 'bg-black text-white' : 'bg-[#222222] text-[#858585]'
+                }`}
+              >
+                NVMe/SSD
+              </span>
             </div>
             <div className="text-xl md:text-2xl font-bold tracking-tight mb-1">
               {volumes[0]?.name || 'Local Disk'}
@@ -200,6 +209,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <div className="text-3xl md:text-4xl font-bold font-mono mb-3">
               {volumes[0]?.path || 'C:\\'}
             </div>
+
+            {/* Capacity meter */}
+            <div
+              className={`w-full h-1.5 rounded-full overflow-hidden mb-2.5 ${
+                selectedVolume === 'PRIMARY' ? 'bg-neutral-300' : 'bg-[#222222]'
+              }`}
+            >
+              <div
+                className={`h-full transition-all duration-500 ${
+                  selectedVolume === 'PRIMARY' ? 'bg-black' : 'bg-[#57b887]'
+                }`}
+                style={{ width: `${volumes[0]?.percentUsed || 45}%` }}
+              />
+            </div>
+
             <div
               className={`text-sm ${
                 selectedVolume === 'PRIMARY' ? 'text-neutral-800' : 'text-[#b8b8b8]'
@@ -222,20 +246,29 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 setTargetPath(volumes[1].path);
               }
             }}
-            className={`w-full text-left border p-6 select-none transition-all rounded-[2px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white ${
+            className={`w-full text-left border p-6 select-none transition-all rounded-[2px] glow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-white ${
               selectedVolume === 'EXTERNAL'
-                ? 'bg-white text-black border-white shadow-sm'
+                ? 'bg-white text-black border-white shadow-md'
                 : 'bg-[#141414] text-[#f5f5f5] border-[#303030] hover:border-[#454545] hover:bg-[#1b1b1b]'
             } ${
               volumes.length < 2 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
             }`}
           >
-            <div
-              className={`text-xs uppercase font-semibold tracking-wider mb-2 ${
-                selectedVolume === 'EXTERNAL' ? 'text-black' : 'text-[#858585]'
-              }`}
-            >
-              Secondary Drive
+            <div className="flex items-center justify-between mb-2">
+              <span
+                className={`text-xs uppercase font-semibold tracking-wider ${
+                  selectedVolume === 'EXTERNAL' ? 'text-black' : 'text-[#858585]'
+                }`}
+              >
+                Secondary Drive
+              </span>
+              <span
+                className={`text-[10px] px-1.5 py-0.5 rounded-[1px] uppercase font-mono font-bold ${
+                  selectedVolume === 'EXTERNAL' ? 'bg-black text-white' : 'bg-[#222222] text-[#858585]'
+                }`}
+              >
+                EXT/DISK
+              </span>
             </div>
             <div className="text-xl md:text-2xl font-bold tracking-tight mb-1">
               {volumes.length > 1 ? volumes[1].name : 'No Secondary Drive'}
@@ -243,6 +276,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <div className="text-2xl md:text-3xl font-bold font-mono mb-3 truncate">
               {volumes.length > 1 ? volumes[1].path : '—'}
             </div>
+
+            {/* Capacity meter */}
+            {volumes.length > 1 && (
+              <div
+                className={`w-full h-1.5 rounded-full overflow-hidden mb-2.5 ${
+                  selectedVolume === 'EXTERNAL' ? 'bg-neutral-300' : 'bg-[#222222]'
+                }`}
+              >
+                <div
+                  className={`h-full transition-all duration-500 ${
+                    selectedVolume === 'EXTERNAL' ? 'bg-black' : 'bg-[#57b887]'
+                  }`}
+                  style={{ width: `${volumes[1]?.percentUsed || 30}%` }}
+                />
+              </div>
+            )}
+
             <div
               className={`text-sm ${
                 selectedVolume === 'EXTERNAL' ? 'text-neutral-800' : 'text-[#b8b8b8]'
@@ -264,18 +314,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 setTargetPath(folders[0].path);
               }
             }}
-            className={`w-full text-left border p-6 cursor-pointer select-none transition-all rounded-[2px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white ${
+            className={`w-full text-left border p-6 cursor-pointer select-none transition-all rounded-[2px] glow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-white ${
               selectedVolume === 'CUSTOM'
-                ? 'bg-white text-black border-white shadow-sm'
+                ? 'bg-white text-black border-white shadow-md'
                 : 'bg-[#141414] text-[#f5f5f5] border-[#303030] hover:border-[#454545] hover:bg-[#1b1b1b]'
             }`}
           >
-            <div
-              className={`text-xs uppercase font-semibold tracking-wider mb-2 ${
-                selectedVolume === 'CUSTOM' ? 'text-black' : 'text-[#858585]'
-              }`}
-            >
-              Specific Folder
+            <div className="flex items-center justify-between mb-2">
+              <span
+                className={`text-xs uppercase font-semibold tracking-wider ${
+                  selectedVolume === 'CUSTOM' ? 'text-black' : 'text-[#858585]'
+                }`}
+              >
+                Specific Folder
+              </span>
+              <span
+                className={`text-[10px] px-1.5 py-0.5 rounded-[1px] uppercase font-mono font-bold ${
+                  selectedVolume === 'CUSTOM' ? 'bg-black text-white' : 'bg-[#222222] text-[#858585]'
+                }`}
+              >
+                USER PRESET
+              </span>
             </div>
             <div className="text-xl md:text-2xl font-bold tracking-tight mb-1">
               User Directory
@@ -364,13 +423,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             type="button"
             aria-pressed={pipelineOptions.exactDupes}
             onClick={() => toggleOption('exactDupes')}
-            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] ${
+            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] glow-card ${
               pipelineOptions.exactDupes
-                ? 'bg-[#1b1b1b] border-white text-white'
-                : 'bg-[#101010] border-[#303030] text-[#858585]'
+                ? 'bg-[#1b1b1b] border-white text-white shadow-xs'
+                : 'bg-[#101010] border-[#303030] text-[#858585] hover:border-[#484848]'
             }`}
           >
-            <span className="font-mono text-base font-bold">
+            <span className="font-mono text-base font-bold text-[#57b887]">
               {pipelineOptions.exactDupes ? '[✓]' : '[ ]'}
             </span>
             <div>
@@ -387,13 +446,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             type="button"
             aria-pressed={pipelineOptions.similarImages}
             onClick={() => toggleOption('similarImages')}
-            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] ${
+            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] glow-card ${
               pipelineOptions.similarImages
-                ? 'bg-[#1b1b1b] border-white text-white'
-                : 'bg-[#101010] border-[#303030] text-[#858585]'
+                ? 'bg-[#1b1b1b] border-white text-white shadow-xs'
+                : 'bg-[#101010] border-[#303030] text-[#858585] hover:border-[#484848]'
             }`}
           >
-            <span className="font-mono text-base font-bold">
+            <span className="font-mono text-base font-bold text-[#57b887]">
               {pipelineOptions.similarImages ? '[✓]' : '[ ]'}
             </span>
             <div>
@@ -410,13 +469,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             type="button"
             aria-pressed={pipelineOptions.oldFiles}
             onClick={() => toggleOption('oldFiles')}
-            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] ${
+            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] glow-card ${
               pipelineOptions.oldFiles
-                ? 'bg-[#1b1b1b] border-white text-white'
-                : 'bg-[#101010] border-[#303030] text-[#858585]'
+                ? 'bg-[#1b1b1b] border-white text-white shadow-xs'
+                : 'bg-[#101010] border-[#303030] text-[#858585] hover:border-[#484848]'
             }`}
           >
-            <span className="font-mono text-base font-bold">
+            <span className="font-mono text-base font-bold text-[#57b887]">
               {pipelineOptions.oldFiles ? '[✓]' : '[ ]'}
             </span>
             <div>
@@ -433,13 +492,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             type="button"
             aria-pressed={pipelineOptions.tempFiles}
             onClick={() => toggleOption('tempFiles')}
-            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] ${
+            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] glow-card ${
               pipelineOptions.tempFiles
-                ? 'bg-[#1b1b1b] border-white text-white'
-                : 'bg-[#101010] border-[#303030] text-[#858585]'
+                ? 'bg-[#1b1b1b] border-white text-white shadow-xs'
+                : 'bg-[#101010] border-[#303030] text-[#858585] hover:border-[#484848]'
             }`}
           >
-            <span className="font-mono text-base font-bold">
+            <span className="font-mono text-base font-bold text-[#57b887]">
               {pipelineOptions.tempFiles ? '[✓]' : '[ ]'}
             </span>
             <div>
@@ -456,13 +515,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             type="button"
             aria-pressed={pipelineOptions.storageAnalytics}
             onClick={() => toggleOption('storageAnalytics')}
-            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] ${
+            className={`flex items-start gap-3 p-3.5 border transition-all text-left cursor-pointer rounded-[2px] glow-card ${
               pipelineOptions.storageAnalytics
-                ? 'bg-[#1b1b1b] border-white text-white'
-                : 'bg-[#101010] border-[#303030] text-[#858585]'
+                ? 'bg-[#1b1b1b] border-white text-white shadow-xs'
+                : 'bg-[#101010] border-[#303030] text-[#858585] hover:border-[#484848]'
             }`}
           >
-            <span className="font-mono text-base font-bold">
+            <span className="font-mono text-base font-bold text-[#57b887]">
               {pipelineOptions.storageAnalytics ? '[✓]' : '[ ]'}
             </span>
             <div>
@@ -495,28 +554,47 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {scanStatus === 'SCANNING' && (
           <div className="space-y-5">
             <div className="text-base font-semibold text-white flex items-center justify-between">
-              <span>Scanning files…</span>
-              <span className="border border-[#57b887] px-2.5 py-0.5 bg-[#57b887]/20 text-[#57b887] font-bold text-xs">
-                IN PROGRESS
+              <span className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#57b887] inline-block animate-ping"></span>
+                <span>Forensic scan in progress…</span>
+              </span>
+              <span className="border border-[#57b887] px-2.5 py-0.5 bg-[#57b887]/20 text-[#57b887] font-bold text-xs flex items-center gap-1.5 glow-accent">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#57b887] animate-pulse"></span>
+                ACTIVE PIPELINE
               </span>
             </div>
 
-            <div>
-              <div className="text-xs text-[#858585] uppercase mb-1">Directory traversal</div>
-              <div className="text-white text-sm md:text-base font-mono">
-                {renderBlocks(workersPercent)} [{workersPercent}%]
+            {/* Visual Animated Progress Meters */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs text-[#858585] uppercase">
+                <span>Directory traversal</span>
+                <span className="font-mono text-white font-bold">{workersPercent}%</span>
               </div>
+              <div className="w-full h-2 bg-[#222222] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-neutral-400 via-white to-neutral-200 transition-all duration-300"
+                  style={{ width: `${workersPercent}%` }}
+                />
+              </div>
+              <div className="text-[#858585] text-xs font-mono">{renderBlocks(workersPercent)}</div>
             </div>
 
-            <div>
-              <div className="text-xs text-[#858585] uppercase mb-1">File hashing</div>
-              <div className="text-white text-sm md:text-base font-mono">
-                {renderBlocks(inodesPercent)} [{inodesPercent}%]
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs text-[#858585] uppercase">
+                <span>Cryptographic SHA-256 Hashing</span>
+                <span className="font-mono text-white font-bold">{inodesPercent}%</span>
               </div>
+              <div className="w-full h-2 bg-[#222222] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-[#2e7d52] via-[#57b887] to-[#7be0aa] transition-all duration-300"
+                  style={{ width: `${inodesPercent}%` }}
+                />
+              </div>
+              <div className="text-[#858585] text-xs font-mono">{renderBlocks(inodesPercent)}</div>
             </div>
 
             <div className="pt-3 border-t border-[#303030] flex justify-between items-center text-sm">
-              <span className="text-[#b8b8b8]">Files found:</span>
+              <span className="text-[#b8b8b8]">Files indexed so far:</span>
               <span className="text-2xl font-bold font-mono text-white">
                 {discoveredFiles.toLocaleString()}
               </span>
