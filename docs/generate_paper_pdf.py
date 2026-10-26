@@ -1,12 +1,14 @@
 """
 True Two-Column IEEE Transactions Engine for ClutterScan.
-Features:
-- Page 1: Single-Column Title/Authors/Abstract/IndexTerms Banner spanning 540 pt (full width),
+Replicates official IEEE Transactions on Software Engineering:
+- Page 1: Single-Column Title/Authors/Abstract/IndexTerms Banner (540 pt width),
   followed by 2 balanced columns (256 pt width each, 28 pt gutter) starting below banner.
 - Subsequent Pages: Standard 2-Column IEEE Layout (top to bottom).
-- Automatic natural balance flow without artificial manual page breaks.
-- Embedded high-res figures scaled to column width (256 pt).
-- Formal IEEE equations, algorithm block, tables, and bibliography.
+- Mathematical Formulas Rendered via High-Resolution Computer Modern Vector/Raster Flowables
+  (eliminating ugly underscores, raw text brackets, or broken Unicode math glyphs).
+- Professional Algorithm 1 box with exact line-numbered pseudocode and mathematical notation.
+- Embedded high-res figures and production UI screenshots scaled to column width (256 pt).
+- Formal IEEE tables, equations, and 15 academic references.
 """
 
 import os
@@ -19,9 +21,45 @@ from reportlab.platypus import (
     Image as RLImage, FrameBreak, PageBreak, KeepTogether, HRFlowable, NextPageTemplate
 )
 from reportlab.pdfgen import canvas
+from PIL import Image
 
 PDF_OUTPUT_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "ClutterScan_Research_Paper.pdf")
 FIGURES_DIR = os.path.join(os.path.dirname(__file__), "figures")
+EQS_DIR = os.path.join(FIGURES_DIR, "eqs")
+
+def get_equation_image(name, max_width=240, max_height=32):
+    """Helper to return an RLImage flowable for a rendered equation, scaled proportionally."""
+    p = os.path.join(EQS_DIR, f"{name}.png")
+    if not os.path.exists(p):
+        return None
+    img = Image.open(p)
+    w_px, h_px = img.size
+    # Convert pixels at 300 DPI to points (72 / 300 = 0.24)
+    w_pt = w_px * 72.0 / 300.0
+    h_pt = h_px * 72.0 / 300.0
+    
+    # Scale if exceeding max dimensions
+    scale = 1.0
+    if w_pt > max_width:
+        scale = min(scale, max_width / w_pt)
+    if h_pt > max_height:
+        scale = min(scale, max_height / h_pt)
+    
+    final_w = w_pt * scale
+    final_h = h_pt * scale
+    
+    # Return centered in a single-cell table for neat display
+    rl_img = RLImage(p, width=final_w, height=final_h)
+    t = Table([[rl_img]], colWidths=[256])
+    t.setStyle(TableStyle([
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('TOPPADDING', (0,0), (-1,-1), 1.5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 1.5),
+        ('LEFTPADDING', (0,0), (-1,-1), 0),
+        ('RIGHTPADDING', (0,0), (-1,-1), 0),
+    ]))
+    return t
 
 class IEEETransactionsCanvas(canvas.Canvas):
     def __init__(self, *args, **kwargs):
@@ -72,20 +110,13 @@ class IEEETransactionsCanvas(canvas.Canvas):
 
 
 def build_two_column_ieee_pdf():
-    # Page geometry
-    # Full width = 612, height = 792
-    # Margin = 36 pt. Usable width = 540 pt.
-    # Col width = 256 pt, gutter = 28 pt (36 + 256 + 28 + 256 + 36 = 612)
     margin = 36
     col_w = 256
     gutter = 28
     col1_x = margin
     col2_x = margin + col_w + gutter
 
-    # Page 1:
-    # Banner Frame at top: full width 540 pt, height = 230 pt (y = 524 to 754)
-    # Then Column 1: x = col1_x, y = 42, w = 256, h = 475
-    # Then Column 2: x = col2_x, y = 42, w = 256, h = 475
+    # Page 1 Frames
     banner_y = 524
     banner_h = 232
     p1_cols_y = 40
@@ -95,8 +126,7 @@ def build_two_column_ieee_pdf():
     frame_p1_c1 = Frame(col1_x, p1_cols_y, col_w, p1_cols_h, id='p1_col1', topPadding=0, bottomPadding=0, leftPadding=0, rightPadding=0)
     frame_p1_c2 = Frame(col2_x, p1_cols_y, col_w, p1_cols_h, id='p1_col2', topPadding=0, bottomPadding=0, leftPadding=0, rightPadding=0)
 
-    # Later Pages:
-    # Column 1 & 2 full height: y = 42, h = 708
+    # Later Pages Frames
     p2_y = 42
     p2_h = 708
     frame_p2_c1 = Frame(col1_x, p2_y, col_w, p2_h, id='p2_col1', topPadding=0, bottomPadding=0, leftPadding=0, rightPadding=0)
@@ -261,7 +291,7 @@ def build_two_column_ieee_pdf():
     story.append(Paragraph("<b>Krish Khandwala</b>, <i>SPIT</i>, <b>Aabhash Khemka</b>, <i>SPIT</i>, and <b>Avani Bhide</b>, <i>SPIT</i><br/>"
                            "<i>Department of Computer Engineering &mdash; Sardar Patel Institute of Technology (SPIT), Mumbai, India</i><br/>"
                            "Correspondence: <font color='#0284c7'>{krish.khandwala, aabhash.khemka, avani.bhide}@spit.ac.in</font> &nbsp;&bull;&nbsp; Digital Object Identifier: <font color='#0284c7'>10.1109/TSE.2026.3190241</font>", authors_style))
-    story.append(Paragraph("<b><i>Abstract</i>&mdash; Workstation solid-state storage subsystems are increasingly overwhelmed by unstructured digital debris, ranging from redundant binary archives and duplicate multi-media assets to deep build caches and orphaned compilation trees. Traditional consumer disk sanitation utilities suffer from three foundational architectural deficiencies: (1) unsustainable I/O saturation caused by naive whole-file cryptographic digest calculations across dense file trees; (2) perceptual blindness to modified, re-compressed, or geometrically resized visual assets; and (3) irrecoverable data loss risk arising from non-transactional deletion semantics, frequently compounded by closed-source cloud telemetry ingestion. This paper presents ClutterScan, a decentralized, zero-telemetry client-side storage intelligence system designed for ultra-high-throughput deduplication, perceptual visual clustering, and verifiable atomic reclamation. ClutterScan introduces a four-phase adaptive sieve that pipeline-couples filesystem metadata cardinality filtering, a 4 KB sparse-prefix xxHash64 probe, and deferred full cryptographic SHA-256 confirmation. This architecture eliminates up to 97.3% of storage bus payload reads, transforming the traditional O(N &middot; S) I/O burden into an amortized O(|C| &middot; S) complexity where |C| &lt;&lt; N. For photographic and graphical clutter, ClutterScan formalizes a 64-bit discrete horizontal gradient difference hash (dHash) operating over an 8x9 luminance manifold, achieving high cluster separability (F_1 = 0.992) at Hamming distance threshold tau = 10. Safe reclamation is guaranteed by an atomic staging vault enforcing a formal Invariant of Reversibility with bit-exact manifest validation. Empirical benchmarking across 250,000 files (1.05 TB) demonstrates a 25.6x wall-clock speedup (1,260 s reduced to 49.2 s) with zero regression failures across an automated test suite of 27 formally verified invariant tests.</b>", abstract_style))
+    story.append(Paragraph("<b><i>Abstract</i>&mdash; Workstation solid-state storage subsystems are increasingly overwhelmed by unstructured digital debris, ranging from redundant binary archives and duplicate multi-media assets to deep build caches and orphaned compilation trees. Traditional consumer disk sanitation utilities suffer from three foundational architectural deficiencies: (1) unsustainable I/O saturation caused by naive whole-file cryptographic digest calculations across dense file trees; (2) perceptual blindness to modified, re-compressed, or geometrically resized visual assets; and (3) irrecoverable data loss risk arising from non-transactional deletion semantics, frequently compounded by closed-source cloud telemetry ingestion. This paper presents ClutterScan, a decentralized, zero-telemetry client-side storage intelligence system designed for ultra-high-throughput deduplication, perceptual visual clustering, and verifiable atomic reclamation. ClutterScan introduces a four-phase adaptive sieve that pipeline-couples filesystem metadata cardinality filtering, a 4 KB sparse-prefix xxHash64 probe, and deferred full cryptographic SHA-256 confirmation. This architecture eliminates up to 97.3% of storage bus payload reads, transforming the traditional <i>O</i>(<i>N</i> &middot; <i>S</i>) I/O burden into an amortized <i>O</i>(|<i>C</i>| &middot; <i>S</i>) complexity where |<i>C</i>| &lt;&lt; <i>N</i>. For photographic and graphical clutter, ClutterScan formalizes a 64-bit discrete horizontal gradient difference hash (dHash) operating over an 8&times;9 luminance manifold, achieving high cluster separability (<i>F</i><sub>1</sub> = 0.992) at Hamming distance threshold &tau; = 10. Safe reclamation is guaranteed by an atomic staging vault enforcing a formal Invariant of Reversibility with bit-exact manifest validation. Empirical benchmarking across 250,000 files (1.05 TB) demonstrates a 25.6&times; wall-clock speedup (1,260 s reduced to 49.2 s) with zero regression failures across an automated test suite of 27 formally verified invariant tests.</b>", abstract_style))
     story.append(Paragraph("<b><i>Index Terms</i>&mdash; Data deduplication, storage systems, perceptual hashing, difference hash, transactional recovery, solid-state drive I/O optimization, zero-telemetry architecture.</b>", index_terms_style))
     story.append(HRFlowable(width="100%", thickness=0.8, color=colors.HexColor('#1e293b'), spaceAfter=2, spaceBefore=2))
 
@@ -271,7 +301,6 @@ def build_two_column_ieee_pdf():
     # ========================================================
     # PAGE 1 COLUMN 1 & ONWARDS (Natural 2-column continuous flow)
     # ========================================================
-    # Register that once page 1 finishes, switch to 'PageLater' template
     story.append(NextPageTemplate('PageLater'))
 
     story.append(Paragraph("I. INTRODUCTION", h1_style))
@@ -340,31 +369,45 @@ def build_two_column_ieee_pdf():
     story.append(Paragraph("IV. FORMAL ALGORITHMIC FORMULATIONS", h1_style))
     story.append(Paragraph("<i>A. Multi-Stage Adaptive Duplicate Sieve</i>", h2_style))
     story.append(Paragraph(
-        "Let F = {f_1, f_2, ..., f_N} denote the set of indexed files in target root directory D. Naive duplicate detection requires computing full cryptographic digests across all files, reading total bytes V_naive = &sum; size(f_i) = N &middot; S_mean. ClutterScan decomposes deduplication into an adaptive four-stage sieve formalized in Algorithm 1.",
+        "Let <i>F</i> = {<i>f</i><sub>1</sub>, <i>f</i><sub>2</sub>, ..., <i>f</i><sub><i>N</i></sub>} denote the set of indexed files in target root directory <i>D</i>. Naive duplicate detection requires computing full cryptographic digests across all files, reading total bytes:",
         body_style
     ))
 
-    # Algorithm 1 Box
+    # Equation 1: Naive I/O volume
+    eq_naive = get_equation_image("eq_naive", max_width=220)
+    if eq_naive:
+        story.append(eq_naive)
+
+    story.append(Paragraph(
+        "where <i>S</i> represents the mean file size. ClutterScan decomposes duplicate detection into an adaptive four-stage sieve formalized in Algorithm 1.",
+        body_style
+    ))
+
+    # Algorithm 1 Box with clear mathematical notation
     alg_content = [
         [Paragraph("<b>Algorithm 1:</b> ClutterScan Adaptive Multi-Stage Sieve", caption_style)],
         [Paragraph(
-            "<b>Input:</b> Set of indexed files F = {f_1, ..., f_N}<br/>"
-            "<b>Output:</b> Equivalence partition of duplicates G_dup<br/>"
-            "1: M_size &larr; Group f in F by exact byte size(f)<br/>"
-            "2: C_1 &larr; { f in M_size[s] | |M_size[s]| &ge; 2 }  <i>// Size Sieve (0 I/O)</i><br/>"
-            "3: <b>for each</b> f in C_1 <b>do</b><br/>"
-            "4: &nbsp;&nbsp;&nbsp;&nbsp;B_4K &larr; ReadPrefixBytes(f, 4096)<br/>"
-            "5: &nbsp;&nbsp;&nbsp;&nbsp;h_pref &larr; xxHash64(B_4K)<br/>"
-            "6: &nbsp;&nbsp;&nbsp;&nbsp;Insert f into M_pref[(size(f), h_pref)]<br/>"
-            "7: C_2 &larr; { f in M_pref[k] | |M_pref[k]| &ge; 2 }<br/>"
-            "8: <b>for each</b> f in C_2 <b>do</b><br/>"
-            "9: &nbsp;&nbsp;&nbsp;&nbsp;h_full &larr; xxHash64(ReadAllBytes(f))<br/>"
-            "10: &nbsp;&nbsp;&nbsp;Insert f into M_xx[h_full]<br/>"
-            "11: C_3 &larr; { f in M_xx[k] | |M_xx[k]| &ge; 2 }<br/>"
-            "12: <b>for each</b> f in C_3 <b>do</b><br/>"
-            "13: &nbsp;&nbsp;&nbsp;h_sha &larr; SHA256(ReadAllBytes(f))<br/>"
-            "14: &nbsp;&nbsp;&nbsp;Insert f into M_sha[h_sha]<br/>"
-            "15: <b>return</b> G_dup &larr; { M_sha[k] | |M_sha[k]| &ge; 2 }",
+            "<b>Input:</b> Set of indexed files <i>F</i> = {<i>f</i><sub>1</sub>, ..., <i>f</i><sub><i>N</i></sub>}<br/>"
+            "<b>Output:</b> Equivalence partition of duplicates <i>G</i><sub>dup</sub><br/>"
+            "1: <b>Phase 1: Size Cardinality Partitioning</b><br/>"
+            "2: <i>M</i><sub>size</sub> &larr; Group <i>f</i> &isin; <i>F</i> by exact byte size(<i>f</i>)<br/>"
+            "3: <i>C</i><sub>1</sub> &larr; &cup; { <i>M</i><sub>size</sub>[<i>s</i>] | |<i>M</i><sub>size</sub>[<i>s</i>]| &ge; 2 }  <i>// 0 I/O reads</i><br/>"
+            "4: <b>Phase 2: Sparse 4 KB Prefix Probe</b><br/>"
+            "5: <b>for each</b> <i>f</i> &isin; <i>C</i><sub>1</sub> <b>do</b><br/>"
+            "6: &nbsp;&nbsp;&nbsp;&nbsp;<i>B</i><sub>4K</sub> &larr; ReadPrefixBytes(<i>f</i>, 4096)<br/>"
+            "7: &nbsp;&nbsp;&nbsp;&nbsp;<i>h</i><sub>pref</sub> &larr; xxHash64(<i>B</i><sub>4K</sub>)<br/>"
+            "8: &nbsp;&nbsp;&nbsp;&nbsp;Insert <i>f</i> into <i>M</i><sub>pref</sub>[(size(<i>f</i>), <i>h</i><sub>pref</sub>)]<br/>"
+            "9: <i>C</i><sub>2</sub> &larr; &cup; { <i>M</i><sub>pref</sub>[<i>k</i>] | |<i>M</i><sub>pref</sub>[<i>k</i>]| &ge; 2 }<br/>"
+            "10: <b>Phase 3: Fast Non-Cryptographic Full Hash</b><br/>"
+            "11: <b>for each</b> <i>f</i> &isin; <i>C</i><sub>2</sub> <b>do</b><br/>"
+            "12: &nbsp;&nbsp;&nbsp;<i>h</i><sub>full</sub> &larr; xxHash64(ReadAllBytes(<i>f</i>))<br/>"
+            "13: &nbsp;&nbsp;&nbsp;Insert <i>f</i> into <i>M</i><sub>xx</sub>[<i>h</i><sub>full</sub>]<br/>"
+            "14: <i>C</i><sub>3</sub> &larr; &cup; { <i>M</i><sub>xx</sub>[<i>k</i>] | |<i>M</i><sub>xx</sub>[<i>k</i>]| &ge; 2 }<br/>"
+            "15: <b>Phase 4: Cryptographic Confirmation</b><br/>"
+            "16: <b>for each</b> <i>f</i> &isin; <i>C</i><sub>3</sub> <b>do</b><br/>"
+            "17: &nbsp;&nbsp;&nbsp;<i>h</i><sub>sha</sub> &larr; SHA-256(ReadAllBytes(<i>f</i>))<br/>"
+            "18: &nbsp;&nbsp;&nbsp;Insert <i>f</i> into <i>M</i><sub>sha</sub>[<i>h</i><sub>sha</sub>]<br/>"
+            "19: <b>return</b> <i>G</i><sub>dup</sub> &larr; { <i>M</i><sub>sha</sub>[<i>k</i>] | |<i>M</i><sub>sha</sub>[<i>k</i>]| &ge; 2 }",
             code_style
         )]
     ]
@@ -385,17 +428,53 @@ def build_two_column_ieee_pdf():
         body_style
     ))
     story.append(Paragraph(
-        "<i>Proof:</i> Let f_a, f_b in F be two distinct files such that f_a &equiv; f_b (identical contents). Then size(f_a) = size(f_b), implying f_a, f_b in C_1. Identical contents guarantee identical initial 4 KB prefixes, yielding identical xxHash64 prefix digests, so f_a, f_b in C_2. Similarly, full payload identity guarantees h_full(f_a) = h_full(f_b) and h_sha(f_a) = h_sha(f_b). Conversely, candidate non-duplicates that collide on size and 4 KB prefix are separated in Stage 3 or Stage 4 under the cryptographic collision resistance of SHA-256 (P_collision &le; 2^-128). Q.E.D.",
+        "<i>Proof:</i> Let <i>f</i><sub><i>a</i></sub>, <i>f</i><sub><i>b</i></sub> &isin; <i>F</i> be two distinct files such that <i>f</i><sub><i>a</i></sub> &equiv; <i>f</i><sub><i>b</i></sub> (identical content payloads). Then size(<i>f</i><sub><i>a</i></sub>) = size(<i>f</i><sub><i>b</i></sub>), implying <i>f</i><sub><i>a</i></sub>, <i>f</i><sub><i>b</i></sub> &isin; <i>C</i><sub>1</sub>. Identical content guarantees identical initial 4 KB prefixes, yielding identical xxHash64 prefix digests, so <i>f</i><sub><i>a</i></sub>, <i>f</i><sub><i>b</i></sub> &isin; <i>C</i><sub>2</sub>. Similarly, full payload identity guarantees <i>h</i><sub>full</sub>(<i>f</i><sub><i>a</i></sub>) = <i>h</i><sub>full</sub>(<i>f</i><sub><i>b</i></sub>) and <i>h</i><sub>sha</sub>(<i>f</i><sub><i>a</i></sub>) = <i>h</i><sub>sha</sub>(<i>f</i><sub><i>b</i></sub>). Conversely, candidate non-duplicates that collide on size and 4 KB prefix are separated in Stage 3 or Stage 4 under the collision resistance of SHA-256 (<i>P</i><sub>collision</sub> &le; 2<sup>-128</sup>). Q.E.D.",
         body_style
     ))
 
     story.append(Paragraph("<i>B. Discrete Gradient Perceptual Difference Hashing (dHash)</i>", h2_style))
     story.append(Paragraph(
-        "To identify visually redundant images, ClutterScan maps an arbitrary 2D visual asset I to a compact 64-bit fingerprint: (1) Rescale image I to an 8x9 matrix P utilizing bilinear anti-aliasing interpolation; (2) Convert P to luminance channel Y via ITU-R BT.601 standard: Y_{i, j} = 0.299*R + 0.587*G + 0.114*B; (3) Compute discrete horizontal difference gradients: &Delta;_{i, j} = Y_{i, j} - Y_{i, j+1} for all i, j in [0, 7]; (4) Binarize gradients into a 64-bit bitvector: b_{8i + j} = 1 if &Delta;_{i, j} &gt; 0 else 0.",
+        "To identify visually redundant images, ClutterScan maps an arbitrary 2D visual asset <i>I</i> to a compact 64-bit fingerprint: (1) Rescale image <i>I</i> to an 8&times;9 matrix <i>P</i> utilizing bilinear anti-aliasing interpolation; (2) Convert <i>P</i> to luminance channel <i>Y</i> via ITU-R BT.601 standard:",
         body_style
     ))
+
+    # Equation 2: Luminance
+    eq_lum = get_equation_image("eq_luminance", max_width=240)
+    if eq_lum:
+        story.append(eq_lum)
+
     story.append(Paragraph(
-        "The compact fingerprint is represented as H_d(I) = &sum; b_k 2^k. Similarity between two images I_A and I_B is evaluated via the bitwise Hamming distance: D_H(I_A, I_B) = popcount(H_d(I_A) &oplus; H_d(I_B)). Pairs satisfying D_H &le; 10 are classified as visually identical or near-duplicate.",
+        "(3) Compute discrete horizontal difference gradients across adjacent pixels:",
+        body_style
+    ))
+
+    # Equation 3: Delta
+    eq_del = get_equation_image("eq_delta", max_width=200)
+    if eq_del:
+        story.append(eq_del)
+
+    story.append(Paragraph(
+        "(4) Binarize gradients into a compact 64-bit bitvector:",
+        body_style
+    ))
+
+    # Equation 4: Binarize
+    eq_bin = get_equation_image("eq_binarize", max_width=220)
+    if eq_bin:
+        story.append(eq_bin)
+
+    story.append(Paragraph(
+        "The compact fingerprint is represented as <i>H</i><sub><i>d</i></sub>(<i>I</i>) = &sum; <i>b</i><sub><i>k</i></sub> 2<sup><i>k</i></sup>. Similarity between two images <i>I</i><sub><i>A</i></sub> and <i>I</i><sub><i>B</i></sub> is evaluated via the bitwise Hamming distance:",
+        body_style
+    ))
+
+    # Equation 5: Popcount
+    eq_pop = get_equation_image("eq_popcount", max_width=240)
+    if eq_pop:
+        story.append(eq_pop)
+
+    story.append(Paragraph(
+        "Pairs satisfying <i>D</i><sub><i>H</i></sub> &le; 10 are classified as visually identical or near-duplicate media assets.",
         body_style
     ))
 
@@ -403,33 +482,57 @@ def build_two_column_ieee_pdf():
     fig3_path = os.path.join(FIGURES_DIR, "fig3_phash_hamming_dist.png")
     if os.path.exists(fig3_path):
         story.append(RLImage(fig3_path, width=256, height=135))
-        story.append(Paragraph("<b>Fig. 2.</b> Empirical probability density distribution of dHash Hamming distances for near-duplicate versus unrelated image pairs, validating optimal threshold tau = 10.", caption_style))
+        story.append(Paragraph("<b>Fig. 2.</b> Empirical probability density distribution of dHash Hamming distances for near-duplicate versus unrelated image pairs, validating optimal threshold &tau; = 10.", caption_style))
 
     story.append(Paragraph("<i>C. Intelligent Keeper Heuristic Formulation</i>", h2_style))
     story.append(Paragraph(
-        "Upon identifying an equivalence cluster G_k = {f_1, ..., f_m}, the system recommends an optimal keeper file f* in G_k by maximizing utility score S(f):",
+        "Upon identifying an equivalence cluster <i>G</i><sub><i>k</i></sub> = {<i>f</i><sub>1</sub>, ..., <i>f</i><sub><i>m</i></sub>}, the system recommends an optimal keeper file <i>f</i>* &isin; <i>G</i><sub><i>k</i></sub> by maximizing utility score <i>S</i>(<i>f</i>):",
         body_style
     ))
+
+    # Equation 6: Utility
+    eq_util = get_equation_image("eq_utility", max_width=230)
+    if eq_util:
+        story.append(eq_util)
+
     story.append(Paragraph(
-        "<font name='Times-Italic'>S(f) = w_d &middot; e^(-&lambda;&middot;depth(f)) + w_m &middot; (t_m(f)/T_ref) + w_p &middot; 1_P(f) + w_n &middot; N(f)</font>",
-        ParagraphStyle('EqCenter', parent=body_style, alignment=1, firstLineIndent=0, spaceBefore=2, spaceAfter=2)
-    ))
-    story.append(Paragraph(
-        "where depth(f) penalizes deeply buried paths (&lambda; = 0.15), t_m/T favors recently modified files, 1_P(f) rewards canonical user directories over transient folders, and N(f) penalizes redundant filename markers (e.g., 'Copy', '(1)'). Weights satisfy &sum; w_i = 1.0.",
+        "where depth(<i>f</i>) penalizes deeply buried paths (&lambda; = 0.15), <i>t</i><sub><i>m</i></sub>/<i>T</i> favors recently modified files, <b>1</b><sub><i>P</i></sub>(<i>f</i>) rewards canonical user directories over transient folders, and <i>N</i>(<i>f</i>) penalizes redundant filename markers (e.g., 'Copy', '(1)'). Weights satisfy &sum; <i>w</i><sub><i>i</i></sub> = 1.0.",
         body_style
     ))
 
     story.append(Paragraph("<i>D. Formal Transactional Safety Invariants</i>", h2_style))
     story.append(Paragraph(
-        "<b>Definition 1 (Vault Manifest):</b> A staging operation generates an immutable manifest entry M(f) = &lang;UUID, Path_orig, Path_vault, Size, Timestamp, SHA256&rang;.",
+        "<b>Definition 1 (Vault Manifest):</b> A staging operation generates an immutable manifest entry:",
         body_style
     ))
+
+    # Equation 7: Manifest
+    eq_man = get_equation_image("eq_manifest", max_width=230)
+    if eq_man:
+        story.append(eq_man)
+
     story.append(Paragraph(
-        "<b>Invariant 1 (Invariant of Bit-Exact Reversibility):</b> For any staged file f, the restoration operator R satisfies: R(M(f)) &rArr; SHA256(Payload(Path_orig)) &equiv; M(f).SHA256.",
+        "<b>Invariant 1 (Invariant of Bit-Exact Reversibility):</b> For any staged file <i>f</i>, the restoration operator <i>R</i> satisfies:",
         body_style
     ))
+
+    # Equation 8: Reversibility
+    eq_rev = get_equation_image("eq_reversibility", max_width=230)
+    if eq_rev:
+        story.append(eq_rev)
+
     story.append(Paragraph(
-        "<b>Invariant 2 (At-Least-One-Keeper Invariant):</b> In any duplicate cluster G_k, the staged purge set F_stage satisfies |F_stage &cap; G_k| &le; |G_k| - 1, preventing total cluster erasure.",
+        "<b>Invariant 2 (At-Least-One-Keeper Invariant):</b> In any duplicate cluster <i>G</i><sub><i>k</i></sub>, the staged purge set satisfies:",
+        body_style
+    ))
+
+    # Equation 9: Keeper Bound
+    eq_kp = get_equation_image("eq_keeper_bound", max_width=180)
+    if eq_kp:
+        story.append(eq_kp)
+
+    story.append(Paragraph(
+        "preventing accidental complete erasure of all copies.",
         body_style
     ))
 
@@ -572,7 +675,7 @@ def build_two_column_ieee_pdf():
         body_style
     ))
     story.append(Paragraph(
-        "<b>4) Perceptual Visual Similarity Sieve (Fig. 5d):</b> Evaluates image clusters against the 64-bit dHash gradient descriptor, rendering comparative overlays and Hamming distances (D_H &le; 10).",
+        "<b>4) Perceptual Visual Similarity Sieve (Fig. 5d):</b> Evaluates image clusters against the 64-bit dHash gradient descriptor, rendering comparative overlays and Hamming distances (<i>D</i><sub><i>H</i></sub> &le; 10).",
         body_style
     ))
 
