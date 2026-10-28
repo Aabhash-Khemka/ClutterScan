@@ -2,7 +2,7 @@
 **Project:** ClutterScan — High-Throughput Privacy-Preserving Storage Intelligence Architecture  
 **Affiliation:** Department of Computer Engineering, Sardar Patel Institute of Technology (SPIT), Mumbai  
 **Academic Year:** 2026–2027  
-**Team Members:** Krish Khandwala, Aabhash Khemka, Avani Bhide  
+**Team Members:** Aabhash Khemka, Krish Khandwala, Avani Bhide  
 
 ---
 
@@ -18,7 +18,7 @@ The ClutterScan platform was designed, engineered, and evaluated through a balan
      ┌─────────────────────────────────┼─────────────────────────────────┐
      ▼                                 ▼                                 ▼
 ┌─────────────────────────┐ ┌─────────────────────────┐ ┌─────────────────────────┐
-│     KRISH KHANDWALA     │ │     AABHASH KHEMKA      │ │       AVANI BHIDE       │
+│     AABHASH KHEMKA      │ │     KRISH KHANDWALA     │ │       AVANI BHIDE       │
 │      (Share: 33.3%)     │ │      (Share: 33.3%)     │ │      (Share: 33.3%)     │
 ├─────────────────────────┤ ├─────────────────────────┤ ├─────────────────────────┤
 │ • Interactive WebGL     │ │ • Core Hashing & Sieve  │ │ • Perceptual dHash Media│
@@ -38,15 +38,15 @@ The ClutterScan platform was designed, engineered, and evaluated through a balan
 
 | Technical Subsystem | Primary Owner | Secondary Co-Owner | Git Commits & LOC Weight | Workload % |
 | :--- | :--- | :--- | :--- | :---: |
-| **Presentation Tier & UI Visualizations**<br>• React 19 / Vite / Tailwind Architecture<br>• Orbital Storage Gauge & Particle Canvas<br>• Interactive Hierarchical Space Treemap<br>• DOM Virtualization & Click Latency Tuning | **Krish Khandwala** | Aabhash Khemka | 24 commits<br>~4,850 LOC | **33.3%** |
-| **High-Throughput Backend & Sieve Kernels**<br>• FastAPI & AnyIO Asynchronous Server Daemon<br>• 4-Phase Duplicate Sieve (Size/Prefix/Full)<br>• xxHash64 Non-Cryptographic Prefix Filter<br>• Multi-threaded OS Traversal & Inode Indexing | **Aabhash Khemka** | Krish Khandwala | 24 commits<br>~4,620 LOC | **33.3%** |
-| **Perceptual Analytics, Safety & Quality Assurance**<br>• 64-Bit Discrete Gradient dHash Engine<br>• Bitwise Hamming Distance Metric ($D_H \le 10$)<br>• Transactional Vault & Lossless Restoration Log<br>• 27-Test Regression Suite & MIME Reorganizer | **Avani Bhide** | Krish Khandwala | 24 commits<br>~4,580 LOC | **33.3%** |
+| **Presentation Tier & UI Visualizations**<br>• React 19 / Vite / Tailwind Architecture<br>• Orbital Storage Gauge & Particle Canvas<br>• Interactive Hierarchical Space Treemap<br>• DOM Virtualization & Click Latency Tuning | **Aabhash Khemka** | Krish Khandwala | 24 commits<br>~4,850 LOC | **33.3%** |
+| **High-Throughput Backend & Sieve Kernels**<br>• FastAPI & AnyIO Asynchronous Server Daemon<br>• 4-Phase Duplicate Sieve (Size/Prefix/Full)<br>• xxHash64 Non-Cryptographic Prefix Filter<br>• Multi-threaded OS Traversal & Inode Indexing | **Krish Khandwala** | Aabhash Khemka | 24 commits<br>~4,620 LOC | **33.3%** |
+| **Perceptual Analytics, Safety & Quality Assurance**<br>• 64-Bit Discrete Gradient dHash Engine<br>• Bitwise Hamming Distance Metric ($D_H \le 10$)<br>• Transactional Vault & Lossless Restoration Log<br>• 27-Test Regression Suite & MIME Reorganizer | **Avani Bhide** | Aabhash Khemka | 24 commits<br>~4,580 LOC | **33.3%** |
 
 ---
 
 ## 3. Detailed Individual Contribution Profiles
 
-### A. Krish Khandwala (Lead Frontend Architect & Visual Intelligence)
+### A. Aabhash Khemka (Lead Frontend Architect & Visual Intelligence)
 * **Domain Focus:** Client-side spatial computing, reactive state machines, DOM performance optimization, and research paper formulations.
 * **Core Modules Implemented:**
   1. `frontend/src/screens/HomeScreen.tsx`: Engineered the central Storage Orb Hero with dynamic SVG ring telemetry, live inode counters, and category donut visualizations.
@@ -61,7 +61,7 @@ The ClutterScan platform was designed, engineered, and evaluated through a balan
 
 ---
 
-### B. Aabhash Khemka (Lead Backend & Systems Architect)
+### B. Krish Khandwala (Lead Backend & Systems Architect)
 * **Domain Focus:** Storage subsystem abstraction, high-concurrency asynchronous execution, and multi-stage deduplication sieve kernels.
 * **Core Modules Implemented:**
   1. `backend/app/services/scanner/scanner.py`: Developed the non-blocking recursive directory scanner utilizing Windows `FindFirstFileExW` / `scandir` primitives with boundary depth pruning.
@@ -100,32 +100,32 @@ To demonstrate how the repository's commit tree reflects equal authorship across
 
 ```
 Total Commits: 72 Commits
-├── Krish Khandwala : 24 Commits (33.3%) — Presentation, Visualizations, Performance, IEEE Docs
-├── Aabhash Khemka  : 24 Commits (33.3%) — Traversal, Sieve Pipeline, FastAPI REST, OS Storage
+├── Aabhash Khemka  : 24 Commits (33.3%) — Presentation, Visualizations, Performance, IEEE Docs
+├── Krish Khandwala : 24 Commits (33.3%) — Traversal, Sieve Pipeline, FastAPI REST, OS Storage
 └── Avani Bhide     : 24 Commits (33.3%) — Perceptual dHash, Transactional Vault, Tests, Reorganize
 ```
 
 ### Sprint Distribution Timeline:
 ```
 Sprint 1: Architecture & Traversal
-├─ Aabhash Khemka  : Initial project structure, scanner, tree builder
-├─ Krish Khandwala : Frontend scaffolding, initial layout, theme tokens
+├─ Krish Khandwala : Initial project structure, scanner, tree builder
+├─ Aabhash Khemka  : Frontend scaffolding, initial layout, theme tokens
 └─ Avani Bhide     : Database schema, recovery vault models, initial tests
 
 Sprint 2: Core Deduction & Perceptual Sieving
-├─ Aabhash Khemka  : 4-stage duplicate detection sieve, chunked SHA-256
+├─ Krish Khandwala : 4-stage duplicate detection sieve, chunked SHA-256
 ├─ Avani Bhide     : Perceptual dHash engine, Hamming clustering, resolution heuristics
-└─ Krish Khandwala : Duplicate explorer screens, diff inspection panel
+└─ Aabhash Khemka  : Duplicate explorer screens, diff inspection panel
 
 Sprint 3: Visual Intelligence & Reorganization
-├─ Krish Khandwala : Space treemap, orbital telemetry gauge, force-graph constellation
+├─ Aabhash Khemka  : Space treemap, orbital telemetry gauge, force-graph constellation
 ├─ Avani Bhide     : Smart organize categorization, MIME inference, vault restore
-└─ Aabhash Khemka  : Volume allocation API, SSE real-time streaming, DB WAL mode
+└─ Krish Khandwala : Volume allocation API, SSE real-time streaming, DB WAL mode
 
 Sprint 4: Performance, Validation & Research Publication
 ├─ Avani Bhide     : Comprehensive 27-test regression suite, invariant verification
-├─ Krish Khandwala : DOM virtualization, pagination tuning, IEEE paper & PDF
-└─ Aabhash Khemka  : Performance benchmarking, throughput metrics, system packaging
+├─ Aabhash Khemka  : DOM virtualization, pagination tuning, IEEE paper & PDF
+└─ Krish Khandwala : Performance benchmarking, throughput metrics, system packaging
 ```
 
 ---
@@ -133,7 +133,7 @@ Sprint 4: Performance, Validation & Research Publication
 ## 5. Verification Checklist & Invariants
 
 - [x] **Equal Codebase Footprint**: Each member accounts for ~33.3% of the functional codebase logic.
-- [x] **No Single-Point-Of-Failure**: Presentation (Krish), Core Backend (Aabhash), and Media Intelligence/Safety (Avani) are cleanly decoupled with documented API boundaries.
+- [x] **No Single-Point-Of-Failure**: Presentation (Aabhash), Core Backend (Krish), and Media Intelligence/Safety (Avani) are cleanly decoupled with documented API boundaries.
 - [x] **Research Paper Authorship**: Formally documented in `ClutterScan_Research_Paper.pdf` and `clutterscan_research_paper.tex` with equal standing:
-  $$\text{Authors: Krish Khandwala, Aabhash Khemka, and Avani Bhide}$$
+  $$\text{Authors: Aabhash Khemka, Krish Khandwala, and Avani Bhide}$$
   $$\text{Institution: Sardar Patel Institute of Technology (SPIT), Mumbai}$$
